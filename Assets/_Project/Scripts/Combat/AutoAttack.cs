@@ -13,6 +13,8 @@ namespace PawVoyage.Combat
         [SerializeField] private float attackRange = 6f;
         [SerializeField] private float attacksPerSecond = 1f;
         [SerializeField] private int damage = 1;
+        [SerializeField] private int damageBonus = 0;
+        [SerializeField] private float attackRateBonusMult = 1f;
         [SerializeField] private CombatStats combatStats = new CombatStats();
         [SerializeField] private LayerMask targetLayers = ~0;
         [SerializeField] private string targetTag = "Enemy";
@@ -34,6 +36,22 @@ namespace PawVoyage.Combat
         /// 현재 공격 수치를 결정하는 무기 데이터입니다. 없으면 직렬화된 기본값을 사용합니다.
         /// </summary>
         public WeaponData WeaponData => weaponData;
+
+        /// <summary>
+        /// 레벨업 보상으로 추가 피해를 누적합니다.
+        /// </summary>
+        public void AddDamageBonus(int amount)
+        {
+            damageBonus += Mathf.Max(0, amount);
+        }
+
+        /// <summary>
+        /// 레벨업 보상으로 공격 속도 배율을 누적합니다.
+        /// </summary>
+        public void AddAttackRateMultiplier(float multiplierBonus)
+        {
+            attackRateBonusMult = Mathf.Max(0.01f, attackRateBonusMult + Mathf.Max(0f, multiplierBonus));
+        }
 
         public void SetWeapon(WeaponData newWeaponData)
         {
@@ -144,16 +162,17 @@ namespace PawVoyage.Combat
         {
             if (weaponData != null)
             {
-                return weaponData.BaseCooldown / combatStats.AttackRateMult;
+                return weaponData.BaseCooldown / (combatStats.AttackRateMult * attackRateBonusMult);
             }
 
-            float attackRate = attacksPerSecond * combatStats.AttackRateMult;
+            float attackRate = attacksPerSecond * combatStats.AttackRateMult * attackRateBonusMult;
             return attackRate <= 0f ? float.PositiveInfinity : 1f / attackRate;
         }
 
         private int CalculateDamage()
         {
-            return combatStats.CalculateDamage(weaponData != null ? weaponData.BaseDamage : damage);
+            int baseDamage = weaponData != null ? weaponData.BaseDamage : damage;
+            return combatStats.CalculateDamage(baseDamage + damageBonus);
         }
 
         private float GetAttackRange()

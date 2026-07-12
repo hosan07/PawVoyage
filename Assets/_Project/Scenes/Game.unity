@@ -274,6 +274,7 @@ GameObject:
   - component: {fileID: 1807036303}
   - component: {fileID: 1807036304}
   - component: {fileID: 1807036305}
+  - component: {fileID: 1807036306}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -410,6 +411,8 @@ MonoBehaviour:
   attackRange: 6
   attacksPerSecond: 1
   damage: 1
+  damageBonus: 0
+  attackRateBonusMult: 1
   combatStats:
     damageMult: 1
     attackRateMult: 1
@@ -546,6 +549,21 @@ MonoBehaviour:
   position: {x: 24, y: 36}
   barSize: {x: 280, y: 18}
   rowSpacing: 34
+--- !u!114 &1807036306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1807036295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 251d89d35d394b77b2c90ed405aa31b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.UI.LevelUpPanel
+  damageBonus: 2
+  attackRateBonus: 0.15
+  maxHpBonus: 20
 --- !u!1 &1973712823
 GameObject:
   m_ObjectHideFlags: 0

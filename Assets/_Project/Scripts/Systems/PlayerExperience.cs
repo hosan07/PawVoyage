@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 namespace PawVoyage.Systems
 {
@@ -11,6 +12,8 @@ namespace PawVoyage.Systems
         [SerializeField] private int currentExp = 0;
         [SerializeField] private int expToNextLevel = 10;
         [SerializeField] private float levelRequirementGrowth = 1.25f;
+
+        public event Action<int> LevelGained;
 
         public int CurrentLevel => currentLevel;
         public int CurrentExp => currentExp;
@@ -25,6 +28,7 @@ namespace PawVoyage.Systems
                 currentExp -= expToNextLevel;
                 currentLevel++;
                 expToNextLevel = Mathf.Max(expToNextLevel + 1, Mathf.CeilToInt(expToNextLevel * levelRequirementGrowth));
+                LevelGained?.Invoke(currentLevel);
             }
         }
     }

@@ -79,6 +79,24 @@ namespace PawVoyage.Combat
         }
 
         /// <summary>
+        /// 레벨업 보상으로 기본 최대 체력을 증가시키고 선택적으로 즉시 회복합니다.
+        /// </summary>
+        public void AddMaxHpBonus(int amount, bool healByAddedAmount)
+        {
+            int bonus = Mathf.Max(0, amount);
+            maxHp += bonus;
+
+            if (healByAddedAmount)
+            {
+                Heal(bonus);
+            }
+            else
+            {
+                currentHp = Mathf.Min(currentHp, MaxHp);
+            }
+        }
+
+        /// <summary>
         /// 이 오브젝트의 체력을 가득 채우고 사망 상태를 해제합니다.
         /// </summary>
         public void ResetHealth()
