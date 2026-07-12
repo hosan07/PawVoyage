@@ -19,6 +19,7 @@ namespace PawVoyage.Combat
         [SerializeField] private Projectile projectilePrefab = null;
         [SerializeField] private Transform projectileSpawnPoint = null;
         [SerializeField] private float projectileSpeed = 10f;
+        [SerializeField] private WeaponData weaponData = null;
 
         private readonly Collider2D[] targetBuffer = new Collider2D[MaxTargets];
         private float nextAttackTime;
@@ -28,6 +29,16 @@ namespace PawVoyage.Combat
         /// Current target selected by nearest-distance search.
         /// </summary>
         public Transform CurrentTarget { get; private set; }
+
+        /// <summary>
+        /// Weapon data currently driving attack values. If unset, serialized fallback values are used.
+        /// </summary>
+        public WeaponData WeaponData => weaponData;
+
+        public void SetWeapon(WeaponData newWeaponData)
+        {
+            weaponData = newWeaponData;
+        }
 
         private void Awake()
         {
@@ -59,7 +70,7 @@ namespace PawVoyage.Combat
         {
             int hitCount = Physics2D.OverlapCircle(
                 transform.position,
-                attackRange,
+                GetAttackRange(),
                 targetFilter,
                 targetBuffer);
 
@@ -90,10 +101,10 @@ namespace PawVoyage.Combat
             Vector2 origin = projectileSpawnPoint != null ? projectileSpawnPoint.position : transform.position;
             Vector2 direction = ((Vector2)target.position - origin).normalized;
 
-            if (projectilePrefab != null)
+            int projectileCount = GetProjectileCount();
+            if (projectilePrefab != null && GetAttackType() == WeaponAttackType.Projectile)
             {
-                Projectile projectile = Instantiate(projectilePrefab, origin, Quaternion.identity);
-                projectile.Initialize(direction, projectileSpeed, CalculateDamage(), targetLayers, targetTag);
+                FireProjectiles(origin, direction, projectileCount);
                 return;
             }
 
@@ -107,6 +118,21 @@ namespace PawVoyage.Combat
             target.SendMessage("TakeDamage", request.Amount, SendMessageOptions.DontRequireReceiver);
         }
 
+        private void FireProjectiles(Vector2 origin, Vector2 direction, int projectileCount)
+        {
+            int count = Mathf.Max(1, projectileCount);
+            float spreadStep = count <= 1 ? 0f : 12f;
+            float startAngle = -spreadStep * (count - 1) * 0.5f;
+
+            for (int i = 0; i < count; i++)
+            {
+                float angle = startAngle + spreadStep * i;
+                Vector2 fireDirection = Quaternion.Euler(0f, 0f, angle) * direction;
+                Projectile projectile = Instantiate(projectilePrefab, origin, Quaternion.identity);
+                projectile.Initialize(fireDirection, GetProjectileSpeed(), CalculateDamage(), targetLayers, targetTag);
+            }
+        }
+
         private bool MatchesTargetTag(Collider2D candidate)
         {
             return candidate.GetComponent<EnemyController>() != null
@@ -116,19 +142,46 @@ namespace PawVoyage.Combat
 
         private float GetAttackInterval()
         {
+            if (weaponData != null)
+            {
+                return weaponData.BaseCooldown / combatStats.AttackRateMult;
+            }
+
             float attackRate = attacksPerSecond * combatStats.AttackRateMult;
             return attackRate <= 0f ? float.PositiveInfinity : 1f / attackRate;
         }
 
         private int CalculateDamage()
         {
-            return combatStats.CalculateDamage(damage);
+            return combatStats.CalculateDamage(weaponData != null ? weaponData.BaseDamage : damage);
+        }
+
+        private float GetAttackRange()
+        {
+            float baseRange = weaponData != null ? weaponData.BaseRange : attackRange;
+            return baseRange * combatStats.RangeMult;
+        }
+
+        private float GetProjectileSpeed()
+        {
+            return weaponData != null ? weaponData.ProjectileSpeed : projectileSpeed;
+        }
+
+        private int GetProjectileCount()
+        {
+            int baseCount = weaponData != null ? weaponData.BaseProjectileCount : 1;
+            return baseCount + combatStats.ProjectileBonus;
+        }
+
+        private WeaponAttackType GetAttackType()
+        {
+            return weaponData != null ? weaponData.AttackType : WeaponAttackType.Projectile;
         }
 
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(transform.position, attackRange);
+            Gizmos.DrawWireSphere(transform.position, GetAttackRange());
         }
     }
 }
