@@ -3,7 +3,7 @@ using UnityEngine;
 namespace PawVoyage.Combat
 {
     /// <summary>
-    /// Shared combat stat modifiers from Balance Bible.
+    /// 밸런스 바이블 기준의 공통 전투 스탯 보정값입니다.
     /// </summary>
     [System.Serializable]
     public class CombatStats
@@ -35,7 +35,7 @@ namespace PawVoyage.Combat
         public float DamageReduction => Mathf.Clamp(damageReduction, 0f, 0.6f);
 
         /// <summary>
-        /// Calculates final hit damage using Balance Bible's base damage formula.
+        /// 밸런스 바이블의 기본 피해 공식을 사용해 최종 타격 피해를 계산합니다.
         /// </summary>
         public int CalculateDamage(int baseDamage)
         {
@@ -44,7 +44,7 @@ namespace PawVoyage.Combat
         }
 
         /// <summary>
-        /// Calculates final hit damage with an explicit critical result.
+        /// 명시된 치명타 결과를 사용해 최종 타격 피해를 계산합니다.
         /// </summary>
         public int CalculateDamage(int baseDamage, bool isCritical)
         {
@@ -53,7 +53,7 @@ namespace PawVoyage.Combat
         }
 
         /// <summary>
-        /// Applies defender-side damage reduction.
+        /// 방어자 측 피해 감소를 적용합니다.
         /// </summary>
         public int ReduceIncomingDamage(int incomingDamage)
         {

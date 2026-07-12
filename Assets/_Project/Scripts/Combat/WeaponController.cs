@@ -3,7 +3,7 @@ using UnityEngine;
 namespace PawVoyage.Combat
 {
     /// <summary>
-    /// Bridges the player's equipped weapon data into the attack runtime.
+    /// 플레이어가 장착한 무기 데이터를 공격 런타임에 연결합니다.
     /// </summary>
     [RequireComponent(typeof(AutoAttack))]
     public class WeaponController : MonoBehaviour

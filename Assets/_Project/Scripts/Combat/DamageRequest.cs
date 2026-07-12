@@ -3,7 +3,7 @@ using UnityEngine;
 namespace PawVoyage.Combat
 {
     /// <summary>
-    /// Immutable data describing a single damage event.
+    /// 단일 피해 이벤트를 설명하는 불변 데이터입니다.
     /// </summary>
     public readonly struct DamageRequest
     {
@@ -15,17 +15,17 @@ namespace PawVoyage.Combat
         }
 
         /// <summary>
-        /// Final damage amount after attacker-side calculations.
+        /// 공격자 측 계산이 끝난 최종 피해량입니다.
         /// </summary>
         public int Amount { get; }
 
         /// <summary>
-        /// GameObject responsible for the damage, if known.
+        /// 피해를 발생시킨 GameObject입니다. 알 수 없는 경우 null입니다.
         /// </summary>
         public GameObject Source { get; }
 
         /// <summary>
-        /// Whether this hit was a critical hit.
+        /// 이 타격이 치명타인지 여부입니다.
         /// </summary>
         public bool IsCritical { get; }
     }

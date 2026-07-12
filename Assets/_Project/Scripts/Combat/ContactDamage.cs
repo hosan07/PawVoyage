@@ -4,7 +4,7 @@ using UnityEngine;
 namespace PawVoyage.Combat
 {
     /// <summary>
-    /// Applies contact damage with per-target cooldown to prevent frame-stacked hits.
+    /// 프레임 단위 중첩 피해를 막기 위해 대상별 쿨다운을 두고 접촉 피해를 적용합니다.
     /// </summary>
     public class ContactDamage : MonoBehaviour
     {

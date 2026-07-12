@@ -15,7 +15,7 @@ namespace PawVoyage.Combat
     }
 
     /// <summary>
-    /// Data source for a weapon's base combat values.
+    /// 무기의 기본 전투 수치를 담는 데이터 소스입니다.
     /// </summary>
     [CreateAssetMenu(fileName = "WeaponData", menuName = "Paw Voyage/Combat/Weapon Data")]
     public class WeaponData : ScriptableObject

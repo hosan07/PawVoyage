@@ -4,7 +4,7 @@ using UnityEngine;
 namespace PawVoyage.Combat
 {
     /// <summary>
-    /// Automatically targets the nearest enemy and attacks at a fixed interval.
+    /// 가장 가까운 적을 자동으로 조준하고 일정 간격으로 공격합니다.
     /// </summary>
     public class AutoAttack : MonoBehaviour
     {
@@ -26,12 +26,12 @@ namespace PawVoyage.Combat
         private ContactFilter2D targetFilter;
 
         /// <summary>
-        /// Current target selected by nearest-distance search.
+        /// 가장 가까운 거리 탐색으로 선택된 현재 대상입니다.
         /// </summary>
         public Transform CurrentTarget { get; private set; }
 
         /// <summary>
-        /// Weapon data currently driving attack values. If unset, serialized fallback values are used.
+        /// 현재 공격 수치를 결정하는 무기 데이터입니다. 없으면 직렬화된 기본값을 사용합니다.
         /// </summary>
         public WeaponData WeaponData => weaponData;
 

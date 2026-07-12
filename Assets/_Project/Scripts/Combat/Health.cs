@@ -4,7 +4,7 @@ using UnityEngine.Events;
 namespace PawVoyage.Combat
 {
     /// <summary>
-    /// Reusable health component with damage reduction and death events.
+    /// 피해 감소와 사망 이벤트를 포함한 재사용 가능한 체력 컴포넌트입니다.
     /// </summary>
     public class Health : MonoBehaviour, IDamageable
     {
@@ -18,12 +18,12 @@ namespace PawVoyage.Combat
         private bool isDead;
 
         /// <summary>
-        /// Current hit points.
+        /// 현재 체력입니다.
         /// </summary>
         public int CurrentHp => currentHp;
 
         /// <summary>
-        /// Maximum hit points after stat modifiers.
+        /// 스탯 보정이 적용된 최대 체력입니다.
         /// </summary>
         public int MaxHp => Mathf.Max(1, Mathf.FloorToInt((maxHp + combatStats.MaxHpBonus) * combatStats.MaxHpMult));
 
@@ -35,7 +35,7 @@ namespace PawVoyage.Combat
         }
 
         /// <summary>
-        /// Applies damage using the common damage request structure.
+        /// 공통 피해 요청 구조를 사용해 피해를 적용합니다.
         /// </summary>
         public void ApplyDamage(DamageRequest request)
         {
@@ -55,7 +55,7 @@ namespace PawVoyage.Combat
         }
 
         /// <summary>
-        /// Compatibility method for SendMessage and simple callers.
+        /// SendMessage와 단순 호출자를 위한 호환 메서드입니다.
         /// </summary>
         public void TakeDamage(int amount)
         {
@@ -63,7 +63,7 @@ namespace PawVoyage.Combat
         }
 
         /// <summary>
-        /// Restores health up to the maximum.
+        /// 체력을 최대치까지 회복합니다.
         /// </summary>
         public void Heal(int amount)
         {
@@ -76,7 +76,7 @@ namespace PawVoyage.Combat
         }
 
         /// <summary>
-        /// Restores this object to full health and clears death state.
+        /// 이 오브젝트의 체력을 가득 채우고 사망 상태를 해제합니다.
         /// </summary>
         public void ResetHealth()
         {

@@ -4,7 +4,7 @@ using UnityEngine;
 namespace PawVoyage.Enemy
 {
     /// <summary>
-    /// Basic enemy behavior: follow the player, receive damage, and die at zero HP.
+    /// 플레이어를 추적하고, 피해를 받으며, 체력이 0이 되면 사망하는 기본 적 동작입니다.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(Health))]
@@ -20,7 +20,7 @@ namespace PawVoyage.Enemy
         private Rigidbody2D rb;
 
         /// <summary>
-        /// Movement target, usually the player.
+        /// 이동 대상입니다. 보통 플레이어를 가리킵니다.
         /// </summary>
         public Transform Target
         {

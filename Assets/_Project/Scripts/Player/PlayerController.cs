@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 namespace PawVoyage.Player
 {
     /// <summary>
-    /// Handles player movement for keyboard testing and future mobile joystick input.
+    /// 키보드 테스트와 추후 모바일 조이스틱 입력을 위한 플레이어 이동을 처리합니다.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerController : MonoBehaviour
@@ -16,7 +16,7 @@ namespace PawVoyage.Player
         private Vector2 externalMoveInput;
 
         /// <summary>
-        /// Current movement speed in Unity units per second.
+        /// 초당 Unity 단위 기준 현재 이동 속도입니다.
         /// </summary>
         public float MoveSpeed
         {
@@ -25,12 +25,12 @@ namespace PawVoyage.Player
         }
 
         /// <summary>
-        /// Last non-zero movement direction. Defaults to right.
+        /// 마지막으로 입력된 0이 아닌 이동 방향입니다. 기본값은 오른쪽입니다.
         /// </summary>
         public Vector2 LastMoveDirection { get; private set; } = Vector2.right;
 
         /// <summary>
-        /// Current normalized movement input.
+        /// 현재 정규화된 이동 입력입니다.
         /// </summary>
         public Vector2 MoveInput => moveInput;
 
@@ -60,16 +60,16 @@ namespace PawVoyage.Player
         }
 
         /// <summary>
-        /// Sets movement input from a virtual joystick or other mobile control.
+        /// 가상 조이스틱 또는 다른 모바일 컨트롤에서 받은 이동 입력을 설정합니다.
         /// </summary>
-        /// <param name="input">Input vector where magnitude is clamped to 1.</param>
+        /// <param name="input">크기가 1 이하로 제한되는 입력 벡터입니다.</param>
         public void SetMoveInput(Vector2 input)
         {
             externalMoveInput = Vector2.ClampMagnitude(input, 1f);
         }
 
         /// <summary>
-        /// Clears external movement input, usually when a virtual joystick is released.
+        /// 외부 이동 입력을 지웁니다. 보통 가상 조이스틱에서 손을 뗄 때 사용합니다.
         /// </summary>
         public void ClearMoveInput()
         {

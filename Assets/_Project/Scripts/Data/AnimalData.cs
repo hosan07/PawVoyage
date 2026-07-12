@@ -3,7 +3,7 @@ using UnityEngine;
 namespace PawVoyage.Data
 {
     /// <summary>
-    /// Static animal master data stored as a Unity asset.
+    /// Unity 에셋으로 저장되는 동물 고정 마스터 데이터입니다.
     /// </summary>
     [CreateAssetMenu(fileName = "AnimalData", menuName = "Paw Voyage/Animal Data")]
     public class AnimalData : ScriptableObject
@@ -19,7 +19,7 @@ namespace PawVoyage.Data
         [SerializeField] private AnimalAttackPattern attackPattern = AnimalAttackPattern.Melee;
 
         /// <summary>
-        /// Stable unique animal id used by saved player data.
+        /// 저장된 플레이어 데이터에서 사용하는 고정 동물 고유 ID입니다.
         /// </summary>
         public string Id
         {
@@ -28,7 +28,7 @@ namespace PawVoyage.Data
         }
 
         /// <summary>
-        /// Display name shown in UI.
+        /// 화면에 표시되는 이름입니다.
         /// </summary>
         public string AnimalName
         {
@@ -37,7 +37,7 @@ namespace PawVoyage.Data
         }
 
         /// <summary>
-        /// Collection rarity tier.
+        /// 수집 희귀도 등급입니다.
         /// </summary>
         public AnimalTier Tier
         {
@@ -46,7 +46,7 @@ namespace PawVoyage.Data
         }
 
         /// <summary>
-        /// Unlock method for this animal.
+        /// 이 동물의 해금 방식입니다.
         /// </summary>
         public AnimalUnlockType UnlockType
         {
@@ -55,7 +55,7 @@ namespace PawVoyage.Data
         }
 
         /// <summary>
-        /// Required currency amount for non-free unlocks.
+        /// 무료가 아닌 해금에 필요한 재화 수량입니다.
         /// </summary>
         public int UnlockCost
         {
@@ -64,7 +64,7 @@ namespace PawVoyage.Data
         }
 
         /// <summary>
-        /// Base attack power before upgrades.
+        /// 업그레이드 적용 전 기본 공격력입니다.
         /// </summary>
         public int BaseAttack
         {
@@ -73,7 +73,7 @@ namespace PawVoyage.Data
         }
 
         /// <summary>
-        /// Base maximum health before upgrades.
+        /// 업그레이드 적용 전 기본 최대 체력입니다.
         /// </summary>
         public int BaseHp
         {
@@ -82,7 +82,7 @@ namespace PawVoyage.Data
         }
 
         /// <summary>
-        /// Base movement speed before upgrades.
+        /// 업그레이드 적용 전 기본 이동 속도입니다.
         /// </summary>
         public float BaseSpeed
         {
@@ -91,7 +91,7 @@ namespace PawVoyage.Data
         }
 
         /// <summary>
-        /// Default attack behavior used by this animal.
+        /// 이 동물이 기본으로 사용하는 공격 방식입니다.
         /// </summary>
         public AnimalAttackPattern AttackPattern
         {
@@ -101,7 +101,7 @@ namespace PawVoyage.Data
     }
 
     /// <summary>
-    /// Animal rarity tiers.
+    /// 동물 희귀도 등급입니다.
     /// </summary>
     public enum AnimalTier
     {
@@ -112,7 +112,7 @@ namespace PawVoyage.Data
     }
 
     /// <summary>
-    /// Animal unlock methods.
+    /// 동물 해금 방식입니다.
     /// </summary>
     public enum AnimalUnlockType
     {
@@ -123,7 +123,7 @@ namespace PawVoyage.Data
     }
 
     /// <summary>
-    /// Animal attack pattern categories.
+    /// 동물 공격 패턴 분류입니다.
     /// </summary>
     public enum AnimalAttackPattern
     {

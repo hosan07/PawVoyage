@@ -4,84 +4,84 @@ using System.Collections.Generic;
 namespace PawVoyage.Data
 {
     /// <summary>
-    /// Persistent player progress data synchronized with backend storage.
+    /// 백엔드 저장소와 동기화되는 영구 플레이어 진행 데이터입니다.
     /// </summary>
     [Serializable]
     public class PlayerData
     {
         /// <summary>
-        /// Soft currency earned through gameplay.
+        /// 게임 플레이로 획득하는 일반 재화입니다.
         /// </summary>
         public int Gold { get; set; }
 
         /// <summary>
-        /// Premium currency used for paid unlocks or convenience purchases.
+        /// 유료 해금 또는 편의 구매에 사용하는 프리미엄 재화입니다.
         /// </summary>
         public int Gems { get; set; }
 
         /// <summary>
-        /// Current energy available for starting game sessions.
+        /// 게임 세션 시작에 사용할 수 있는 현재 에너지입니다.
         /// </summary>
         public int Energy { get; set; }
 
         /// <summary>
-        /// Maximum energy capacity.
+        /// 최대 에너지 보유량입니다.
         /// </summary>
         public int EnergyMax { get; set; } = 60;
 
         /// <summary>
-        /// Last UTC time energy refill was calculated.
+        /// 에너지 회복이 마지막으로 계산된 UTC 시간입니다.
         /// </summary>
         public DateTime EnergyLastRefillTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Animal ids currently owned by the player.
+        /// 플레이어가 현재 보유한 동물 ID 목록입니다.
         /// </summary>
         public List<string> OwnedAnimals { get; set; } = new List<string>();
 
         /// <summary>
-        /// Animal id currently selected for gameplay.
+        /// 게임 플레이에 현재 선택된 동물 ID입니다.
         /// </summary>
         public string EquippedAnimal { get; set; } = string.Empty;
 
         /// <summary>
-        /// Permanent upgrade levels purchased with gold.
+        /// 골드로 구매한 영구 업그레이드 레벨입니다.
         /// </summary>
         public PlayerUpgradeLevels UpgradeLevels { get; set; } = new PlayerUpgradeLevels();
 
         /// <summary>
-        /// Whether VIP benefits are currently active.
+        /// VIP 혜택이 현재 활성화되어 있는지 여부입니다.
         /// </summary>
         public bool VipActive { get; set; }
 
         /// <summary>
-        /// UTC expiry time for VIP benefits, or null if inactive or permanent.
+        /// VIP 혜택의 UTC 만료 시간입니다. 비활성 또는 영구 혜택이면 null입니다.
         /// </summary>
         public DateTime? VipExpiry { get; set; }
 
         /// <summary>
-        /// Best survival time in seconds.
+        /// 초 단위 최고 생존 시간입니다.
         /// </summary>
         public int BestSurvivalTime { get; set; }
 
         /// <summary>
-        /// Permanent stat upgrade levels.
+        /// 영구 스탯 업그레이드 레벨입니다.
         /// </summary>
         [Serializable]
         public class PlayerUpgradeLevels
         {
             /// <summary>
-            /// Attack power upgrade level.
+            /// 공격력 업그레이드 레벨입니다.
             /// </summary>
             public int Attack { get; set; }
 
             /// <summary>
-            /// Maximum health upgrade level.
+            /// 최대 체력 업그레이드 레벨입니다.
             /// </summary>
             public int Hp { get; set; }
 
             /// <summary>
-            /// Movement speed upgrade level.
+            /// 이동 속도 업그레이드 레벨입니다.
             /// </summary>
             public int Speed { get; set; }
         }

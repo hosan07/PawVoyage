@@ -5,7 +5,7 @@ using UnityEngine;
 namespace PawVoyage.Systems
 {
     /// <summary>
-    /// Spawns enemies around the player at a fixed interval.
+    /// 일정 간격으로 플레이어 주변에 적을 생성합니다.
     /// </summary>
     public class WaveSpawner : MonoBehaviour
     {

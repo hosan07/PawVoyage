@@ -3,7 +3,7 @@ using UnityEngine;
 namespace PawVoyage.Combat
 {
     /// <summary>
-    /// Simple 2D projectile that travels in one direction and damages matching targets.
+    /// 한 방향으로 이동하며 조건에 맞는 대상에게 피해를 주는 단순 2D 투사체입니다.
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
     public class Projectile : MonoBehaviour
@@ -59,7 +59,7 @@ namespace PawVoyage.Combat
         }
 
         /// <summary>
-        /// Initializes projectile movement and damage data.
+        /// 투사체 이동과 피해 데이터를 초기화합니다.
         /// </summary>
         public void Initialize(Vector2 fireDirection, float fireSpeed, int attackDamage, LayerMask layers, string requiredTag)
         {
