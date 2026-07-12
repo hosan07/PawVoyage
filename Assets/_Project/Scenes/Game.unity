@@ -583,8 +583,9 @@ MonoBehaviour:
   levelUpClip: {fileID: 8300000, guid: 2667a0a008b044e218b63df62e2be749, type: 3}
   enemyHitClip: {fileID: 8300000, guid: 3becec1909f194046945d85ac1077772, type: 3}
   cardSelectClip: {fileID: 8300000, guid: 35fbad8cdde724f11ba6481f1e64af71, type: 3}
-  masterVolume: 0.7
-  minimumAttackInterval: 0.08
+  masterVolume: 0.179
+  minimumAttackInterval: 0.55
+  attackClipCooldownRatio: 0.9
 --- !u!1 &1973712823
 GameObject:
   m_ObjectHideFlags: 0

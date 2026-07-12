@@ -14,7 +14,8 @@ namespace PawVoyage.Systems
         [SerializeField] private AudioClip enemyHitClip = null;
         [SerializeField] private AudioClip cardSelectClip = null;
         [SerializeField, Range(0f, 1f)] private float masterVolume = 0.7f;
-        [SerializeField] private float minimumAttackInterval = 0.08f;
+        [SerializeField] private float minimumAttackInterval = 0.55f;
+        [SerializeField] private float attackClipCooldownRatio = 0.9f;
 
         private AudioSource audioSource;
         private float nextAttackSoundTime;
@@ -50,7 +51,7 @@ namespace PawVoyage.Systems
                 return;
             }
 
-            Instance.nextAttackSoundTime = Time.unscaledTime + Instance.minimumAttackInterval;
+            Instance.nextAttackSoundTime = Time.unscaledTime + Instance.GetAttackSoundInterval();
             Instance.Play(Instance.attackClip);
         }
 
@@ -87,6 +88,12 @@ namespace PawVoyage.Systems
             }
 
             audioSource.PlayOneShot(clip, masterVolume);
+        }
+
+        private float GetAttackSoundInterval()
+        {
+            float clipInterval = attackClip != null ? attackClip.length * Mathf.Max(0f, attackClipCooldownRatio) : 0f;
+            return Mathf.Max(minimumAttackInterval, clipInterval);
         }
     }
 }
