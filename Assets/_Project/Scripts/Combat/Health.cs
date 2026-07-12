@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using System;
 
 namespace PawVoyage.Combat
 {
@@ -16,6 +17,8 @@ namespace PawVoyage.Combat
         [SerializeField] private UnityEvent onDeath = null;
 
         private bool isDead;
+
+        public event Action<Health> Died;
 
         /// <summary>
         /// 현재 체력입니다.
@@ -93,6 +96,7 @@ namespace PawVoyage.Combat
 
             isDead = true;
             onDeath?.Invoke();
+            Died?.Invoke(this);
 
             if (destroyOnDeath)
             {

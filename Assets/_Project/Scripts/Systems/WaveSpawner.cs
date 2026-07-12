@@ -65,6 +65,7 @@ namespace PawVoyage.Systems
             enemyObject.transform.position = spawnPosition;
             enemyObject.transform.localScale = Vector3.one * 0.75f;
             enemyObject.AddComponent<ContactDamage>();
+            enemyObject.AddComponent<EnemyReward>();
             return enemyObject.AddComponent<EnemyController>();
         }
 
