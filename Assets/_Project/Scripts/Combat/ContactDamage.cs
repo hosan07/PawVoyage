@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using PawVoyage.Systems;
 using UnityEngine;
 
 namespace PawVoyage.Combat
@@ -39,6 +40,7 @@ namespace PawVoyage.Combat
             }
 
             damageable.ApplyDamage(new DamageRequest(damage, gameObject));
+            GameSfx.PlayDamage();
             nextHitTimes[damageable] = Time.time + Mathf.Max(0f, hitCooldown);
         }
 

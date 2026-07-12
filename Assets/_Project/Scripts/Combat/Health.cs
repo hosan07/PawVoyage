@@ -1,4 +1,3 @@
-using PawVoyage.Systems;
 using UnityEngine;
 using UnityEngine.Events;
 using System;
@@ -50,7 +49,6 @@ namespace PawVoyage.Combat
 
             int finalDamage = combatStats.ReduceIncomingDamage(request.Amount);
             currentHp = Mathf.Max(0, currentHp - finalDamage);
-            GameSfx.PlayDamage();
             onDamaged?.Invoke();
 
             if (currentHp <= 0)
