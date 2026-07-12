@@ -1,3 +1,4 @@
+using PawVoyage.Enemy;
 using UnityEngine;
 
 namespace PawVoyage.Combat
@@ -100,7 +101,9 @@ namespace PawVoyage.Combat
 
         private bool MatchesTargetTag(Collider2D candidate)
         {
-            return string.IsNullOrWhiteSpace(targetTag) || candidate.gameObject.tag == targetTag;
+            return candidate.GetComponent<EnemyController>() != null
+                || string.IsNullOrWhiteSpace(targetTag)
+                || candidate.gameObject.tag == targetTag;
         }
 
         private float GetAttackInterval()
