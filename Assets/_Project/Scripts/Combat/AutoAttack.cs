@@ -1,4 +1,5 @@
 using PawVoyage.Enemy;
+using PawVoyage.Systems;
 using UnityEngine;
 
 namespace PawVoyage.Combat
@@ -116,6 +117,8 @@ namespace PawVoyage.Combat
 
         private void Attack(Transform target)
         {
+            GameSfx.PlayAttack();
+
             Vector2 origin = projectileSpawnPoint != null ? projectileSpawnPoint.position : transform.position;
             Vector2 direction = ((Vector2)target.position - origin).normalized;
 

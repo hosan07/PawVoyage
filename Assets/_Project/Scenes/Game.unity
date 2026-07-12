@@ -275,6 +275,7 @@ GameObject:
   - component: {fileID: 1807036304}
   - component: {fileID: 1807036305}
   - component: {fileID: 1807036306}
+  - component: {fileID: 1807036307}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -564,6 +565,24 @@ MonoBehaviour:
   damageBonus: 2
   attackRateBonus: 0.15
   maxHpBonus: 20
+--- !u!114 &1807036307
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1807036295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fe644e2ac464ddc8789aa0b609d108b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.Systems.GameSfx
+  attackClip: {fileID: 8300000, guid: cabfae866cab347928b74b7d0ca6bfa9, type: 3}
+  damageClip: {fileID: 8300000, guid: 7478151cf36724a7dada558f746c3633, type: 3}
+  experienceClip: {fileID: 8300000, guid: 5fdb13d3756c84fecac96f5a2d124370, type: 3}
+  levelUpClip: {fileID: 8300000, guid: 4b4dd7245f6104c8c8eb07ccf6b386ed, type: 3}
+  masterVolume: 0.7
+  minimumAttackInterval: 0.08
 --- !u!1 &1973712823
 GameObject:
   m_ObjectHideFlags: 0

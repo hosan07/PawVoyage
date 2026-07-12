@@ -95,6 +95,7 @@ namespace PawVoyage.UI
         private void OnLevelGained(int newLevel)
         {
             pendingLevelUps++;
+            GameSfx.PlayLevelUp();
 
             if (pendingLevelUps == 1)
             {

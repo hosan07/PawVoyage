@@ -48,6 +48,7 @@ namespace PawVoyage.Systems
             }
 
             playerExperience.AddExperience(experienceAmount);
+            GameSfx.PlayExperience();
             Destroy(gameObject);
         }
 
