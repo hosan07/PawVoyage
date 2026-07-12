@@ -276,6 +276,7 @@ GameObject:
   - component: {fileID: 1807036305}
   - component: {fileID: 1807036306}
   - component: {fileID: 1807036307}
+  - component: {fileID: 1807036308}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -461,7 +462,7 @@ MonoBehaviour:
     moveSpeedMult: 1
     pickupRadiusMult: 1
     damageReduction: 0
-  destroyOnDeath: 1
+  destroyOnDeath: 0
   currentHp: 100
   onDamaged:
     m_PersistentCalls:
@@ -586,6 +587,20 @@ MonoBehaviour:
   masterVolume: 0.179
   minimumAttackInterval: 0.55
   attackClipCooldownRatio: 0.9
+--- !u!114 &1807036308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1807036295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e935276f6148ebb77808f6ca1df280, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.UI.GameOverPanel
+  titleText: GAME OVER
+  retryText: RETRY
 --- !u!1 &1973712823
 GameObject:
   m_ObjectHideFlags: 0
