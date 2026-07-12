@@ -11,10 +11,10 @@ namespace PawVoyage.Combat
         [SerializeField] private int maxHp = 3;
         [SerializeField] private CombatStats combatStats = new CombatStats();
         [SerializeField] private bool destroyOnDeath = true;
+        [SerializeField] private int currentHp;
         [SerializeField] private UnityEvent onDamaged = null;
         [SerializeField] private UnityEvent onDeath = null;
 
-        private int currentHp;
         private bool isDead;
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace PawVoyage.Combat
 
         private void Awake()
         {
-            currentHp = MaxHp;
+            ResetHealth();
         }
 
         /// <summary>
@@ -73,6 +73,15 @@ namespace PawVoyage.Combat
             }
 
             currentHp = Mathf.Min(MaxHp, currentHp + Mathf.Max(0, amount));
+        }
+
+        /// <summary>
+        /// Restores this object to full health and clears death state.
+        /// </summary>
+        public void ResetHealth()
+        {
+            isDead = false;
+            currentHp = MaxHp;
         }
 
         private void Die()

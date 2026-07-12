@@ -269,6 +269,7 @@ GameObject:
   - component: {fileID: 1807036297}
   - component: {fileID: 1807036296}
   - component: {fileID: 1807036300}
+  - component: {fileID: 1807036301}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -405,6 +406,19 @@ MonoBehaviour:
   attackRange: 6
   attacksPerSecond: 1
   damage: 1
+  combatStats:
+    damageMult: 1
+    attackRateMult: 1
+    projectileBonus: 0
+    rangeMult: 1
+    pierceBonus: 0
+    critChance: 0.05
+    critDamageMult: 1.5
+    maxHpBonus: 0
+    maxHpMult: 1
+    moveSpeedMult: 1
+    pickupRadiusMult: 1
+    damageReduction: 0
   targetLayers:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -412,6 +426,39 @@ MonoBehaviour:
   projectilePrefab: {fileID: 0}
   projectileSpawnPoint: {fileID: 0}
   projectileSpeed: 10
+--- !u!114 &1807036301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1807036295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b072df650094c6ebf7708f950d50b85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.Combat.Health
+  maxHp: 100
+  combatStats:
+    damageMult: 1
+    attackRateMult: 1
+    projectileBonus: 0
+    rangeMult: 1
+    pierceBonus: 0
+    critChance: 0.05
+    critDamageMult: 1.5
+    maxHpBonus: 0
+    maxHpMult: 1
+    moveSpeedMult: 1
+    pickupRadiusMult: 1
+    damageReduction: 0
+  destroyOnDeath: 1
+  onDamaged:
+    m_PersistentCalls:
+      m_Calls: []
+  onDeath:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1973712823
 GameObject:
   m_ObjectHideFlags: 0
