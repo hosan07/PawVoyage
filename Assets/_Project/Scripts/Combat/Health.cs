@@ -8,7 +8,7 @@ namespace PawVoyage.Combat
     /// </summary>
     public class Health : MonoBehaviour, IDamageable
     {
-        [SerializeField] private int maxHp = 3;
+        [SerializeField] private int maxHp = 30;
         [SerializeField] private CombatStats combatStats = new CombatStats();
         [SerializeField] private bool destroyOnDeath = true;
         [SerializeField] private int currentHp;

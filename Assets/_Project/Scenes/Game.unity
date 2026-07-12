@@ -546,7 +546,7 @@ MonoBehaviour:
   player: {fileID: 1807036298}
   playerName: Player
   spawnInterval: 1.5
-  spawnRadius: 7
+  spawnRadius: 4.5
   maxAliveEnemies: 20
   spawnOnStart: 1
 --- !u!4 &1973712825
