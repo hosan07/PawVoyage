@@ -273,6 +273,7 @@ GameObject:
   - component: {fileID: 1807036302}
   - component: {fileID: 1807036303}
   - component: {fileID: 1807036304}
+  - component: {fileID: 1807036305}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -530,6 +531,21 @@ MonoBehaviour:
   currentExp: 0
   expToNextLevel: 10
   levelRequirementGrowth: 1.25
+--- !u!114 &1807036305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1807036295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ef8feb94e204247ad8e330c756bb23f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.UI.PlayerHud
+  position: {x: 24, y: 36}
+  barSize: {x: 280, y: 18}
+  rowSpacing: 34
 --- !u!1 &1973712823
 GameObject:
   m_ObjectHideFlags: 0
