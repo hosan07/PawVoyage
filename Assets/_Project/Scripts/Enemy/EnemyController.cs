@@ -1,3 +1,4 @@
+using PawVoyage.Combat;
 using UnityEngine;
 
 namespace PawVoyage.Enemy
@@ -6,23 +7,17 @@ namespace PawVoyage.Enemy
     /// Basic enemy behavior: follow the player, receive damage, and die at zero HP.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
+    [RequireComponent(typeof(Health))]
     public class EnemyController : MonoBehaviour
     {
         private static Sprite fallbackSprite;
 
-        [SerializeField] private int maxHp = 3;
         [SerializeField] private float moveSpeed = 2f;
         [SerializeField] private Transform target;
         [SerializeField] private string targetName = "Player";
         [SerializeField] private bool createFallbackVisual = true;
 
         private Rigidbody2D rb;
-        private int currentHp;
-
-        /// <summary>
-        /// Current enemy HP.
-        /// </summary>
-        public int CurrentHp => currentHp;
 
         /// <summary>
         /// Movement target, usually the player.
@@ -38,7 +33,6 @@ namespace PawVoyage.Enemy
             rb = GetComponent<Rigidbody2D>();
             rb.gravityScale = 0f;
             rb.freezeRotation = true;
-            currentHp = maxHp;
 
             EnsureCollider();
             EnsureFallbackVisual();
@@ -64,20 +58,6 @@ namespace PawVoyage.Enemy
             rb.MovePosition(nextPosition);
         }
 
-        /// <summary>
-        /// Applies damage to this enemy.
-        /// </summary>
-        /// <param name="amount">Damage amount.</param>
-        public void TakeDamage(int amount)
-        {
-            currentHp -= Mathf.Max(0, amount);
-
-            if (currentHp <= 0)
-            {
-                Die();
-            }
-        }
-
         private void FindTarget()
         {
             GameObject targetObject = GameObject.Find(targetName);
@@ -85,11 +65,6 @@ namespace PawVoyage.Enemy
             {
                 target = targetObject.transform;
             }
-        }
-
-        private void Die()
-        {
-            Destroy(gameObject);
         }
 
         private void EnsureCollider()

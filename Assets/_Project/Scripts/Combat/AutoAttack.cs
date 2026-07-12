@@ -13,6 +13,7 @@ namespace PawVoyage.Combat
         [SerializeField] private float attackRange = 6f;
         [SerializeField] private float attacksPerSecond = 1f;
         [SerializeField] private int damage = 1;
+        [SerializeField] private CombatStats combatStats = new CombatStats();
         [SerializeField] private LayerMask targetLayers = ~0;
         [SerializeField] private string targetTag = "Enemy";
         [SerializeField] private Projectile projectilePrefab = null;
@@ -92,11 +93,18 @@ namespace PawVoyage.Combat
             if (projectilePrefab != null)
             {
                 Projectile projectile = Instantiate(projectilePrefab, origin, Quaternion.identity);
-                projectile.Initialize(direction, projectileSpeed, damage, targetLayers, targetTag);
+                projectile.Initialize(direction, projectileSpeed, CalculateDamage(), targetLayers, targetTag);
                 return;
             }
 
-            target.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
+            DamageRequest request = new DamageRequest(CalculateDamage(), gameObject);
+            if (target.TryGetComponent(out IDamageable damageable))
+            {
+                damageable.ApplyDamage(request);
+                return;
+            }
+
+            target.SendMessage("TakeDamage", request.Amount, SendMessageOptions.DontRequireReceiver);
         }
 
         private bool MatchesTargetTag(Collider2D candidate)
@@ -108,7 +116,13 @@ namespace PawVoyage.Combat
 
         private float GetAttackInterval()
         {
-            return attacksPerSecond <= 0f ? float.PositiveInfinity : 1f / attacksPerSecond;
+            float attackRate = attacksPerSecond * combatStats.AttackRateMult;
+            return attackRate <= 0f ? float.PositiveInfinity : 1f / attackRate;
+        }
+
+        private int CalculateDamage()
+        {
+            return combatStats.CalculateDamage(damage);
         }
 
         private void OnDrawGizmosSelected()

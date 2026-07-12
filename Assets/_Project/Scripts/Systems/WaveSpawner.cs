@@ -1,4 +1,5 @@
 using PawVoyage.Enemy;
+using PawVoyage.Combat;
 using UnityEngine;
 
 namespace PawVoyage.Systems
@@ -63,6 +64,7 @@ namespace PawVoyage.Systems
             GameObject enemyObject = new GameObject("Enemy");
             enemyObject.transform.position = spawnPosition;
             enemyObject.transform.localScale = Vector3.one * 0.75f;
+            enemyObject.AddComponent<ContactDamage>();
             return enemyObject.AddComponent<EnemyController>();
         }
 

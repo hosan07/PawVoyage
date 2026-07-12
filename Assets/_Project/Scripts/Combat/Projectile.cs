@@ -45,7 +45,16 @@ namespace PawVoyage.Combat
                 return;
             }
 
-            other.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
+            DamageRequest request = new DamageRequest(damage, gameObject);
+            if (other.TryGetComponent(out IDamageable damageable))
+            {
+                damageable.ApplyDamage(request);
+            }
+            else
+            {
+                other.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
+            }
+
             Destroy(gameObject);
         }
 
