@@ -1,6 +1,7 @@
 using PawVoyage.Combat;
 using PawVoyage.Systems;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace PawVoyage.UI
 {
@@ -24,6 +25,9 @@ namespace PawVoyage.UI
         private GUIStyle buttonStyle;
         private int pendingLevelUps;
         private float previousTimeScale = 1f;
+        private Rect damageButtonRect;
+        private Rect attackSpeedButtonRect;
+        private Rect healthButtonRect;
 
         private bool IsOpen => pendingLevelUps > 0;
 
@@ -45,6 +49,18 @@ namespace PawVoyage.UI
             ResumeGameIfNeeded();
         }
 
+        private void Update()
+        {
+            if (!IsOpen)
+            {
+                return;
+            }
+
+            UpdateButtonRects();
+            HandlePointerSelection();
+            HandleKeyboardSelection();
+        }
+
         private void OnGUI()
         {
             if (!IsOpen)
@@ -53,29 +69,24 @@ namespace PawVoyage.UI
             }
 
             EnsureStyles();
-
-            Rect panelRect = new Rect(
-                Screen.width * 0.5f - 180f,
-                Screen.height * 0.5f - 145f,
-                360f,
-                290f);
+            Rect panelRect = GetPanelRect();
+            UpdateButtonRects();
 
             GUI.Box(panelRect, GUIContent.none);
             GUI.Label(new Rect(panelRect.x + 24f, panelRect.y + 22f, panelRect.width - 48f, 32f), "LEVEL UP", titleStyle);
             GUI.Label(new Rect(panelRect.x + 24f, panelRect.y + 58f, panelRect.width - 48f, 26f), $"Choose a reward for LV {playerExperience.CurrentLevel}", bodyStyle);
 
-            float buttonY = panelRect.y + 100f;
-            if (GUI.Button(new Rect(panelRect.x + 28f, buttonY, panelRect.width - 56f, 46f), $"+{damageBonus} Damage", buttonStyle))
+            if (GUI.Button(damageButtonRect, $"+{damageBonus} Damage", buttonStyle))
             {
                 ApplyDamageUpgrade();
             }
 
-            if (GUI.Button(new Rect(panelRect.x + 28f, buttonY + 58f, panelRect.width - 56f, 46f), $"+{Mathf.RoundToInt(attackRateBonus * 100f)}% Attack Speed", buttonStyle))
+            if (GUI.Button(attackSpeedButtonRect, $"+{Mathf.RoundToInt(attackRateBonus * 100f)}% Attack Speed", buttonStyle))
             {
                 ApplyAttackSpeedUpgrade();
             }
 
-            if (GUI.Button(new Rect(panelRect.x + 28f, buttonY + 116f, panelRect.width - 56f, 46f), $"+{maxHpBonus} Max HP", buttonStyle))
+            if (GUI.Button(healthButtonRect, $"+{maxHpBonus} Max HP", buttonStyle))
             {
                 ApplyHealthUpgrade();
             }
@@ -94,18 +105,33 @@ namespace PawVoyage.UI
 
         private void ApplyDamageUpgrade()
         {
+            if (!IsOpen)
+            {
+                return;
+            }
+
             autoAttack.AddDamageBonus(damageBonus);
             CloseOneSelection();
         }
 
         private void ApplyAttackSpeedUpgrade()
         {
+            if (!IsOpen)
+            {
+                return;
+            }
+
             autoAttack.AddAttackRateMultiplier(attackRateBonus);
             CloseOneSelection();
         }
 
         private void ApplyHealthUpgrade()
         {
+            if (!IsOpen)
+            {
+                return;
+            }
+
             health.AddMaxHpBonus(maxHpBonus, true);
             CloseOneSelection();
         }
@@ -124,6 +150,88 @@ namespace PawVoyage.UI
             }
 
             Time.timeScale = previousTimeScale <= 0f ? 1f : previousTimeScale;
+        }
+
+        private Rect GetPanelRect()
+        {
+            return new Rect(
+                Screen.width * 0.5f - 180f,
+                Screen.height * 0.5f - 145f,
+                360f,
+                290f);
+        }
+
+        private void UpdateButtonRects()
+        {
+            Rect panelRect = GetPanelRect();
+            float buttonY = panelRect.y + 100f;
+            damageButtonRect = new Rect(panelRect.x + 28f, buttonY, panelRect.width - 56f, 46f);
+            attackSpeedButtonRect = new Rect(panelRect.x + 28f, buttonY + 58f, panelRect.width - 56f, 46f);
+            healthButtonRect = new Rect(panelRect.x + 28f, buttonY + 116f, panelRect.width - 56f, 46f);
+        }
+
+        private void HandlePointerSelection()
+        {
+            if (!TryGetPressedScreenPosition(out Vector2 screenPosition))
+            {
+                return;
+            }
+
+            Vector2 guiPosition = new Vector2(screenPosition.x, Screen.height - screenPosition.y);
+            if (damageButtonRect.Contains(guiPosition))
+            {
+                ApplyDamageUpgrade();
+            }
+            else if (attackSpeedButtonRect.Contains(guiPosition))
+            {
+                ApplyAttackSpeedUpgrade();
+            }
+            else if (healthButtonRect.Contains(guiPosition))
+            {
+                ApplyHealthUpgrade();
+            }
+        }
+
+        private static bool TryGetPressedScreenPosition(out Vector2 screenPosition)
+        {
+            Mouse mouse = Mouse.current;
+            if (mouse != null && mouse.leftButton.wasPressedThisFrame)
+            {
+                screenPosition = mouse.position.ReadValue();
+                return true;
+            }
+
+            Touchscreen touchscreen = Touchscreen.current;
+            if (touchscreen != null && touchscreen.primaryTouch.press.wasPressedThisFrame)
+            {
+                screenPosition = touchscreen.primaryTouch.position.ReadValue();
+                return true;
+            }
+
+            screenPosition = Vector2.zero;
+            return false;
+        }
+
+        private void HandleKeyboardSelection()
+        {
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null)
+            {
+                return;
+            }
+
+            if (keyboard.digit1Key.wasPressedThisFrame || keyboard.numpad1Key.wasPressedThisFrame)
+            {
+                ApplyDamageUpgrade();
+            }
+            else if (keyboard.digit2Key.wasPressedThisFrame || keyboard.numpad2Key.wasPressedThisFrame)
+            {
+                ApplyAttackSpeedUpgrade();
+            }
+            else if (keyboard.digit3Key.wasPressedThisFrame || keyboard.numpad3Key.wasPressedThisFrame)
+            {
+                ApplyHealthUpgrade();
+            }
         }
 
         private void EnsureStyles()
