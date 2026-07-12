@@ -1,4 +1,5 @@
 using UnityEngine;
+using PawVoyage.Systems;
 
 namespace PawVoyage.Combat
 {
@@ -49,10 +50,12 @@ namespace PawVoyage.Combat
             if (other.TryGetComponent(out IDamageable damageable))
             {
                 damageable.ApplyDamage(request);
+                GameSfx.PlayEnemyHit();
             }
             else
             {
                 other.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
+                GameSfx.PlayEnemyHit();
             }
 
             Destroy(gameObject);

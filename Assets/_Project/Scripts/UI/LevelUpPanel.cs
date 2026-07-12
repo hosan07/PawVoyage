@@ -139,6 +139,7 @@ namespace PawVoyage.UI
 
         private void CloseOneSelection()
         {
+            GameSfx.PlayCardSelect();
             pendingLevelUps = Mathf.Max(0, pendingLevelUps - 1);
             ResumeGameIfNeeded();
         }

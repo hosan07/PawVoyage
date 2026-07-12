@@ -133,10 +133,12 @@ namespace PawVoyage.Combat
             if (target.TryGetComponent(out IDamageable damageable))
             {
                 damageable.ApplyDamage(request);
+                GameSfx.PlayEnemyHit();
                 return;
             }
 
             target.SendMessage("TakeDamage", request.Amount, SendMessageOptions.DontRequireReceiver);
+            GameSfx.PlayEnemyHit();
         }
 
         private void FireProjectiles(Vector2 origin, Vector2 direction, int projectileCount)
