@@ -97,6 +97,23 @@ namespace PawVoyage.Combat
         }
 
         /// <summary>
+        /// 런타임에 생성되는 대상의 기본 최대 체력을 설정합니다.
+        /// </summary>
+        public void SetBaseMaxHp(int value, bool resetCurrentHp)
+        {
+            maxHp = Mathf.Max(1, value);
+
+            if (resetCurrentHp)
+            {
+                ResetHealth();
+            }
+            else
+            {
+                currentHp = Mathf.Min(currentHp, MaxHp);
+            }
+        }
+
+        /// <summary>
         /// 이 오브젝트의 체력을 가득 채우고 사망 상태를 해제합니다.
         /// </summary>
         public void ResetHealth()

@@ -17,6 +17,10 @@ namespace PawVoyage.Systems
         [SerializeField] private int maxAliveEnemies = 20;
         [SerializeField] private float minimumSpawnInterval = 0.65f;
         [SerializeField] private int finalMaxAliveEnemies = 36;
+        [SerializeField] private int enemyBaseMaxHp = 30;
+        [SerializeField] private int enemyFinalMaxHp = 70;
+        [SerializeField] private int enemyBaseContactDamage = 1;
+        [SerializeField] private int enemyFinalContactDamage = 3;
         [SerializeField] private bool spawnOnStart = true;
 
         private float nextSpawnTime;
@@ -49,6 +53,7 @@ namespace PawVoyage.Systems
                 ? Instantiate(enemyPrefab, spawnPosition, Quaternion.identity)
                 : CreateFallbackEnemy(spawnPosition);
 
+            ConfigureEnemyStats(enemy);
             enemy.Target = player;
         }
 
@@ -68,9 +73,23 @@ namespace PawVoyage.Systems
             GameObject enemyObject = new GameObject("Enemy");
             enemyObject.transform.position = spawnPosition;
             enemyObject.transform.localScale = Vector3.one * 0.75f;
+            enemyObject.AddComponent<Health>();
             enemyObject.AddComponent<ContactDamage>();
             enemyObject.AddComponent<EnemyReward>();
             return enemyObject.AddComponent<EnemyController>();
+        }
+
+        private void ConfigureEnemyStats(EnemyController enemy)
+        {
+            if (enemy.TryGetComponent(out Health health))
+            {
+                health.SetBaseMaxHp(GetCurrentEnemyMaxHp(), true);
+            }
+
+            if (enemy.TryGetComponent(out ContactDamage contactDamage))
+            {
+                contactDamage.SetDamage(GetCurrentEnemyContactDamage());
+            }
         }
 
         private void FindPlayerIfNeeded()
@@ -111,6 +130,18 @@ namespace PawVoyage.Systems
         {
             int scaledMax = Mathf.RoundToInt(Mathf.Lerp(maxAliveEnemies, finalMaxAliveEnemies, GetRunProgress()));
             return Mathf.Max(1, scaledMax);
+        }
+
+        private int GetCurrentEnemyMaxHp()
+        {
+            int scaledMaxHp = Mathf.RoundToInt(Mathf.Lerp(enemyBaseMaxHp, enemyFinalMaxHp, GetRunProgress()));
+            return Mathf.Max(1, scaledMaxHp);
+        }
+
+        private int GetCurrentEnemyContactDamage()
+        {
+            int scaledDamage = Mathf.RoundToInt(Mathf.Lerp(enemyBaseContactDamage, enemyFinalContactDamage, GetRunProgress()));
+            return Mathf.Max(0, scaledDamage);
         }
 
         private void OnDrawGizmosSelected()

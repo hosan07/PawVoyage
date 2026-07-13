@@ -670,6 +670,10 @@ MonoBehaviour:
   maxAliveEnemies: 20
   minimumSpawnInterval: 0.65
   finalMaxAliveEnemies: 36
+  enemyBaseMaxHp: 30
+  enemyFinalMaxHp: 70
+  enemyBaseContactDamage: 1
+  enemyFinalContactDamage: 3
   spawnOnStart: 1
 --- !u!4 &1973712825
 Transform:
