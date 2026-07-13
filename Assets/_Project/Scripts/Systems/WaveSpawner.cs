@@ -21,10 +21,22 @@ namespace PawVoyage.Systems
         [SerializeField] private int enemyFinalMaxHp = 70;
         [SerializeField] private int enemyBaseContactDamage = 1;
         [SerializeField] private int enemyFinalContactDamage = 3;
+        [SerializeField] private float enemyMoveSpeed = 2f;
+        [SerializeField] private float eliteSpawnTimeSeconds = 18f;
+        [SerializeField] private int eliteMaxHp = 260;
+        [SerializeField] private int eliteContactDamage = 5;
+        [SerializeField] private float eliteMoveSpeed = 1.35f;
+        [SerializeField] private int eliteExperienceAmount = 8;
+        [SerializeField] private float eliteScale = 1.45f;
+        [SerializeField] private Color eliteColor = new Color(0.65f, 0.2f, 1f, 1f);
+        [SerializeField] private float eliteWarningDuration = 2.25f;
         [SerializeField] private bool spawnOnStart = true;
 
         private float nextSpawnTime;
         private RunStats runStats;
+        private bool eliteSpawned;
+        private float eliteWarningEndTime;
+        private GUIStyle eliteWarningStyle;
 
         private void Start()
         {
@@ -39,11 +51,24 @@ namespace PawVoyage.Systems
 
             if (player == null || Time.time < nextSpawnTime || CountAliveEnemies() >= GetCurrentMaxAliveEnemies())
             {
+                TrySpawnElite();
                 return;
             }
 
+            TrySpawnElite();
             SpawnEnemy();
             nextSpawnTime = Time.time + GetCurrentSpawnInterval();
+        }
+
+        private void OnGUI()
+        {
+            if (Time.unscaledTime >= eliteWarningEndTime)
+            {
+                return;
+            }
+
+            EnsureEliteWarningStyle();
+            GUI.Label(new Rect(0f, Screen.height * 0.2f, Screen.width, 42f), "ELITE INCOMING", eliteWarningStyle);
         }
 
         private void SpawnEnemy()
@@ -55,6 +80,24 @@ namespace PawVoyage.Systems
 
             ConfigureEnemyStats(enemy);
             enemy.Target = player;
+        }
+
+        private void TrySpawnElite()
+        {
+            if (eliteSpawned || player == null || GetElapsedSeconds() < eliteSpawnTimeSeconds)
+            {
+                return;
+            }
+
+            eliteSpawned = true;
+            eliteWarningEndTime = Time.unscaledTime + Mathf.Max(0f, eliteWarningDuration);
+            Vector2 spawnPosition = GetSpawnPosition();
+            EnemyController elite = enemyPrefab != null
+                ? Instantiate(enemyPrefab, spawnPosition, Quaternion.identity)
+                : CreateFallbackEnemy(spawnPosition);
+
+            ConfigureEliteStats(elite);
+            elite.Target = player;
         }
 
         private Vector2 GetSpawnPosition()
@@ -93,6 +136,8 @@ namespace PawVoyage.Systems
                 contactDamage.SetDamage(GetCurrentEnemyContactDamage());
             }
 
+            enemy.SetMoveSpeed(enemyMoveSpeed);
+
             if (!enemy.TryGetComponent<EnemyHitFeedback>(out _))
             {
                 enemy.gameObject.AddComponent<EnemyHitFeedback>();
@@ -101,6 +146,35 @@ namespace PawVoyage.Systems
             if (!enemy.TryGetComponent<EnemyDeathFeedback>(out _))
             {
                 enemy.gameObject.AddComponent<EnemyDeathFeedback>();
+            }
+        }
+
+        private void ConfigureEliteStats(EnemyController enemy)
+        {
+            ConfigureEnemyStats(enemy);
+
+            enemy.gameObject.name = "EliteEnemy";
+            enemy.transform.localScale = Vector3.one * Mathf.Max(0.1f, eliteScale);
+            enemy.SetMoveSpeed(eliteMoveSpeed);
+
+            if (enemy.TryGetComponent(out Health health))
+            {
+                health.SetBaseMaxHp(eliteMaxHp, true);
+            }
+
+            if (enemy.TryGetComponent(out ContactDamage contactDamage))
+            {
+                contactDamage.SetDamage(eliteContactDamage);
+            }
+
+            if (enemy.TryGetComponent(out EnemyReward enemyReward))
+            {
+                enemyReward.SetExperienceAmount(eliteExperienceAmount);
+            }
+
+            if (enemy.TryGetComponent(out SpriteRenderer spriteRenderer))
+            {
+                spriteRenderer.color = eliteColor;
             }
         }
 
@@ -133,6 +207,16 @@ namespace PawVoyage.Systems
             return runStats == null ? 0f : Mathf.Clamp01(runStats.ElapsedSeconds / runStats.ClearTimeSeconds);
         }
 
+        private float GetElapsedSeconds()
+        {
+            if (runStats == null)
+            {
+                runStats = RunStats.Instance;
+            }
+
+            return runStats == null ? 0f : runStats.ElapsedSeconds;
+        }
+
         private float GetCurrentSpawnInterval()
         {
             return Mathf.Lerp(spawnInterval, minimumSpawnInterval, GetRunProgress());
@@ -161,6 +245,22 @@ namespace PawVoyage.Systems
             Transform center = player != null ? player : transform;
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(center.position, spawnRadius);
+        }
+
+        private void EnsureEliteWarningStyle()
+        {
+            if (eliteWarningStyle != null)
+            {
+                return;
+            }
+
+            eliteWarningStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 28,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = new Color(1f, 0.35f, 0.2f, 1f) }
+            };
         }
     }
 }

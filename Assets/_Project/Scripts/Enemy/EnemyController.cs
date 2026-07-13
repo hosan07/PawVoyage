@@ -28,6 +28,14 @@ namespace PawVoyage.Enemy
             set => target = value;
         }
 
+        /// <summary>
+        /// 런타임 난이도나 적 타입에 맞춰 이동 속도를 설정합니다.
+        /// </summary>
+        public void SetMoveSpeed(float value)
+        {
+            moveSpeed = Mathf.Max(0f, value);
+        }
+
         private void Awake()
         {
             rb = GetComponent<Rigidbody2D>();

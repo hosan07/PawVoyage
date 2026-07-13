@@ -28,6 +28,14 @@ namespace PawVoyage.Systems
             }
         }
 
+        /// <summary>
+        /// 적 타입에 맞춰 사망 시 지급할 경험치량을 설정합니다.
+        /// </summary>
+        public void SetExperienceAmount(int amount)
+        {
+            experienceAmount = Mathf.Max(0, amount);
+        }
+
         private void OnDied(Health deadHealth)
         {
             RunStats.Instance?.AddKill();

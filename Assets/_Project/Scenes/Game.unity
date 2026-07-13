@@ -731,6 +731,15 @@ MonoBehaviour:
   enemyFinalMaxHp: 70
   enemyBaseContactDamage: 1
   enemyFinalContactDamage: 3
+  enemyMoveSpeed: 2
+  eliteSpawnTimeSeconds: 18
+  eliteMaxHp: 260
+  eliteContactDamage: 5
+  eliteMoveSpeed: 1.35
+  eliteExperienceAmount: 8
+  eliteScale: 1.45
+  eliteColor: {r: 0.65, g: 0.2, b: 1, a: 1}
+  eliteWarningDuration: 2.25
   spawnOnStart: 1
 --- !u!4 &1973712825
 Transform:
