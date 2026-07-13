@@ -72,7 +72,7 @@ namespace PawVoyage.Player
 
         private void OnGUI()
         {
-            if (!showTouchJoystick || !joystickActive)
+            if (!showTouchJoystick)
             {
                 return;
             }
@@ -82,7 +82,8 @@ namespace PawVoyage.Player
             float knobSize = joystickRadius * 0.72f;
             Vector2 center = GetFixedJoystickCenter();
             Vector2 guiCenter = new Vector2(center.x, Screen.height - center.y);
-            Vector2 guiPointer = new Vector2(joystickPointer.x, Screen.height - joystickPointer.y);
+            Vector2 pointer = joystickActive ? joystickPointer : center;
+            Vector2 guiPointer = new Vector2(pointer.x, Screen.height - pointer.y);
 
             GUI.DrawTexture(new Rect(guiCenter.x - joystickRadius, guiCenter.y - joystickRadius, baseSize, baseSize), joystickBaseStyle.normal.background);
             GUI.DrawTexture(new Rect(guiPointer.x - knobSize * 0.5f, guiPointer.y - knobSize * 0.5f, knobSize, knobSize), joystickKnobStyle.normal.background);
@@ -187,8 +188,8 @@ namespace PawVoyage.Player
 
         private void EnsureJoystickStyles()
         {
-            joystickBaseStyle ??= CreateJoystickStyle(new Color(1f, 1f, 1f, 0.2f), 128, 0.82f);
-            joystickKnobStyle ??= CreateJoystickStyle(new Color(1f, 1f, 1f, 0.42f), 128, 1f);
+            joystickBaseStyle ??= CreateJoystickStyle(new Color(1f, 1f, 1f, 0.32f), 128, 0.82f);
+            joystickKnobStyle ??= CreateJoystickStyle(new Color(1f, 1f, 1f, 0.58f), 128, 1f);
         }
 
         private static GUIStyle CreateJoystickStyle(Color color, int textureSize, float fillRatio)
