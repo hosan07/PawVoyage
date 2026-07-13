@@ -76,6 +76,7 @@ namespace PawVoyage.Systems
             enemyObject.AddComponent<Health>();
             enemyObject.AddComponent<ContactDamage>();
             enemyObject.AddComponent<EnemyReward>();
+            enemyObject.AddComponent<EnemyHitFeedback>();
             return enemyObject.AddComponent<EnemyController>();
         }
 
@@ -89,6 +90,11 @@ namespace PawVoyage.Systems
             if (enemy.TryGetComponent(out ContactDamage contactDamage))
             {
                 contactDamage.SetDamage(GetCurrentEnemyContactDamage());
+            }
+
+            if (!enemy.TryGetComponent<EnemyHitFeedback>(out _))
+            {
+                enemy.gameObject.AddComponent<EnemyHitFeedback>();
             }
         }
 

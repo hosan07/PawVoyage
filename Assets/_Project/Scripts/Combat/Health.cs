@@ -18,6 +18,7 @@ namespace PawVoyage.Combat
 
         private bool isDead;
 
+        public event Action<Health, int, bool> Damaged;
         public event Action<Health> Died;
 
         /// <summary>
@@ -49,6 +50,7 @@ namespace PawVoyage.Combat
 
             int finalDamage = combatStats.ReduceIncomingDamage(request.Amount);
             currentHp = Mathf.Max(0, currentHp - finalDamage);
+            Damaged?.Invoke(this, finalDamage, request.IsCritical);
             onDamaged?.Invoke();
 
             if (currentHp <= 0)
