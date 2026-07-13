@@ -31,6 +31,8 @@ namespace PawVoyage.UI
 
         private void Update()
         {
+            HandlePointerInput();
+
             Keyboard keyboard = Keyboard.current;
             if (keyboard == null)
             {
@@ -52,8 +54,7 @@ namespace PawVoyage.UI
         {
             EnsureStyles();
 
-            Rect pauseButtonRect = new Rect(Screen.width - 78f, 24f, 54f, 46f);
-            if (!isPaused && GUI.Button(pauseButtonRect, pauseButtonText, smallButtonStyle))
+            if (!isPaused && GUI.Button(GetPauseButtonRect(), pauseButtonText, smallButtonStyle))
             {
                 Pause();
             }
@@ -63,25 +64,95 @@ namespace PawVoyage.UI
                 return;
             }
 
-            Rect panelRect = new Rect(
-                Screen.width * 0.5f - 180f,
-                Screen.height * 0.5f - 135f,
-                360f,
-                270f);
+            Rect panelRect = GetPanelRect();
 
             GUI.Box(panelRect, GUIContent.none);
             GUI.Label(new Rect(panelRect.x + 24f, panelRect.y + 30f, panelRect.width - 48f, 38f), titleText, titleStyle);
             GUI.Label(new Rect(panelRect.x + 32f, panelRect.y + 82f, panelRect.width - 64f, 34f), "Take a breath, then jump back in.", bodyStyle);
 
-            if (GUI.Button(new Rect(panelRect.x + 58f, panelRect.y + 136f, panelRect.width - 116f, 46f), resumeText, buttonStyle))
+            if (GUI.Button(GetResumeButtonRect(), resumeText, buttonStyle))
             {
                 Resume();
             }
 
-            if (GUI.Button(new Rect(panelRect.x + 58f, panelRect.y + 194f, panelRect.width - 116f, 46f), retryText, buttonStyle))
+            if (GUI.Button(GetRetryButtonRect(), retryText, buttonStyle))
             {
                 RestartScene();
             }
+        }
+
+        private void HandlePointerInput()
+        {
+            if (!TryGetPressedScreenPosition(out Vector2 screenPosition))
+            {
+                return;
+            }
+
+            Vector2 guiPosition = new Vector2(screenPosition.x, Screen.height - screenPosition.y);
+            if (!isPaused)
+            {
+                if (GetPauseButtonRect().Contains(guiPosition))
+                {
+                    Pause();
+                }
+
+                return;
+            }
+
+            if (GetResumeButtonRect().Contains(guiPosition))
+            {
+                Resume();
+            }
+            else if (GetRetryButtonRect().Contains(guiPosition))
+            {
+                RestartScene();
+            }
+        }
+
+        private static bool TryGetPressedScreenPosition(out Vector2 screenPosition)
+        {
+            Mouse mouse = Mouse.current;
+            if (mouse != null && mouse.leftButton.wasPressedThisFrame)
+            {
+                screenPosition = mouse.position.ReadValue();
+                return true;
+            }
+
+            Touchscreen touchscreen = Touchscreen.current;
+            if (touchscreen != null && touchscreen.primaryTouch.press.wasPressedThisFrame)
+            {
+                screenPosition = touchscreen.primaryTouch.position.ReadValue();
+                return true;
+            }
+
+            screenPosition = Vector2.zero;
+            return false;
+        }
+
+        private static Rect GetPauseButtonRect()
+        {
+            return new Rect(Screen.width - 78f, 24f, 54f, 46f);
+        }
+
+        private static Rect GetPanelRect()
+        {
+            return new Rect(
+                Screen.width * 0.5f - 180f,
+                Screen.height * 0.5f - 135f,
+                360f,
+                270f);
+        }
+
+        private static Rect GetResumeButtonRect()
+        {
+            Rect panelRect = GetPanelRect();
+            return new Rect(panelRect.x + 58f, panelRect.y + 136f, panelRect.width - 116f, 46f);
+        }
+
+        private static Rect GetRetryButtonRect()
+        {
+            Rect panelRect = GetPanelRect();
+            return new Rect(panelRect.x + 58f, panelRect.y + 194f, panelRect.width - 116f, 46f);
         }
 
         private void TogglePause()
