@@ -643,6 +643,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.UI.GameOverPanel
   titleText: GAME OVER
   retryText: RETRY
+  menuText: MENU
+  mainMenuSceneName: MainMenu
 --- !u!114 &1807036309
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -670,6 +672,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.UI.StageClearPanel
   titleText: STAGE CLEAR
   retryText: RETRY
+  menuText: MENU
+  mainMenuSceneName: MainMenu
 --- !u!114 &1807036312
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,4 +1,5 @@
 using PawVoyage.Combat;
+using PawVoyage.Systems;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -13,6 +14,8 @@ namespace PawVoyage.UI
     {
         [SerializeField] private string titleText = "GAME OVER";
         [SerializeField] private string retryText = "RETRY";
+        [SerializeField] private string menuText = "MENU";
+        [SerializeField] private string mainMenuSceneName = "MainMenu";
 
         private Health health;
         private GUIStyle titleStyle;
@@ -48,10 +51,16 @@ namespace PawVoyage.UI
                 return;
             }
 
+            HandlePointerInput();
+
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && keyboard.rKey.wasPressedThisFrame)
             {
                 RestartScene();
+            }
+            else if (keyboard != null && keyboard.mKey.wasPressedThisFrame)
+            {
+                LoadMainMenu();
             }
         }
 
@@ -64,20 +73,80 @@ namespace PawVoyage.UI
 
             EnsureStyles();
 
-            Rect panelRect = new Rect(
-                Screen.width * 0.5f - 175f,
-                Screen.height * 0.5f - 115f,
-                350f,
-                230f);
+            Rect panelRect = GetPanelRect();
 
             GUI.Box(panelRect, GUIContent.none);
             GUI.Label(new Rect(panelRect.x + 24f, panelRect.y + 28f, panelRect.width - 48f, 38f), titleText, titleStyle);
             GUI.Label(new Rect(panelRect.x + 32f, panelRect.y + 76f, panelRect.width - 64f, 42f), "Run ended. Try again with a fresh start.", bodyStyle);
 
-            if (GUI.Button(new Rect(panelRect.x + 58f, panelRect.y + 145f, panelRect.width - 116f, 48f), retryText, buttonStyle))
+            if (GUI.Button(GetRetryButtonRect(), retryText, buttonStyle))
             {
                 RestartScene();
             }
+
+            if (GUI.Button(GetMenuButtonRect(), menuText, buttonStyle))
+            {
+                LoadMainMenu();
+            }
+        }
+
+        private void HandlePointerInput()
+        {
+            if (!TryGetPressedScreenPosition(out Vector2 screenPosition))
+            {
+                return;
+            }
+
+            Vector2 guiPosition = new Vector2(screenPosition.x, Screen.height - screenPosition.y);
+            if (GetRetryButtonRect().Contains(guiPosition))
+            {
+                RestartScene();
+            }
+            else if (GetMenuButtonRect().Contains(guiPosition))
+            {
+                LoadMainMenu();
+            }
+        }
+
+        private static bool TryGetPressedScreenPosition(out Vector2 screenPosition)
+        {
+            Mouse mouse = Mouse.current;
+            if (mouse != null && mouse.leftButton.wasPressedThisFrame)
+            {
+                screenPosition = mouse.position.ReadValue();
+                return true;
+            }
+
+            Touchscreen touchscreen = Touchscreen.current;
+            if (touchscreen != null && touchscreen.primaryTouch.press.wasPressedThisFrame)
+            {
+                screenPosition = touchscreen.primaryTouch.position.ReadValue();
+                return true;
+            }
+
+            screenPosition = Vector2.zero;
+            return false;
+        }
+
+        private static Rect GetPanelRect()
+        {
+            return new Rect(
+                Screen.width * 0.5f - 175f,
+                Screen.height * 0.5f - 115f,
+                350f,
+                230f);
+        }
+
+        private static Rect GetRetryButtonRect()
+        {
+            Rect panelRect = GetPanelRect();
+            return new Rect(panelRect.x + 38f, panelRect.y + 145f, 132f, 48f);
+        }
+
+        private static Rect GetMenuButtonRect()
+        {
+            Rect panelRect = GetPanelRect();
+            return new Rect(panelRect.x + panelRect.width - 170f, panelRect.y + 145f, 132f, 48f);
         }
 
         private void OnPlayerDied(Health deadHealth)
@@ -88,14 +157,32 @@ namespace PawVoyage.UI
             }
 
             isGameOver = true;
+            RecordResult(false);
             previousTimeScale = Time.timeScale;
             Time.timeScale = 0f;
+        }
+
+        private static void RecordResult(bool cleared)
+        {
+            RunStats runStats = RunStats.Instance;
+            if (runStats == null)
+            {
+                return;
+            }
+
+            RunResultData.RecordResult(cleared, runStats.ElapsedSeconds, runStats.KillCount);
         }
 
         private void RestartScene()
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        private void LoadMainMenu()
+        {
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(mainMenuSceneName);
         }
 
         private void EnsureStyles()

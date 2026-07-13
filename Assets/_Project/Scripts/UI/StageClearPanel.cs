@@ -13,6 +13,8 @@ namespace PawVoyage.UI
     {
         [SerializeField] private string titleText = "STAGE CLEAR";
         [SerializeField] private string retryText = "RETRY";
+        [SerializeField] private string menuText = "MENU";
+        [SerializeField] private string mainMenuSceneName = "MainMenu";
 
         private RunStats runStats;
         private GUIStyle titleStyle;
@@ -48,10 +50,16 @@ namespace PawVoyage.UI
                 return;
             }
 
+            HandlePointerInput();
+
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && keyboard.rKey.wasPressedThisFrame)
             {
                 RestartScene();
+            }
+            else if (keyboard != null && keyboard.mKey.wasPressedThisFrame)
+            {
+                LoadMainMenu();
             }
         }
 
@@ -64,11 +72,7 @@ namespace PawVoyage.UI
 
             EnsureStyles();
 
-            Rect panelRect = new Rect(
-                Screen.width * 0.5f - 190f,
-                Screen.height * 0.5f - 130f,
-                380f,
-                260f);
+            Rect panelRect = GetPanelRect();
 
             GUI.Box(panelRect, GUIContent.none);
             GUI.Label(new Rect(panelRect.x + 24f, panelRect.y + 28f, panelRect.width - 48f, 38f), titleText, titleStyle);
@@ -77,10 +81,74 @@ namespace PawVoyage.UI
                 $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}",
                 bodyStyle);
 
-            if (GUI.Button(new Rect(panelRect.x + 68f, panelRect.y + 170f, panelRect.width - 136f, 48f), retryText, buttonStyle))
+            if (GUI.Button(GetRetryButtonRect(), retryText, buttonStyle))
             {
                 RestartScene();
             }
+
+            if (GUI.Button(GetMenuButtonRect(), menuText, buttonStyle))
+            {
+                LoadMainMenu();
+            }
+        }
+
+        private void HandlePointerInput()
+        {
+            if (!TryGetPressedScreenPosition(out Vector2 screenPosition))
+            {
+                return;
+            }
+
+            Vector2 guiPosition = new Vector2(screenPosition.x, Screen.height - screenPosition.y);
+            if (GetRetryButtonRect().Contains(guiPosition))
+            {
+                RestartScene();
+            }
+            else if (GetMenuButtonRect().Contains(guiPosition))
+            {
+                LoadMainMenu();
+            }
+        }
+
+        private static bool TryGetPressedScreenPosition(out Vector2 screenPosition)
+        {
+            Mouse mouse = Mouse.current;
+            if (mouse != null && mouse.leftButton.wasPressedThisFrame)
+            {
+                screenPosition = mouse.position.ReadValue();
+                return true;
+            }
+
+            Touchscreen touchscreen = Touchscreen.current;
+            if (touchscreen != null && touchscreen.primaryTouch.press.wasPressedThisFrame)
+            {
+                screenPosition = touchscreen.primaryTouch.position.ReadValue();
+                return true;
+            }
+
+            screenPosition = Vector2.zero;
+            return false;
+        }
+
+        private static Rect GetPanelRect()
+        {
+            return new Rect(
+                Screen.width * 0.5f - 190f,
+                Screen.height * 0.5f - 130f,
+                380f,
+                260f);
+        }
+
+        private static Rect GetRetryButtonRect()
+        {
+            Rect panelRect = GetPanelRect();
+            return new Rect(panelRect.x + 48f, panelRect.y + 174f, 132f, 48f);
+        }
+
+        private static Rect GetMenuButtonRect()
+        {
+            Rect panelRect = GetPanelRect();
+            return new Rect(panelRect.x + panelRect.width - 180f, panelRect.y + 174f, 132f, 48f);
         }
 
         private void OnRunCleared()
@@ -91,6 +159,7 @@ namespace PawVoyage.UI
             }
 
             isOpen = true;
+            RunResultData.RecordResult(true, runStats.ElapsedSeconds, runStats.KillCount);
             previousTimeScale = Time.timeScale;
             Time.timeScale = 0f;
         }
@@ -99,6 +168,12 @@ namespace PawVoyage.UI
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        private void LoadMainMenu()
+        {
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(mainMenuSceneName);
         }
 
         private void EnsureStyles()
