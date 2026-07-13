@@ -12,14 +12,14 @@ namespace PawVoyage.Player
         [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private bool enableTouchDragMove = true;
         [SerializeField] private bool showTouchJoystick = true;
-        [SerializeField] private float joystickRadius = 90f;
-        [SerializeField] private float touchDeadZone = 12f;
+        [SerializeField] private float joystickRadius = 128f;
+        [SerializeField] private float joystickBottomMargin = 112f;
+        [SerializeField] private float touchDeadZone = 16f;
 
         private Rigidbody2D rb;
         private Vector2 moveInput;
         private Vector2 externalMoveInput;
         private Vector2 touchMoveInput;
-        private Vector2 joystickCenter;
         private Vector2 joystickPointer;
         private bool joystickActive;
         private GUIStyle joystickBaseStyle;
@@ -80,11 +80,12 @@ namespace PawVoyage.Player
             EnsureJoystickStyles();
             float baseSize = joystickRadius * 2f;
             float knobSize = joystickRadius * 0.72f;
-            Vector2 guiCenter = new Vector2(joystickCenter.x, Screen.height - joystickCenter.y);
+            Vector2 center = GetFixedJoystickCenter();
+            Vector2 guiCenter = new Vector2(center.x, Screen.height - center.y);
             Vector2 guiPointer = new Vector2(joystickPointer.x, Screen.height - joystickPointer.y);
 
-            GUI.Box(new Rect(guiCenter.x - joystickRadius, guiCenter.y - joystickRadius, baseSize, baseSize), GUIContent.none, joystickBaseStyle);
-            GUI.Box(new Rect(guiPointer.x - knobSize * 0.5f, guiPointer.y - knobSize * 0.5f, knobSize, knobSize), GUIContent.none, joystickKnobStyle);
+            GUI.DrawTexture(new Rect(guiCenter.x - joystickRadius, guiCenter.y - joystickRadius, baseSize, baseSize), joystickBaseStyle.normal.background);
+            GUI.DrawTexture(new Rect(guiPointer.x - knobSize * 0.5f, guiPointer.y - knobSize * 0.5f, knobSize, knobSize), joystickKnobStyle.normal.background);
         }
 
         /// <summary>
@@ -124,23 +125,23 @@ namespace PawVoyage.Player
 
             if (TryReadPrimaryPointer(out Vector2 position, out bool isPressed, out bool wasPressedThisFrame))
             {
-                if (wasPressedThisFrame && IsJoystickStartArea(position))
+                Vector2 center = GetFixedJoystickCenter();
+                if (wasPressedThisFrame && IsJoystickStartArea(position, center))
                 {
                     joystickActive = true;
-                    joystickCenter = position;
-                    joystickPointer = position;
+                    joystickPointer = center;
                 }
 
                 if (isPressed && joystickActive)
                 {
-                    Vector2 offset = Vector2.ClampMagnitude(position - joystickCenter, joystickRadius);
-                    joystickPointer = joystickCenter + offset;
+                    Vector2 offset = Vector2.ClampMagnitude(position - center, joystickRadius);
+                    joystickPointer = center + offset;
                     return offset.magnitude < touchDeadZone ? Vector2.zero : offset / joystickRadius;
                 }
             }
 
             joystickActive = false;
-            joystickPointer = joystickCenter;
+            joystickPointer = GetFixedJoystickCenter();
             return Vector2.zero;
         }
 
@@ -170,21 +171,44 @@ namespace PawVoyage.Player
             return false;
         }
 
-        private static bool IsJoystickStartArea(Vector2 screenPosition)
+        private Vector2 GetFixedJoystickCenter()
         {
-            return screenPosition.x <= Screen.width * 0.55f && screenPosition.y <= Screen.height * 0.55f;
+            float radius = Mathf.Max(1f, joystickRadius);
+            float centerX = Screen.width * 0.5f;
+            float centerY = Mathf.Max(radius + 24f, joystickBottomMargin + radius);
+            return new Vector2(centerX, centerY);
+        }
+
+        private bool IsJoystickStartArea(Vector2 screenPosition, Vector2 center)
+        {
+            float startRadius = joystickRadius * 1.25f;
+            return Vector2.Distance(screenPosition, center) <= startRadius;
         }
 
         private void EnsureJoystickStyles()
         {
-            joystickBaseStyle ??= CreateJoystickStyle(new Color(1f, 1f, 1f, 0.18f));
-            joystickKnobStyle ??= CreateJoystickStyle(new Color(1f, 1f, 1f, 0.34f));
+            joystickBaseStyle ??= CreateJoystickStyle(new Color(1f, 1f, 1f, 0.2f), 128, 0.82f);
+            joystickKnobStyle ??= CreateJoystickStyle(new Color(1f, 1f, 1f, 0.42f), 128, 1f);
         }
 
-        private static GUIStyle CreateJoystickStyle(Color color)
+        private static GUIStyle CreateJoystickStyle(Color color, int textureSize, float fillRatio)
         {
-            Texture2D texture = new Texture2D(1, 1);
-            texture.SetPixel(0, 0, color);
+            Texture2D texture = new Texture2D(textureSize, textureSize, TextureFormat.RGBA32, false);
+            float center = (textureSize - 1) * 0.5f;
+            float radius = center * Mathf.Clamp01(fillRatio);
+
+            for (int y = 0; y < textureSize; y++)
+            {
+                for (int x = 0; x < textureSize; x++)
+                {
+                    float distance = Vector2.Distance(new Vector2(x, y), new Vector2(center, center));
+                    float edgeAlpha = Mathf.Clamp01(radius - distance + 1.5f);
+                    Color pixelColor = color;
+                    pixelColor.a *= edgeAlpha;
+                    texture.SetPixel(x, y, distance <= radius + 1.5f ? pixelColor : Color.clear);
+                }
+            }
+
             texture.Apply();
 
             GUIStyle style = new GUIStyle(GUI.skin.box);
