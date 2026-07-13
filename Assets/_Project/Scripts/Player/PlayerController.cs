@@ -17,6 +17,7 @@ namespace PawVoyage.Player
         [SerializeField] private float touchDeadZone = 16f;
 
         private Rigidbody2D rb;
+        private float moveSpeedMultiplier = 1f;
         private Vector2 moveInput;
         private Vector2 externalMoveInput;
         private Vector2 touchMoveInput;
@@ -33,6 +34,11 @@ namespace PawVoyage.Player
             get => moveSpeed;
             set => moveSpeed = Mathf.Max(0f, value);
         }
+
+        /// <summary>
+        /// 보상 배율이 적용된 실제 이동 속도입니다.
+        /// </summary>
+        public float CurrentMoveSpeed => moveSpeed * moveSpeedMultiplier;
 
         /// <summary>
         /// 마지막으로 입력된 0이 아닌 이동 방향입니다. 기본값은 오른쪽입니다.
@@ -66,7 +72,7 @@ namespace PawVoyage.Player
 
         private void FixedUpdate()
         {
-            Vector2 nextPosition = rb.position + moveInput * moveSpeed * Time.fixedDeltaTime;
+            Vector2 nextPosition = rb.position + moveInput * CurrentMoveSpeed * Time.fixedDeltaTime;
             rb.MovePosition(nextPosition);
         }
 
@@ -104,6 +110,14 @@ namespace PawVoyage.Player
         public void ClearMoveInput()
         {
             externalMoveInput = Vector2.zero;
+        }
+
+        /// <summary>
+        /// 레벨업 보상으로 이동 속도 배율을 증가시킵니다.
+        /// </summary>
+        public void AddMoveSpeedMultiplier(float amount)
+        {
+            moveSpeedMultiplier += Mathf.Max(0f, amount);
         }
 
         private Vector2 GetFallbackMoveInput()

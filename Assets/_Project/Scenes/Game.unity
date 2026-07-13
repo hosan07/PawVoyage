@@ -604,6 +604,7 @@ MonoBehaviour:
   attackRateBonus: 0.15
   maxHpBonus: 20
   pickupRadiusBonus: 0.25
+  moveSpeedBonus: 0.12
   visibleRewardCount: 3
 --- !u!114 &1807036307
 MonoBehaviour:

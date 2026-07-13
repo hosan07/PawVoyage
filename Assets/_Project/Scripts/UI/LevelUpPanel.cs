@@ -1,4 +1,5 @@
 using PawVoyage.Combat;
+using PawVoyage.Player;
 using PawVoyage.Systems;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,13 +11,15 @@ namespace PawVoyage.UI
         Damage,
         AttackSpeed,
         MaxHp,
-        PickupRadius
+        PickupRadius,
+        MoveSpeed
     }
 
     /// <summary>
     /// 레벨업 시 게임을 잠시 멈추고 1차 성장 선택지를 제공합니다.
     /// </summary>
     [RequireComponent(typeof(PlayerExperience))]
+    [RequireComponent(typeof(PlayerController))]
     [RequireComponent(typeof(AutoAttack))]
     [RequireComponent(typeof(Health))]
     public class LevelUpPanel : MonoBehaviour
@@ -25,9 +28,11 @@ namespace PawVoyage.UI
         [SerializeField] private float attackRateBonus = 0.15f;
         [SerializeField] private int maxHpBonus = 20;
         [SerializeField] private float pickupRadiusBonus = 0.25f;
-        [SerializeField, Range(1, 4)] private int visibleRewardCount = 3;
+        [SerializeField] private float moveSpeedBonus = 0.12f;
+        [SerializeField, Range(1, 5)] private int visibleRewardCount = 3;
 
         private PlayerExperience playerExperience;
+        private PlayerController playerController;
         private AutoAttack autoAttack;
         private Health health;
         private GUIStyle titleStyle;
@@ -40,17 +45,19 @@ namespace PawVoyage.UI
             LevelUpRewardType.Damage,
             LevelUpRewardType.AttackSpeed,
             LevelUpRewardType.MaxHp,
-            LevelUpRewardType.PickupRadius
+            LevelUpRewardType.PickupRadius,
+            LevelUpRewardType.MoveSpeed
         };
 
-        private readonly LevelUpRewardType[] visibleRewards = new LevelUpRewardType[4];
-        private readonly Rect[] rewardButtonRects = new Rect[4];
+        private readonly LevelUpRewardType[] visibleRewards = new LevelUpRewardType[5];
+        private readonly Rect[] rewardButtonRects = new Rect[5];
 
         private bool IsOpen => pendingLevelUps > 0;
 
         private void Awake()
         {
             playerExperience = GetComponent<PlayerExperience>();
+            playerController = GetComponent<PlayerController>();
             autoAttack = GetComponent<AutoAttack>();
             health = GetComponent<Health>();
         }
@@ -132,6 +139,9 @@ namespace PawVoyage.UI
                 case LevelUpRewardType.PickupRadius:
                     ApplyPickupRadiusUpgrade();
                     break;
+                case LevelUpRewardType.MoveSpeed:
+                    ApplyMoveSpeedUpgrade();
+                    break;
             }
         }
 
@@ -176,6 +186,17 @@ namespace PawVoyage.UI
             }
 
             playerExperience.AddPickupRadiusMultiplier(pickupRadiusBonus);
+            CloseOneSelection();
+        }
+
+        private void ApplyMoveSpeedUpgrade()
+        {
+            if (!IsOpen)
+            {
+                return;
+            }
+
+            playerController.AddMoveSpeedMultiplier(moveSpeedBonus);
             CloseOneSelection();
         }
 
@@ -317,6 +338,7 @@ namespace PawVoyage.UI
                 LevelUpRewardType.AttackSpeed => $"+{Mathf.RoundToInt(attackRateBonus * 100f)}% Attack Speed",
                 LevelUpRewardType.MaxHp => $"+{maxHpBonus} Max HP",
                 LevelUpRewardType.PickupRadius => $"+{Mathf.RoundToInt(pickupRadiusBonus * 100f)}% Pickup Radius",
+                LevelUpRewardType.MoveSpeed => $"+{Mathf.RoundToInt(moveSpeedBonus * 100f)}% Move Speed",
                 _ => "Unknown Reward"
             };
         }
