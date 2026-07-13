@@ -30,6 +30,8 @@ namespace PawVoyage.Systems
 
         private void OnDied(Health deadHealth)
         {
+            RunStats.Instance?.AddKill();
+
             ExperienceOrb orb = experienceOrbPrefab != null
                 ? Instantiate(experienceOrbPrefab, transform.position, Quaternion.identity)
                 : CreateFallbackOrb();

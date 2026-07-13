@@ -19,12 +19,14 @@ namespace PawVoyage.UI
 
         private Health health;
         private PlayerExperience playerExperience;
+        private RunStats runStats;
         private GUIStyle labelStyle;
 
         private void Awake()
         {
             health = GetComponent<Health>();
             playerExperience = GetComponent<PlayerExperience>();
+            runStats = GetComponent<RunStats>();
             EnsureTexture();
         }
 
@@ -46,6 +48,11 @@ namespace PawVoyage.UI
                 playerExperience.CurrentExp,
                 playerExperience.ExpToNextLevel,
                 new Color(0.18f, 0.85f, 0.3f));
+
+            GUI.Label(
+                new Rect(position.x, position.y + rowSpacing * 2f - 12f, width, 22f),
+                $"TIME {FormatTime(runStats != null ? runStats.ElapsedSeconds : 0f)}   KILLS {runStats?.KillCount ?? 0}",
+                labelStyle);
         }
 
         private void DrawStatusRow(Rect barRect, string label, int current, int max, Color fillColor)
@@ -93,6 +100,14 @@ namespace PawVoyage.UI
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = Color.white }
             };
+        }
+
+        private static string FormatTime(float seconds)
+        {
+            int totalSeconds = Mathf.Max(0, Mathf.FloorToInt(seconds));
+            int minutes = totalSeconds / 60;
+            int remainingSeconds = totalSeconds % 60;
+            return $"{minutes:00}:{remainingSeconds:00}";
         }
     }
 }
