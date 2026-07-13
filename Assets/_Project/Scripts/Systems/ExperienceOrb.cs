@@ -51,7 +51,8 @@ namespace PawVoyage.Systems
             }
 
             Vector2 toPlayer = targetPlayer.transform.position - transform.position;
-            if (toPlayer.sqrMagnitude > magnetRadius * magnetRadius)
+            float effectiveMagnetRadius = magnetRadius * targetPlayer.PickupRadiusMultiplier;
+            if (toPlayer.sqrMagnitude > effectiveMagnetRadius * effectiveMagnetRadius)
             {
                 return;
             }

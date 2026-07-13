@@ -538,6 +538,7 @@ MonoBehaviour:
   currentExp: 0
   expToNextLevel: 10
   levelRequirementGrowth: 1.25
+  pickupRadiusMultiplier: 1
 --- !u!114 &1807036305
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -568,6 +569,7 @@ MonoBehaviour:
   damageBonus: 2
   attackRateBonus: 0.15
   maxHpBonus: 20
+  pickupRadiusBonus: 0.25
 --- !u!114 &1807036307
 MonoBehaviour:
   m_ObjectHideFlags: 0

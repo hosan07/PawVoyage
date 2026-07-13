@@ -16,6 +16,7 @@ namespace PawVoyage.UI
         [SerializeField] private int damageBonus = 2;
         [SerializeField] private float attackRateBonus = 0.15f;
         [SerializeField] private int maxHpBonus = 20;
+        [SerializeField] private float pickupRadiusBonus = 0.25f;
 
         private PlayerExperience playerExperience;
         private AutoAttack autoAttack;
@@ -28,6 +29,7 @@ namespace PawVoyage.UI
         private Rect damageButtonRect;
         private Rect attackSpeedButtonRect;
         private Rect healthButtonRect;
+        private Rect pickupRadiusButtonRect;
 
         private bool IsOpen => pendingLevelUps > 0;
 
@@ -90,6 +92,11 @@ namespace PawVoyage.UI
             {
                 ApplyHealthUpgrade();
             }
+
+            if (GUI.Button(pickupRadiusButtonRect, $"+{Mathf.RoundToInt(pickupRadiusBonus * 100f)}% Pickup Radius", buttonStyle))
+            {
+                ApplyPickupRadiusUpgrade();
+            }
         }
 
         private void OnLevelGained(int newLevel)
@@ -137,6 +144,17 @@ namespace PawVoyage.UI
             CloseOneSelection();
         }
 
+        private void ApplyPickupRadiusUpgrade()
+        {
+            if (!IsOpen)
+            {
+                return;
+            }
+
+            playerExperience.AddPickupRadiusMultiplier(pickupRadiusBonus);
+            CloseOneSelection();
+        }
+
         private void CloseOneSelection()
         {
             GameSfx.PlayCardSelect();
@@ -158,9 +176,9 @@ namespace PawVoyage.UI
         {
             return new Rect(
                 Screen.width * 0.5f - 180f,
-                Screen.height * 0.5f - 145f,
+                Screen.height * 0.5f - 175f,
                 360f,
-                290f);
+                350f);
         }
 
         private void UpdateButtonRects()
@@ -170,6 +188,7 @@ namespace PawVoyage.UI
             damageButtonRect = new Rect(panelRect.x + 28f, buttonY, panelRect.width - 56f, 46f);
             attackSpeedButtonRect = new Rect(panelRect.x + 28f, buttonY + 58f, panelRect.width - 56f, 46f);
             healthButtonRect = new Rect(panelRect.x + 28f, buttonY + 116f, panelRect.width - 56f, 46f);
+            pickupRadiusButtonRect = new Rect(panelRect.x + 28f, buttonY + 174f, panelRect.width - 56f, 46f);
         }
 
         private void HandlePointerSelection()
@@ -191,6 +210,10 @@ namespace PawVoyage.UI
             else if (healthButtonRect.Contains(guiPosition))
             {
                 ApplyHealthUpgrade();
+            }
+            else if (pickupRadiusButtonRect.Contains(guiPosition))
+            {
+                ApplyPickupRadiusUpgrade();
             }
         }
 
@@ -233,6 +256,10 @@ namespace PawVoyage.UI
             else if (keyboard.digit3Key.wasPressedThisFrame || keyboard.numpad3Key.wasPressedThisFrame)
             {
                 ApplyHealthUpgrade();
+            }
+            else if (keyboard.digit4Key.wasPressedThisFrame || keyboard.numpad4Key.wasPressedThisFrame)
+            {
+                ApplyPickupRadiusUpgrade();
             }
         }
 
