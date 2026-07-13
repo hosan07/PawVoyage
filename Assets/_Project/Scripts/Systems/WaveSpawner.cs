@@ -15,13 +15,17 @@ namespace PawVoyage.Systems
         [SerializeField] private float spawnInterval = 1.5f;
         [SerializeField] private float spawnRadius = 7f;
         [SerializeField] private int maxAliveEnemies = 20;
+        [SerializeField] private float minimumSpawnInterval = 0.65f;
+        [SerializeField] private int finalMaxAliveEnemies = 36;
         [SerializeField] private bool spawnOnStart = true;
 
         private float nextSpawnTime;
+        private RunStats runStats;
 
         private void Start()
         {
             FindPlayerIfNeeded();
+            runStats = RunStats.Instance;
             nextSpawnTime = spawnOnStart ? Time.time : Time.time + spawnInterval;
         }
 
@@ -29,13 +33,13 @@ namespace PawVoyage.Systems
         {
             FindPlayerIfNeeded();
 
-            if (player == null || Time.time < nextSpawnTime || CountAliveEnemies() >= maxAliveEnemies)
+            if (player == null || Time.time < nextSpawnTime || CountAliveEnemies() >= GetCurrentMaxAliveEnemies())
             {
                 return;
             }
 
             SpawnEnemy();
-            nextSpawnTime = Time.time + Mathf.Max(0.1f, spawnInterval);
+            nextSpawnTime = Time.time + GetCurrentSpawnInterval();
         }
 
         private void SpawnEnemy()
@@ -86,6 +90,27 @@ namespace PawVoyage.Systems
         private static int CountAliveEnemies()
         {
             return Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None).Length;
+        }
+
+        private float GetRunProgress()
+        {
+            if (runStats == null)
+            {
+                runStats = RunStats.Instance;
+            }
+
+            return runStats == null ? 0f : Mathf.Clamp01(runStats.ElapsedSeconds / runStats.ClearTimeSeconds);
+        }
+
+        private float GetCurrentSpawnInterval()
+        {
+            return Mathf.Lerp(spawnInterval, minimumSpawnInterval, GetRunProgress());
+        }
+
+        private int GetCurrentMaxAliveEnemies()
+        {
+            int scaledMax = Mathf.RoundToInt(Mathf.Lerp(maxAliveEnemies, finalMaxAliveEnemies, GetRunProgress()));
+            return Mathf.Max(1, scaledMax);
         }
 
         private void OnDrawGizmosSelected()
