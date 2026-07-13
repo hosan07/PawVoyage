@@ -5,6 +5,14 @@ using UnityEngine.InputSystem;
 
 namespace PawVoyage.UI
 {
+    public enum LevelUpRewardType
+    {
+        Damage,
+        AttackSpeed,
+        MaxHp,
+        PickupRadius
+    }
+
     /// <summary>
     /// 레벨업 시 게임을 잠시 멈추고 1차 성장 선택지를 제공합니다.
     /// </summary>
@@ -17,6 +25,7 @@ namespace PawVoyage.UI
         [SerializeField] private float attackRateBonus = 0.15f;
         [SerializeField] private int maxHpBonus = 20;
         [SerializeField] private float pickupRadiusBonus = 0.25f;
+        [SerializeField, Range(1, 4)] private int visibleRewardCount = 3;
 
         private PlayerExperience playerExperience;
         private AutoAttack autoAttack;
@@ -26,10 +35,16 @@ namespace PawVoyage.UI
         private GUIStyle buttonStyle;
         private int pendingLevelUps;
         private float previousTimeScale = 1f;
-        private Rect damageButtonRect;
-        private Rect attackSpeedButtonRect;
-        private Rect healthButtonRect;
-        private Rect pickupRadiusButtonRect;
+        private readonly LevelUpRewardType[] rewardPool =
+        {
+            LevelUpRewardType.Damage,
+            LevelUpRewardType.AttackSpeed,
+            LevelUpRewardType.MaxHp,
+            LevelUpRewardType.PickupRadius
+        };
+
+        private readonly LevelUpRewardType[] visibleRewards = new LevelUpRewardType[4];
+        private readonly Rect[] rewardButtonRects = new Rect[4];
 
         private bool IsOpen => pendingLevelUps > 0;
 
@@ -78,24 +93,13 @@ namespace PawVoyage.UI
             GUI.Label(new Rect(panelRect.x + 24f, panelRect.y + 22f, panelRect.width - 48f, 32f), "LEVEL UP", titleStyle);
             GUI.Label(new Rect(panelRect.x + 24f, panelRect.y + 58f, panelRect.width - 48f, 26f), $"Choose a reward for LV {playerExperience.CurrentLevel}", bodyStyle);
 
-            if (GUI.Button(damageButtonRect, $"+{damageBonus} Damage", buttonStyle))
+            int count = GetVisibleRewardCount();
+            for (int i = 0; i < count; i++)
             {
-                ApplyDamageUpgrade();
-            }
-
-            if (GUI.Button(attackSpeedButtonRect, $"+{Mathf.RoundToInt(attackRateBonus * 100f)}% Attack Speed", buttonStyle))
-            {
-                ApplyAttackSpeedUpgrade();
-            }
-
-            if (GUI.Button(healthButtonRect, $"+{maxHpBonus} Max HP", buttonStyle))
-            {
-                ApplyHealthUpgrade();
-            }
-
-            if (GUI.Button(pickupRadiusButtonRect, $"+{Mathf.RoundToInt(pickupRadiusBonus * 100f)}% Pickup Radius", buttonStyle))
-            {
-                ApplyPickupRadiusUpgrade();
+                if (GUI.Button(rewardButtonRects[i], GetRewardLabel(visibleRewards[i]), buttonStyle))
+                {
+                    ApplyReward(visibleRewards[i]);
+                }
             }
         }
 
@@ -103,11 +107,31 @@ namespace PawVoyage.UI
         {
             pendingLevelUps++;
             GameSfx.PlayLevelUp();
+            RollVisibleRewards();
 
             if (pendingLevelUps == 1)
             {
                 previousTimeScale = Time.timeScale;
                 Time.timeScale = 0f;
+            }
+        }
+
+        private void ApplyReward(LevelUpRewardType rewardType)
+        {
+            switch (rewardType)
+            {
+                case LevelUpRewardType.Damage:
+                    ApplyDamageUpgrade();
+                    break;
+                case LevelUpRewardType.AttackSpeed:
+                    ApplyAttackSpeedUpgrade();
+                    break;
+                case LevelUpRewardType.MaxHp:
+                    ApplyHealthUpgrade();
+                    break;
+                case LevelUpRewardType.PickupRadius:
+                    ApplyPickupRadiusUpgrade();
+                    break;
             }
         }
 
@@ -176,19 +200,19 @@ namespace PawVoyage.UI
         {
             return new Rect(
                 Screen.width * 0.5f - 180f,
-                Screen.height * 0.5f - 175f,
+                Screen.height * 0.5f - 145f,
                 360f,
-                350f);
+                290f);
         }
 
         private void UpdateButtonRects()
         {
             Rect panelRect = GetPanelRect();
             float buttonY = panelRect.y + 100f;
-            damageButtonRect = new Rect(panelRect.x + 28f, buttonY, panelRect.width - 56f, 46f);
-            attackSpeedButtonRect = new Rect(panelRect.x + 28f, buttonY + 58f, panelRect.width - 56f, 46f);
-            healthButtonRect = new Rect(panelRect.x + 28f, buttonY + 116f, panelRect.width - 56f, 46f);
-            pickupRadiusButtonRect = new Rect(panelRect.x + 28f, buttonY + 174f, panelRect.width - 56f, 46f);
+            for (int i = 0; i < rewardButtonRects.Length; i++)
+            {
+                rewardButtonRects[i] = new Rect(panelRect.x + 28f, buttonY + 58f * i, panelRect.width - 56f, 46f);
+            }
         }
 
         private void HandlePointerSelection()
@@ -199,21 +223,14 @@ namespace PawVoyage.UI
             }
 
             Vector2 guiPosition = new Vector2(screenPosition.x, Screen.height - screenPosition.y);
-            if (damageButtonRect.Contains(guiPosition))
+            int count = GetVisibleRewardCount();
+            for (int i = 0; i < count; i++)
             {
-                ApplyDamageUpgrade();
-            }
-            else if (attackSpeedButtonRect.Contains(guiPosition))
-            {
-                ApplyAttackSpeedUpgrade();
-            }
-            else if (healthButtonRect.Contains(guiPosition))
-            {
-                ApplyHealthUpgrade();
-            }
-            else if (pickupRadiusButtonRect.Contains(guiPosition))
-            {
-                ApplyPickupRadiusUpgrade();
+                if (rewardButtonRects[i].Contains(guiPosition))
+                {
+                    ApplyReward(visibleRewards[i]);
+                    return;
+                }
             }
         }
 
@@ -247,20 +264,61 @@ namespace PawVoyage.UI
 
             if (keyboard.digit1Key.wasPressedThisFrame || keyboard.numpad1Key.wasPressedThisFrame)
             {
-                ApplyDamageUpgrade();
+                ApplyRewardByIndex(0);
             }
             else if (keyboard.digit2Key.wasPressedThisFrame || keyboard.numpad2Key.wasPressedThisFrame)
             {
-                ApplyAttackSpeedUpgrade();
+                ApplyRewardByIndex(1);
             }
             else if (keyboard.digit3Key.wasPressedThisFrame || keyboard.numpad3Key.wasPressedThisFrame)
             {
-                ApplyHealthUpgrade();
+                ApplyRewardByIndex(2);
             }
             else if (keyboard.digit4Key.wasPressedThisFrame || keyboard.numpad4Key.wasPressedThisFrame)
             {
-                ApplyPickupRadiusUpgrade();
+                ApplyRewardByIndex(3);
             }
+        }
+
+        private void ApplyRewardByIndex(int index)
+        {
+            if (index < 0 || index >= GetVisibleRewardCount())
+            {
+                return;
+            }
+
+            ApplyReward(visibleRewards[index]);
+        }
+
+        private void RollVisibleRewards()
+        {
+            for (int i = 0; i < rewardPool.Length; i++)
+            {
+                visibleRewards[i] = rewardPool[i];
+            }
+
+            for (int i = 0; i < visibleRewards.Length; i++)
+            {
+                int swapIndex = Random.Range(i, visibleRewards.Length);
+                (visibleRewards[i], visibleRewards[swapIndex]) = (visibleRewards[swapIndex], visibleRewards[i]);
+            }
+        }
+
+        private int GetVisibleRewardCount()
+        {
+            return Mathf.Clamp(visibleRewardCount, 1, rewardPool.Length);
+        }
+
+        private string GetRewardLabel(LevelUpRewardType rewardType)
+        {
+            return rewardType switch
+            {
+                LevelUpRewardType.Damage => $"+{damageBonus} Damage",
+                LevelUpRewardType.AttackSpeed => $"+{Mathf.RoundToInt(attackRateBonus * 100f)}% Attack Speed",
+                LevelUpRewardType.MaxHp => $"+{maxHpBonus} Max HP",
+                LevelUpRewardType.PickupRadius => $"+{Mathf.RoundToInt(pickupRadiusBonus * 100f)}% Pickup Radius",
+                _ => "Unknown Reward"
+            };
         }
 
         private void EnsureStyles()
