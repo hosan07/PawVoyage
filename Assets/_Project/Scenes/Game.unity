@@ -737,6 +737,7 @@ MonoBehaviour:
   eliteContactDamage: 5
   eliteMoveSpeed: 1.35
   eliteExperienceAmount: 8
+  eliteHealthPickupHealAmount: 35
   eliteScale: 1.45
   eliteColor: {r: 0.65, g: 0.2, b: 1, a: 1}
   eliteWarningDuration: 2.25

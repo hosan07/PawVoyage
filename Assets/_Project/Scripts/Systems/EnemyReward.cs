@@ -11,6 +11,9 @@ namespace PawVoyage.Systems
     {
         [SerializeField] private int experienceAmount = 1;
         [SerializeField] private ExperienceOrb experienceOrbPrefab = null;
+        [SerializeField, Range(0f, 1f)] private float healthPickupDropChance = 0.08f;
+        [SerializeField] private int healthPickupHealAmount = 15;
+        [SerializeField] private HealthPickup healthPickupPrefab = null;
 
         private Health health;
 
@@ -45,6 +48,8 @@ namespace PawVoyage.Systems
                 : CreateFallbackOrb();
 
             orb.Initialize(experienceAmount);
+
+            TryDropHealthPickup();
         }
 
         private ExperienceOrb CreateFallbackOrb()
@@ -54,6 +59,45 @@ namespace PawVoyage.Systems
             CircleCollider2D orbCollider = orbObject.AddComponent<CircleCollider2D>();
             orbCollider.radius = 0.25f;
             return orbObject.AddComponent<ExperienceOrb>();
+        }
+
+        /// <summary>
+        /// 적 타입에 맞춰 체력 회복 아이템 드롭 확률을 설정합니다.
+        /// </summary>
+        public void SetHealthPickupDropChance(float dropChance)
+        {
+            healthPickupDropChance = Mathf.Clamp01(dropChance);
+        }
+
+        /// <summary>
+        /// 적 타입에 맞춰 체력 회복 아이템의 회복량을 설정합니다.
+        /// </summary>
+        public void SetHealthPickupHealAmount(int amount)
+        {
+            healthPickupHealAmount = Mathf.Max(1, amount);
+        }
+
+        private void TryDropHealthPickup()
+        {
+            if (Random.value > healthPickupDropChance)
+            {
+                return;
+            }
+
+            HealthPickup pickup = healthPickupPrefab != null
+                ? Instantiate(healthPickupPrefab, transform.position + Vector3.right * 0.28f, Quaternion.identity)
+                : CreateFallbackHealthPickup();
+
+            pickup.Initialize(healthPickupHealAmount);
+        }
+
+        private HealthPickup CreateFallbackHealthPickup()
+        {
+            GameObject pickupObject = new GameObject("HealthPickup");
+            pickupObject.transform.position = transform.position + Vector3.right * 0.28f;
+            CircleCollider2D pickupCollider = pickupObject.AddComponent<CircleCollider2D>();
+            pickupCollider.radius = 0.25f;
+            return pickupObject.AddComponent<HealthPickup>();
         }
     }
 }

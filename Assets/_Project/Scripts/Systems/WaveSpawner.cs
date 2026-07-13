@@ -27,6 +27,7 @@ namespace PawVoyage.Systems
         [SerializeField] private int eliteContactDamage = 5;
         [SerializeField] private float eliteMoveSpeed = 1.35f;
         [SerializeField] private int eliteExperienceAmount = 8;
+        [SerializeField] private int eliteHealthPickupHealAmount = 35;
         [SerializeField] private float eliteScale = 1.45f;
         [SerializeField] private Color eliteColor = new Color(0.65f, 0.2f, 1f, 1f);
         [SerializeField] private float eliteWarningDuration = 2.25f;
@@ -170,6 +171,8 @@ namespace PawVoyage.Systems
             if (enemy.TryGetComponent(out EnemyReward enemyReward))
             {
                 enemyReward.SetExperienceAmount(eliteExperienceAmount);
+                enemyReward.SetHealthPickupDropChance(1f);
+                enemyReward.SetHealthPickupHealAmount(eliteHealthPickupHealAmount);
             }
 
             if (enemy.TryGetComponent(out SpriteRenderer spriteRenderer))
