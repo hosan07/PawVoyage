@@ -51,7 +51,7 @@ namespace PawVoyage.UI
 
             GUI.Label(
                 new Rect(position.x, position.y + rowSpacing * 2f - 12f, width, 22f),
-                $"TIME {FormatTime(runStats != null ? runStats.ElapsedSeconds : 0f)}   KILLS {runStats?.KillCount ?? 0}",
+                $"TIME {FormatTime(runStats != null ? runStats.ElapsedSeconds : 0f)} / {FormatTime(runStats != null ? runStats.ClearTimeSeconds : 0f)}   KILLS {runStats?.KillCount ?? 0}",
                 labelStyle);
         }
 

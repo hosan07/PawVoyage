@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 namespace PawVoyage.Systems
 {
@@ -7,10 +8,16 @@ namespace PawVoyage.Systems
     /// </summary>
     public class RunStats : MonoBehaviour
     {
+        [SerializeField] private float clearTimeSeconds = 30f;
+
         public static RunStats Instance { get; private set; }
+
+        public event Action RunCleared;
 
         public float ElapsedSeconds { get; private set; }
         public int KillCount { get; private set; }
+        public float ClearTimeSeconds => Mathf.Max(1f, clearTimeSeconds);
+        public bool IsCleared { get; private set; }
 
         private void Awake()
         {
@@ -27,7 +34,18 @@ namespace PawVoyage.Systems
 
         private void Update()
         {
+            if (IsCleared)
+            {
+                return;
+            }
+
             ElapsedSeconds += Time.deltaTime;
+
+            if (ElapsedSeconds >= ClearTimeSeconds)
+            {
+                IsCleared = true;
+                RunCleared?.Invoke();
+            }
         }
 
         /// <summary>

@@ -278,6 +278,7 @@ GameObject:
   - component: {fileID: 1807036307}
   - component: {fileID: 1807036308}
   - component: {fileID: 1807036309}
+  - component: {fileID: 1807036310}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -614,6 +615,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7c151ff52e846bd83ef997c88dfe20d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.Systems.RunStats
+  clearTimeSeconds: 30
+--- !u!114 &1807036310
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1807036295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1fba83bbd2ee44289282408a2aff19c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.UI.StageClearPanel
+  titleText: STAGE CLEAR
+  retryText: RETRY
 --- !u!1 &1973712823
 GameObject:
   m_ObjectHideFlags: 0
