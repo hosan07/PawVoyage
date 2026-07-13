@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 60782922}
   - component: {fileID: 60782921}
   - component: {fileID: 60782924}
+  - component: {fileID: 60782925}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -256,6 +257,23 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &60782925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 60782920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b727de4438fe4eb6ad83015ab64c4d0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.Systems.CameraFollow
+  target: {fileID: 1807036298}
+  targetName: Player
+  offset: {x: 0, y: 0, z: -10}
+  smoothTime: 0.16
+  snapDistance: 20
 --- !u!1 &1807036295
 GameObject:
   m_ObjectHideFlags: 0
