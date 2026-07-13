@@ -12,11 +12,13 @@ namespace PawVoyage.Combat
         [SerializeField] private int maxHp = 30;
         [SerializeField] private CombatStats combatStats = new CombatStats();
         [SerializeField] private bool destroyOnDeath = true;
+        [SerializeField] private float invulnerabilityDuration = 0f;
         [SerializeField] private int currentHp;
         [SerializeField] private UnityEvent onDamaged = null;
         [SerializeField] private UnityEvent onDeath = null;
 
         private bool isDead;
+        private float nextDamageTime;
 
         public event Action<Health, int, bool> Damaged;
         public event Action<Health> Died;
@@ -31,7 +33,7 @@ namespace PawVoyage.Combat
         /// </summary>
         public int MaxHp => Mathf.Max(1, Mathf.FloorToInt((maxHp + combatStats.MaxHpBonus) * combatStats.MaxHpMult));
 
-        public bool CanReceiveDamage => !isDead && currentHp > 0;
+        public bool CanReceiveDamage => !isDead && currentHp > 0 && Time.time >= nextDamageTime;
 
         private void Awake()
         {
@@ -50,6 +52,7 @@ namespace PawVoyage.Combat
 
             int finalDamage = combatStats.ReduceIncomingDamage(request.Amount);
             currentHp = Mathf.Max(0, currentHp - finalDamage);
+            nextDamageTime = Time.time + Mathf.Max(0f, invulnerabilityDuration);
             Damaged?.Invoke(this, finalDamage, request.IsCritical);
             onDamaged?.Invoke();
 
@@ -121,6 +124,7 @@ namespace PawVoyage.Combat
         public void ResetHealth()
         {
             isDead = false;
+            nextDamageTime = 0f;
             currentHp = MaxHp;
         }
 
