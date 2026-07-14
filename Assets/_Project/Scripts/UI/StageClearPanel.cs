@@ -78,7 +78,7 @@ namespace PawVoyage.UI
             GUI.Label(new Rect(panelRect.x + 24f, panelRect.y + 28f, panelRect.width - 48f, 38f), titleText, titleStyle);
             GUI.Label(
                 new Rect(panelRect.x + 32f, panelRect.y + 78f, panelRect.width - 64f, 62f),
-                $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}",
+                $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}   Coins {runStats.CoinsCollected}",
                 bodyStyle);
 
             if (GUI.Button(GetRetryButtonRect(), retryText, buttonStyle))
@@ -159,7 +159,7 @@ namespace PawVoyage.UI
             }
 
             isOpen = true;
-            RunResultData.RecordResult(true, runStats.ElapsedSeconds, runStats.KillCount);
+            RunResultData.RecordResult(true, runStats.ElapsedSeconds, runStats.KillCount, runStats.CoinsCollected);
             previousTimeScale = Time.timeScale;
             Time.timeScale = 0f;
         }

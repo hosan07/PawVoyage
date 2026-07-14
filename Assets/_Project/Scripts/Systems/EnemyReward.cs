@@ -4,13 +4,15 @@ using UnityEngine;
 namespace PawVoyage.Systems
 {
     /// <summary>
-    /// 적 사망 시 경험치 보상을 생성합니다.
+    /// 적 사망 시 경험치, 코인, 회복 아이템 보상을 생성합니다.
     /// </summary>
     [RequireComponent(typeof(Health))]
     public class EnemyReward : MonoBehaviour
     {
         [SerializeField] private int experienceAmount = 1;
         [SerializeField] private ExperienceOrb experienceOrbPrefab = null;
+        [SerializeField] private int coinAmount = 1;
+        [SerializeField] private CoinPickup coinPickupPrefab = null;
         [SerializeField, Range(0f, 1f)] private float healthPickupDropChance = 0.08f;
         [SerializeField] private int healthPickupHealAmount = 15;
         [SerializeField] private HealthPickup healthPickupPrefab = null;
@@ -49,6 +51,7 @@ namespace PawVoyage.Systems
 
             orb.Initialize(experienceAmount);
 
+            DropCoin();
             TryDropHealthPickup();
         }
 
@@ -67,6 +70,14 @@ namespace PawVoyage.Systems
         public void SetHealthPickupDropChance(float dropChance)
         {
             healthPickupDropChance = Mathf.Clamp01(dropChance);
+        }
+
+        /// <summary>
+        /// 적 타입에 맞춰 사망 시 지급할 코인량을 설정합니다.
+        /// </summary>
+        public void SetCoinAmount(int amount)
+        {
+            coinAmount = Mathf.Max(0, amount);
         }
 
         /// <summary>
@@ -98,6 +109,29 @@ namespace PawVoyage.Systems
             CircleCollider2D pickupCollider = pickupObject.AddComponent<CircleCollider2D>();
             pickupCollider.radius = 0.25f;
             return pickupObject.AddComponent<HealthPickup>();
+        }
+
+        private void DropCoin()
+        {
+            if (coinAmount <= 0)
+            {
+                return;
+            }
+
+            CoinPickup coin = coinPickupPrefab != null
+                ? Instantiate(coinPickupPrefab, transform.position + Vector3.left * 0.24f, Quaternion.identity)
+                : CreateFallbackCoin();
+
+            coin.Initialize(coinAmount);
+        }
+
+        private CoinPickup CreateFallbackCoin()
+        {
+            GameObject coinObject = new GameObject("CoinPickup");
+            coinObject.transform.position = transform.position + Vector3.left * 0.24f;
+            CircleCollider2D coinCollider = coinObject.AddComponent<CircleCollider2D>();
+            coinCollider.radius = 0.22f;
+            return coinObject.AddComponent<CoinPickup>();
         }
     }
 }

@@ -626,6 +626,7 @@ MonoBehaviour:
   levelUpClip: {fileID: 8300000, guid: 2667a0a008b044e218b63df62e2be749, type: 3}
   enemyHitClip: {fileID: 8300000, guid: 3becec1909f194046945d85ac1077772, type: 3}
   cardSelectClip: {fileID: 8300000, guid: 35fbad8cdde724f11ba6481f1e64af71, type: 3}
+  coinClip: {fileID: 8300000, guid: 881e3f52c86c94f26a60718d35627cd8, type: 3}
   masterVolume: 0.179
   minimumAttackInterval: 0.55
   attackClipCooldownRatio: 0.9
@@ -737,6 +738,7 @@ MonoBehaviour:
   eliteContactDamage: 5
   eliteMoveSpeed: 1.35
   eliteExperienceAmount: 8
+  eliteCoinAmount: 12
   eliteHealthPickupHealAmount: 35
   eliteScale: 1.45
   eliteColor: {r: 0.65, g: 0.2, b: 1, a: 1}

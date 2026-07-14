@@ -170,7 +170,7 @@ namespace PawVoyage.UI
                 return;
             }
 
-            RunResultData.RecordResult(cleared, runStats.ElapsedSeconds, runStats.KillCount);
+            RunResultData.RecordResult(cleared, runStats.ElapsedSeconds, runStats.KillCount, runStats.CoinsCollected);
         }
 
         private void RestartScene()

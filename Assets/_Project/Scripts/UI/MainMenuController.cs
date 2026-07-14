@@ -50,7 +50,7 @@ namespace PawVoyage.UI
             GUI.Label(new Rect(0f, Screen.height * 0.16f, Screen.width, 54f), titleText, titleStyle);
             GUI.Label(new Rect(Screen.width * 0.5f - 210f, Screen.height * 0.16f + 58f, 420f, 48f), subtitleText, subtitleStyle);
 
-            Rect infoRect = new Rect(Screen.width * 0.5f - 190f, Screen.height * 0.36f, 380f, 142f);
+            Rect infoRect = new Rect(Screen.width * 0.5f - 190f, Screen.height * 0.32f, 380f, 190f);
             GUI.Box(infoRect, GUIContent.none);
             GUI.Label(new Rect(infoRect.x + 28f, infoRect.y + 22f, infoRect.width - 56f, infoRect.height - 44f), GetRecordText(), bodyStyle);
 
@@ -93,13 +93,14 @@ namespace PawVoyage.UI
         {
             if (!RunResultData.HasLastResult)
             {
-                return "Last Run\nNo run yet.\n\nBest\nSurvival 00:00   Kills 0";
+                return $"Last Run\nNo run yet.\n\nBest\nSurvival 00:00   Kills 0\n\nCoins\nTotal {RunResultData.TotalCoins}";
             }
 
             string result = RunResultData.LastCleared ? "Cleared" : "Failed";
             return
-                $"Last Run\n{result}   Survival {FormatTime(RunResultData.LastElapsedSeconds)}   Kills {RunResultData.LastKillCount}\n\n" +
-                $"Best\nSurvival {FormatTime(RunResultData.BestElapsedSeconds)}   Kills {RunResultData.BestKillCount}";
+                $"Last Run\n{result}   Survival {FormatTime(RunResultData.LastElapsedSeconds)}   Kills {RunResultData.LastKillCount}   Coins {RunResultData.LastCoinCount}\n\n" +
+                $"Best\nSurvival {FormatTime(RunResultData.BestElapsedSeconds)}   Kills {RunResultData.BestKillCount}\n\n" +
+                $"Coins\nTotal {RunResultData.TotalCoins}";
         }
 
         private static bool TryGetPressedScreenPosition(out Vector2 screenPosition)
@@ -124,7 +125,7 @@ namespace PawVoyage.UI
 
         private static Rect GetStartButtonRect()
         {
-            return new Rect(Screen.width * 0.5f - 145f, Screen.height * 0.66f, 290f, 54f);
+            return new Rect(Screen.width * 0.5f - 145f, Screen.height * 0.69f, 290f, 54f);
         }
 
         private static Rect GetResetButtonRect()

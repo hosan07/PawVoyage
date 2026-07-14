@@ -13,6 +13,7 @@ namespace PawVoyage.Systems
         [SerializeField] private AudioClip levelUpClip = null;
         [SerializeField] private AudioClip enemyHitClip = null;
         [SerializeField] private AudioClip cardSelectClip = null;
+        [SerializeField] private AudioClip coinClip = null;
         [SerializeField, Range(0f, 1f)] private float masterVolume = 0.7f;
         [SerializeField] private float minimumAttackInterval = 0.55f;
         [SerializeField] private float attackClipCooldownRatio = 0.9f;
@@ -63,6 +64,11 @@ namespace PawVoyage.Systems
         public static void PlayExperience()
         {
             Instance?.Play(Instance.experienceClip);
+        }
+
+        public static void PlayCoin()
+        {
+            Instance?.Play(Instance.coinClip);
         }
 
         public static void PlayLevelUp()

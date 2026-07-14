@@ -16,6 +16,7 @@ namespace PawVoyage.Systems
 
         public float ElapsedSeconds { get; private set; }
         public int KillCount { get; private set; }
+        public int CoinsCollected { get; private set; }
         public float ClearTimeSeconds => Mathf.Max(1f, clearTimeSeconds);
         public bool IsCleared { get; private set; }
 
@@ -54,6 +55,14 @@ namespace PawVoyage.Systems
         public void AddKill()
         {
             KillCount++;
+        }
+
+        /// <summary>
+        /// 현재 런에서 획득한 코인 수를 증가시킵니다.
+        /// </summary>
+        public void AddCoins(int amount)
+        {
+            CoinsCollected += Mathf.Max(0, amount);
         }
     }
 }
