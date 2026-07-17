@@ -20,6 +20,7 @@ namespace PawVoyage.UI
         private Health health;
         private PlayerExperience playerExperience;
         private RunStats runStats;
+        private WaveSpawner waveSpawner;
         private GUIStyle labelStyle;
 
         private void Awake()
@@ -49,9 +50,16 @@ namespace PawVoyage.UI
                 playerExperience.ExpToNextLevel,
                 new Color(0.18f, 0.85f, 0.3f));
 
+            DrawProgressRow(
+                new Rect(position.x, position.y + rowSpacing * 2f, width, barSize.y),
+                $"STAGE {FormatTime(runStats != null ? runStats.ElapsedSeconds : 0f)} / {FormatTime(runStats != null ? runStats.ClearTimeSeconds : 0f)}",
+                GetStageProgress(),
+                new Color(0.18f, 0.52f, 0.95f));
+
+            WaveSpawner currentWaveSpawner = GetWaveSpawner();
             GUI.Label(
-                new Rect(position.x, position.y + rowSpacing * 2f - 12f, width, 22f),
-                $"TIME {FormatTime(runStats != null ? runStats.ElapsedSeconds : 0f)} / {FormatTime(runStats != null ? runStats.ClearTimeSeconds : 0f)}   KILLS {runStats?.KillCount ?? 0}   COINS {runStats?.CoinsCollected ?? 0}",
+                new Rect(position.x, position.y + rowSpacing * 3f - 12f, Mathf.Max(width, 340f), 44f),
+                $"KILLS {runStats?.KillCount ?? 0}   COINS {runStats?.CoinsCollected ?? 0}\nPHASE {GetPhaseText(currentWaveSpawner)}   ENEMIES {GetEnemyCountText(currentWaveSpawner)}",
                 labelStyle);
         }
 
@@ -59,6 +67,17 @@ namespace PawVoyage.UI
         {
             float fillRatio = max > 0 ? Mathf.Clamp01((float)current / max) : 0f;
             Rect fillRect = new Rect(barRect.x, barRect.y, barRect.width * fillRatio, barRect.height);
+            Rect labelRect = new Rect(barRect.x, barRect.y - 20f, barRect.width, 18f);
+
+            DrawRect(new Rect(barRect.x - 2f, barRect.y - 2f, barRect.width + 4f, barRect.height + 4f), Color.black);
+            DrawRect(barRect, new Color(0.12f, 0.12f, 0.12f, 0.9f));
+            DrawRect(fillRect, fillColor);
+            GUI.Label(labelRect, label, labelStyle);
+        }
+
+        private void DrawProgressRow(Rect barRect, string label, float fillRatio, Color fillColor)
+        {
+            Rect fillRect = new Rect(barRect.x, barRect.y, barRect.width * Mathf.Clamp01(fillRatio), barRect.height);
             Rect labelRect = new Rect(barRect.x, barRect.y - 20f, barRect.width, 18f);
 
             DrawRect(new Rect(barRect.x - 2f, barRect.y - 2f, barRect.width + 4f, barRect.height + 4f), Color.black);
@@ -108,6 +127,38 @@ namespace PawVoyage.UI
             int minutes = totalSeconds / 60;
             int remainingSeconds = totalSeconds % 60;
             return $"{minutes:00}:{remainingSeconds:00}";
+        }
+
+        private float GetStageProgress()
+        {
+            if (runStats == null || runStats.ClearTimeSeconds <= 0f)
+            {
+                return 0f;
+            }
+
+            return runStats.ElapsedSeconds / runStats.ClearTimeSeconds;
+        }
+
+        private WaveSpawner GetWaveSpawner()
+        {
+            if (waveSpawner == null)
+            {
+                waveSpawner = WaveSpawner.Instance;
+            }
+
+            return waveSpawner;
+        }
+
+        private static string GetPhaseText(WaveSpawner currentWaveSpawner)
+        {
+            return currentWaveSpawner != null ? currentWaveSpawner.CurrentPhaseName : "NORMAL";
+        }
+
+        private static string GetEnemyCountText(WaveSpawner currentWaveSpawner)
+        {
+            return currentWaveSpawner != null
+                ? $"{currentWaveSpawner.CurrentAliveEnemies}/{currentWaveSpawner.CurrentMaxAliveEnemies}"
+                : "0/0";
         }
     }
 }

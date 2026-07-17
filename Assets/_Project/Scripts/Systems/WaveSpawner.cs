@@ -53,6 +53,49 @@ namespace PawVoyage.Systems
         private string variantNoticeText = string.Empty;
         private GUIStyle eliteWarningStyle;
 
+        public static WaveSpawner Instance { get; private set; }
+
+        public string CurrentPhaseName
+        {
+            get
+            {
+                float elapsedSeconds = GetElapsedSeconds();
+                if (elapsedSeconds >= eliteSpawnTimeSeconds)
+                {
+                    return "ELITE";
+                }
+
+                if (elapsedSeconds >= tankEnemyStartTimeSeconds)
+                {
+                    return "TANK";
+                }
+
+                if (elapsedSeconds >= fastEnemyStartTimeSeconds)
+                {
+                    return "FAST";
+                }
+
+                return "NORMAL";
+            }
+        }
+
+        public int CurrentAliveEnemies => CountAliveEnemies();
+        public int CurrentMaxAliveEnemies => GetCurrentMaxAliveEnemies();
+        public float CurrentSpawnInterval => GetCurrentSpawnInterval();
+
+        private void Awake()
+        {
+            Instance = this;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+        }
+
         private void Start()
         {
             FindPlayerIfNeeded();
@@ -67,6 +110,7 @@ namespace PawVoyage.Systems
             if (player == null || Time.time < nextSpawnTime || CountAliveEnemies() >= GetCurrentMaxAliveEnemies())
             {
                 TrySpawnElite();
+                TryShowVariantNotice();
                 return;
             }
 
