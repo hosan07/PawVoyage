@@ -15,6 +15,8 @@ namespace PawVoyage.UI
         [SerializeField] private string subtitleText = "Survive the first trail with your tiny paw hero.";
         [SerializeField] private string startText = "START";
         [SerializeField] private string resetText = "RESET RECORDS";
+        [SerializeField] private string dogText = "DOG";
+        [SerializeField] private string catText = "CAT";
 
         private readonly MetaUpgradeType[] shopUpgrades =
         {
@@ -68,6 +70,7 @@ namespace PawVoyage.UI
             GUI.Box(infoRect, GUIContent.none);
             GUI.Label(new Rect(infoRect.x + 28f, infoRect.y + 22f, infoRect.width - 56f, infoRect.height - 44f), GetRecordText(), bodyStyle);
 
+            DrawAnimalSelector();
             DrawShop();
             DrawShopFeedback();
 
@@ -98,6 +101,14 @@ namespace PawVoyage.UI
             {
                 RunResultData.ResetRecords();
             }
+            else if (GetDogButtonRect().Contains(guiPosition))
+            {
+                AnimalSelectionData.SelectAnimal(SelectedAnimalType.Dog);
+            }
+            else if (GetCatButtonRect().Contains(guiPosition))
+            {
+                AnimalSelectionData.SelectAnimal(SelectedAnimalType.Cat);
+            }
 
             for (int i = 0; i < shopUpgrades.Length; i++)
             {
@@ -119,14 +130,38 @@ namespace PawVoyage.UI
         {
             if (!RunResultData.HasLastResult)
             {
-                return $"Last Run\nNo run yet.\n\nBest\nSurvival 00:00   Kills 0\n\nCoins\nAvailable {RunResultData.TotalCoins}";
+                return $"Selected {AnimalSelectionData.SelectedAnimalName}   Stage 1 {(RunResultData.Stage1MvpCleared ? "Cleared" : "Uncleared")}\n\nLast Run\nNo run yet.\n\nBest\nSurvival 00:00   Kills 0\n\nCoins\nAvailable {RunResultData.TotalCoins}";
             }
 
             string result = RunResultData.LastCleared ? "Cleared" : "Failed";
             return
-                $"Last Run\n{result}   Survival {FormatTime(RunResultData.LastElapsedSeconds)}   Kills {RunResultData.LastKillCount}   Coins {RunResultData.LastCoinCount}\n\n" +
+                $"Selected {AnimalSelectionData.SelectedAnimalName}   Stage 1 {(RunResultData.Stage1MvpCleared ? "Cleared" : "Uncleared")}\n\n" +
+                $"Last Run\n{result}   Survival {FormatTime(RunResultData.LastElapsedSeconds)}   Kills {RunResultData.LastKillCount}   Coins {RunResultData.LastCoinCount}\n" +
+                $"Level Ups {RunResultData.LastLevelUpCount}   Mini Boss {(RunResultData.LastMiniBossSeen ? "Seen" : "Not Seen")}\n" +
+                $"Weapons {RunResultData.LastSelectedWeapons}\n\n" +
                 $"Best\nSurvival {FormatTime(RunResultData.BestElapsedSeconds)}   Kills {RunResultData.BestKillCount}\n\n" +
                 $"Coins\nAvailable {RunResultData.TotalCoins}";
+        }
+
+        private void DrawAnimalSelector()
+        {
+            Rect selectorRect = GetAnimalSelectorRect();
+            GUI.Box(selectorRect, GUIContent.none);
+            GUI.Label(new Rect(selectorRect.x + 16f, selectorRect.y + 10f, selectorRect.width - 32f, 22f), "CHARACTER", shopTitleStyle);
+
+            SelectedAnimalType selectedAnimal = AnimalSelectionData.SelectedAnimal;
+            string dogLabel = selectedAnimal == SelectedAnimalType.Dog ? $"{dogText} SELECTED" : dogText;
+            string catLabel = selectedAnimal == SelectedAnimalType.Cat ? $"{catText} SELECTED" : catText;
+
+            if (GUI.Button(GetDogButtonRect(), dogLabel, secondaryButtonStyle))
+            {
+                AnimalSelectionData.SelectAnimal(SelectedAnimalType.Dog);
+            }
+
+            if (GUI.Button(GetCatButtonRect(), catLabel, secondaryButtonStyle))
+            {
+                AnimalSelectionData.SelectAnimal(SelectedAnimalType.Cat);
+            }
         }
 
         private void DrawShop()
@@ -230,10 +265,29 @@ namespace PawVoyage.UI
             float width = Mathf.Min(380f, Screen.width - 48f);
             if (IsWideLayout())
             {
-                return new Rect(Screen.width * 0.5f - width - 24f, Screen.height * 0.32f, width, 180f);
+                return new Rect(Screen.width * 0.5f - width - 24f, Screen.height * 0.28f, width, 242f);
             }
 
-            return new Rect(Screen.width * 0.5f - width * 0.5f, Screen.height * 0.30f, width, 180f);
+            return new Rect(Screen.width * 0.5f - width * 0.5f, Screen.height * 0.26f, width, 242f);
+        }
+
+        private static Rect GetAnimalSelectorRect()
+        {
+            float width = Mathf.Min(380f, Screen.width - 48f);
+            Rect infoRect = GetInfoRect();
+            return new Rect(infoRect.x, infoRect.y + infoRect.height + 12f, width, 92f);
+        }
+
+        private static Rect GetDogButtonRect()
+        {
+            Rect selectorRect = GetAnimalSelectorRect();
+            return new Rect(selectorRect.x + 20f, selectorRect.y + 42f, selectorRect.width * 0.5f - 28f, 36f);
+        }
+
+        private static Rect GetCatButtonRect()
+        {
+            Rect selectorRect = GetAnimalSelectorRect();
+            return new Rect(selectorRect.x + selectorRect.width * 0.5f + 8f, selectorRect.y + 42f, selectorRect.width * 0.5f - 28f, 36f);
         }
 
         private static Rect GetShopRect()

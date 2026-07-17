@@ -175,6 +175,8 @@ namespace PawVoyage.Systems
             }
 
             eliteSpawned = true;
+            runStats ??= RunStats.Instance;
+            runStats?.RegisterMiniBossSeen();
             eliteWarningEndTime = Time.unscaledTime + Mathf.Max(0f, eliteWarningDuration);
             Vector2 spawnPosition = GetSpawnPosition();
             EnemyController elite = enemyPrefab != null
@@ -533,7 +535,8 @@ namespace PawVoyage.Systems
                 return;
             }
 
-            runStats.ConfigureStage(GetClearTimeSeconds(), GetClearCondition());
+            string currentStageId = stageData == null ? string.Empty : stageData.StageId;
+            runStats.ConfigureStage(currentStageId, stageMode, GetClearTimeSeconds(), GetClearCondition());
         }
 
         private StageModeConfig GetStageConfig()

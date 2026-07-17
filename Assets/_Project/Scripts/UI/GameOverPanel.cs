@@ -77,7 +77,7 @@ namespace PawVoyage.UI
 
             GUI.Box(panelRect, GUIContent.none);
             GUI.Label(new Rect(panelRect.x + 24f, panelRect.y + 28f, panelRect.width - 48f, 38f), titleText, titleStyle);
-            GUI.Label(new Rect(panelRect.x + 32f, panelRect.y + 76f, panelRect.width - 64f, 76f), GetRunSummaryText(), bodyStyle);
+            GUI.Label(new Rect(panelRect.x + 32f, panelRect.y + 76f, panelRect.width - 64f, 126f), GetRunSummaryText(), bodyStyle);
 
             if (GUI.Button(GetRetryButtonRect(), retryText, buttonStyle))
             {
@@ -132,21 +132,21 @@ namespace PawVoyage.UI
         {
             return new Rect(
                 Screen.width * 0.5f - 175f,
-                Screen.height * 0.5f - 135f,
+                Screen.height * 0.5f - 160f,
                 350f,
-                270f);
+                320f);
         }
 
         private static Rect GetRetryButtonRect()
         {
             Rect panelRect = GetPanelRect();
-            return new Rect(panelRect.x + 38f, panelRect.y + 178f, 132f, 48f);
+            return new Rect(panelRect.x + 38f, panelRect.y + 232f, 132f, 48f);
         }
 
         private static Rect GetMenuButtonRect()
         {
             Rect panelRect = GetPanelRect();
-            return new Rect(panelRect.x + panelRect.width - 170f, panelRect.y + 178f, 132f, 48f);
+            return new Rect(panelRect.x + panelRect.width - 170f, panelRect.y + 232f, 132f, 48f);
         }
 
         private void OnPlayerDied(Health deadHealth)
@@ -170,7 +170,15 @@ namespace PawVoyage.UI
                 return;
             }
 
-            RunResultData.RecordResult(cleared, runStats.ElapsedSeconds, runStats.KillCount, runStats.CoinsCollected);
+            RunResultData.RecordResult(
+                cleared,
+                runStats.ElapsedSeconds,
+                runStats.KillCount,
+                runStats.CoinsCollected,
+                runStats.LevelUpCount,
+                runStats.SelectedWeaponsSummary,
+                runStats.MiniBossSeen,
+                false);
         }
 
         private void RestartScene()
@@ -194,7 +202,8 @@ namespace PawVoyage.UI
             }
 
             string bonusText = runStats.BonusCoinsCollected > 0 ? $" (+{runStats.BonusCoinsCollected} Bonus)" : string.Empty;
-            return $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}\nCoins {runStats.CoinsCollected}{bonusText}";
+            string bossText = runStats.MiniBossSeen ? "Seen" : "Not Seen";
+            return $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}   Coins {runStats.CoinsCollected}{bonusText}\nLevel Ups {runStats.LevelUpCount}   Mini Boss {bossText}\nWeapons {runStats.SelectedWeaponsSummary}";
         }
 
         private static string FormatTime(float seconds)

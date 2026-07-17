@@ -152,6 +152,7 @@ namespace PawVoyage.UI
         private void OnLevelGained(int newLevel)
         {
             pendingLevelUps++;
+            RunStats.Instance?.AddLevelUp();
             GameSfx.PlayLevelUp();
             RollVisibleRewards();
 
@@ -296,6 +297,7 @@ namespace PawVoyage.UI
 
             if (secondaryWeaponController.AcquireOrUpgradeWeapon(weaponData))
             {
+                RunStats.Instance?.RegisterSelectedWeapon(weaponData.DisplayName);
                 CloseOneSelection();
             }
         }
