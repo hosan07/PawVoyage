@@ -13,6 +13,9 @@ namespace PawVoyage.Combat
         [SerializeField] private float lifetime = 3f;
         [SerializeField] private bool createFallbackVisual = true;
         [SerializeField] private Color fallbackColor = new Color(1f, 0.92f, 0.1f, 1f);
+        [SerializeField] private Color impactColor = new Color(1f, 0.72f, 0.12f, 1f);
+        [SerializeField] private float impactScale = 0.42f;
+        [SerializeField] private float impactLifetime = 0.16f;
 
         private Vector2 direction = Vector2.right;
         private float speed = 10f;
@@ -64,6 +67,8 @@ namespace PawVoyage.Combat
                 GameSfx.PlayEnemyHit();
             }
 
+            SpawnImpact(other.ClosestPoint(transform.position));
+
             if (pierceRemaining <= 0)
             {
                 Destroy(gameObject);
@@ -71,6 +76,7 @@ namespace PawVoyage.Combat
             }
 
             pierceRemaining--;
+            TintAfterPierce();
         }
 
         /// <summary>
@@ -96,6 +102,29 @@ namespace PawVoyage.Combat
                 || other.gameObject.tag == targetTag;
 
             return isTargetLayer && isTargetTag;
+        }
+
+        private void SpawnImpact(Vector2 position)
+        {
+            GameObject impactObject = new GameObject("ProjectileImpact");
+            impactObject.transform.position = position;
+            impactObject.transform.localScale = Vector3.one * impactScale;
+
+            SpriteRenderer impactRenderer = impactObject.AddComponent<SpriteRenderer>();
+            impactRenderer.sprite = CreateSquareSprite();
+            impactRenderer.color = impactColor;
+            impactRenderer.sortingOrder = 6;
+
+            ProjectileImpact impact = impactObject.AddComponent<ProjectileImpact>();
+            impact.Initialize(impactLifetime, impactColor);
+        }
+
+        private void TintAfterPierce()
+        {
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.color = new Color(1f, 0.62f, 0.08f, 1f);
+            }
         }
 
         private void EnsureFallbackVisual()
@@ -124,6 +153,40 @@ namespace PawVoyage.Combat
             texture.SetPixels(pixels);
             texture.Apply();
             return Sprite.Create(texture, new Rect(0f, 0f, 8f, 8f), new Vector2(0.5f, 0.5f), 8f);
+        }
+
+        private class ProjectileImpact : MonoBehaviour
+        {
+            private SpriteRenderer spriteRenderer;
+            private Color startColor;
+            private float lifetime = 0.16f;
+            private float elapsed;
+
+            public void Initialize(float duration, Color color)
+            {
+                lifetime = Mathf.Max(0.01f, duration);
+                startColor = color;
+                spriteRenderer = GetComponent<SpriteRenderer>();
+            }
+
+            private void Update()
+            {
+                elapsed += Time.deltaTime;
+                float progress = Mathf.Clamp01(elapsed / lifetime);
+                transform.localScale = Vector3.one * Mathf.Lerp(0.55f, 0.08f, progress);
+
+                if (spriteRenderer != null)
+                {
+                    Color color = startColor;
+                    color.a = 1f - progress;
+                    spriteRenderer.color = color;
+                }
+
+                if (progress >= 1f)
+                {
+                    Destroy(gameObject);
+                }
+            }
         }
     }
 }
