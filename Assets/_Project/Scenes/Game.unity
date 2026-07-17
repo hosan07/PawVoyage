@@ -299,6 +299,7 @@ GameObject:
   - component: {fileID: 1807036310}
   - component: {fileID: 1807036311}
   - component: {fileID: 1807036312}
+  - component: {fileID: 1807036315}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -608,6 +609,18 @@ MonoBehaviour:
   pickupRadiusBonus: 0.25
   moveSpeedBonus: 0.12
   visibleRewardCount: 3
+--- !u!114 &1807036315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1807036295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bc19af5c9014998b04c550ac74f4bb7, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.Systems.PlayerMetaUpgradeApplier
 --- !u!114 &1807036307
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -16,11 +16,21 @@ namespace PawVoyage.UI
         [SerializeField] private string startText = "START";
         [SerializeField] private string resetText = "RESET RECORDS";
 
+        private readonly MetaUpgradeType[] shopUpgrades =
+        {
+            MetaUpgradeType.Damage,
+            MetaUpgradeType.MaxHp,
+            MetaUpgradeType.AttackSpeed,
+            MetaUpgradeType.MoveSpeed,
+            MetaUpgradeType.PickupRadius
+        };
+
         private GUIStyle titleStyle;
         private GUIStyle subtitleStyle;
         private GUIStyle bodyStyle;
         private GUIStyle buttonStyle;
         private GUIStyle secondaryButtonStyle;
+        private GUIStyle shopTitleStyle;
 
         private void Awake()
         {
@@ -50,9 +60,11 @@ namespace PawVoyage.UI
             GUI.Label(new Rect(0f, Screen.height * 0.16f, Screen.width, 54f), titleText, titleStyle);
             GUI.Label(new Rect(Screen.width * 0.5f - 210f, Screen.height * 0.16f + 58f, 420f, 48f), subtitleText, subtitleStyle);
 
-            Rect infoRect = new Rect(Screen.width * 0.5f - 190f, Screen.height * 0.32f, 380f, 190f);
+            Rect infoRect = GetInfoRect();
             GUI.Box(infoRect, GUIContent.none);
             GUI.Label(new Rect(infoRect.x + 28f, infoRect.y + 22f, infoRect.width - 56f, infoRect.height - 44f), GetRecordText(), bodyStyle);
+
+            DrawShop();
 
             if (GUI.Button(GetStartButtonRect(), startText, buttonStyle))
             {
@@ -81,6 +93,15 @@ namespace PawVoyage.UI
             {
                 RunResultData.ResetRecords();
             }
+
+            for (int i = 0; i < shopUpgrades.Length; i++)
+            {
+                if (GetShopButtonRect(i).Contains(guiPosition))
+                {
+                    TryBuyUpgrade(shopUpgrades[i]);
+                    return;
+                }
+            }
         }
 
         private void StartGame()
@@ -93,14 +114,40 @@ namespace PawVoyage.UI
         {
             if (!RunResultData.HasLastResult)
             {
-                return $"Last Run\nNo run yet.\n\nBest\nSurvival 00:00   Kills 0\n\nCoins\nTotal {RunResultData.TotalCoins}";
+                return $"Last Run\nNo run yet.\n\nBest\nSurvival 00:00   Kills 0\n\nCoins\nAvailable {RunResultData.TotalCoins}";
             }
 
             string result = RunResultData.LastCleared ? "Cleared" : "Failed";
             return
                 $"Last Run\n{result}   Survival {FormatTime(RunResultData.LastElapsedSeconds)}   Kills {RunResultData.LastKillCount}   Coins {RunResultData.LastCoinCount}\n\n" +
                 $"Best\nSurvival {FormatTime(RunResultData.BestElapsedSeconds)}   Kills {RunResultData.BestKillCount}\n\n" +
-                $"Coins\nTotal {RunResultData.TotalCoins}";
+                $"Coins\nAvailable {RunResultData.TotalCoins}";
+        }
+
+        private void DrawShop()
+        {
+            Rect shopRect = GetShopRect();
+            GUI.Box(shopRect, GUIContent.none);
+            GUI.Label(new Rect(shopRect.x + 20f, shopRect.y + 12f, shopRect.width - 40f, 28f), "UPGRADES", shopTitleStyle);
+            GUI.Label(new Rect(shopRect.x + 20f, shopRect.y + 40f, shopRect.width - 40f, 22f), $"Coins Available: {RunResultData.TotalCoins}", bodyStyle);
+
+            for (int i = 0; i < shopUpgrades.Length; i++)
+            {
+                MetaUpgradeType upgradeType = shopUpgrades[i];
+                int level = MetaProgressionData.GetLevel(upgradeType);
+                string costText = MetaProgressionData.IsMaxLevel(upgradeType) ? "MAX" : $"{MetaProgressionData.GetCost(upgradeType)} Coins";
+                string label = $"{MetaProgressionData.GetDisplayName(upgradeType)}  Lv {level}/{MetaProgressionData.MaxLevel}\n{MetaProgressionData.GetEffectText(upgradeType)}   {costText}";
+
+                if (GUI.Button(GetShopButtonRect(i), label, secondaryButtonStyle))
+                {
+                    TryBuyUpgrade(upgradeType);
+                }
+            }
+        }
+
+        private static void TryBuyUpgrade(MetaUpgradeType upgradeType)
+        {
+            MetaProgressionData.TryPurchase(upgradeType);
         }
 
         private static bool TryGetPressedScreenPosition(out Vector2 screenPosition)
@@ -125,12 +172,45 @@ namespace PawVoyage.UI
 
         private static Rect GetStartButtonRect()
         {
-            return new Rect(Screen.width * 0.5f - 145f, Screen.height * 0.69f, 290f, 54f);
+            return new Rect(Screen.width * 0.5f - 145f, Screen.height - 150f, 290f, 54f);
         }
 
         private static Rect GetResetButtonRect()
         {
-            return new Rect(Screen.width * 0.5f - 145f, Screen.height * 0.66f + 68f, 290f, 42f);
+            return new Rect(Screen.width * 0.5f - 145f, Screen.height - 86f, 290f, 42f);
+        }
+
+        private static Rect GetInfoRect()
+        {
+            float width = Mathf.Min(380f, Screen.width - 48f);
+            if (IsWideLayout())
+            {
+                return new Rect(Screen.width * 0.5f - width - 24f, Screen.height * 0.32f, width, 180f);
+            }
+
+            return new Rect(Screen.width * 0.5f - width * 0.5f, Screen.height * 0.30f, width, 180f);
+        }
+
+        private static Rect GetShopRect()
+        {
+            float width = Mathf.Min(430f, Screen.width - 40f);
+            if (IsWideLayout())
+            {
+                return new Rect(Screen.width * 0.5f + 24f, Screen.height * 0.32f, width, 314f);
+            }
+
+            return new Rect(Screen.width * 0.5f - width * 0.5f, Screen.height * 0.50f, width, 314f);
+        }
+
+        private static Rect GetShopButtonRect(int index)
+        {
+            Rect shopRect = GetShopRect();
+            return new Rect(shopRect.x + 20f, shopRect.y + 70f + index * 46f, shopRect.width - 40f, 40f);
+        }
+
+        private static bool IsWideLayout()
+        {
+            return Screen.width > Screen.height * 1.1f;
         }
 
         private static string FormatTime(float seconds)
@@ -182,6 +262,14 @@ namespace PawVoyage.UI
             {
                 fontSize = 14,
                 fontStyle = FontStyle.Bold
+            };
+
+            shopTitleStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 20,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = Color.white }
             };
         }
     }

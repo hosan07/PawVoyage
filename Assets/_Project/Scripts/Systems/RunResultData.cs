@@ -39,7 +39,7 @@ namespace PawVoyage.Systems
             PlayerPrefs.SetFloat(LastElapsedSecondsKey, safeElapsedSeconds);
             PlayerPrefs.SetInt(LastKillCountKey, safeKillCount);
             PlayerPrefs.SetInt(LastCoinCountKey, safeCoinCount);
-            PlayerPrefs.SetInt(TotalCoinsKey, TotalCoins + safeCoinCount);
+            AddCoins(safeCoinCount);
 
             if (safeElapsedSeconds > BestElapsedSeconds)
             {
@@ -66,8 +66,32 @@ namespace PawVoyage.Systems
             PlayerPrefs.DeleteKey(LastCoinCountKey);
             PlayerPrefs.DeleteKey(BestElapsedSecondsKey);
             PlayerPrefs.DeleteKey(BestKillCountKey);
-            PlayerPrefs.DeleteKey(TotalCoinsKey);
             PlayerPrefs.Save();
+        }
+
+        /// <summary>
+        /// 영구 성장 구매에 사용할 보유 코인을 증가시킵니다.
+        /// </summary>
+        public static void AddCoins(int amount)
+        {
+            PlayerPrefs.SetInt(TotalCoinsKey, TotalCoins + Mathf.Max(0, amount));
+            PlayerPrefs.Save();
+        }
+
+        /// <summary>
+        /// 보유 코인이 충분할 때 지정 수량을 차감합니다.
+        /// </summary>
+        public static bool TrySpendCoins(int amount)
+        {
+            int safeAmount = Mathf.Max(0, amount);
+            if (TotalCoins < safeAmount)
+            {
+                return false;
+            }
+
+            PlayerPrefs.SetInt(TotalCoinsKey, TotalCoins - safeAmount);
+            PlayerPrefs.Save();
+            return true;
         }
     }
 }
