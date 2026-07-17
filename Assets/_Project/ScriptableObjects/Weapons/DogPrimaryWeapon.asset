@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponId: wpn_dog_primary
   displayName: Dog Primary
   slotType: 0
-  attackType: 1
+  attackType: 0
   baseDamage: 8
   baseCooldown: 0.45
   baseRange: 7

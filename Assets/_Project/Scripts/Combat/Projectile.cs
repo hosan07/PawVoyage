@@ -109,7 +109,7 @@ namespace PawVoyage.Combat
             spriteRenderer.sprite = CreateSquareSprite();
             spriteRenderer.color = fallbackColor;
             spriteRenderer.sortingOrder = 5;
-            transform.localScale = new Vector3(0.42f, 0.14f, 1f);
+            transform.localScale = new Vector3(0.7f, 0.22f, 1f);
         }
 
         private static Sprite CreateSquareSprite()
