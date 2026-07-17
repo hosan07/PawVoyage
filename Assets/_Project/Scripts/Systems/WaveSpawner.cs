@@ -37,14 +37,17 @@ namespace PawVoyage.Systems
         [SerializeField] private float eliteMoveSpeed = 1.35f;
         [SerializeField] private int eliteExperienceAmount = 8;
         [SerializeField] private int eliteCoinAmount = 12;
+        [SerializeField] private int eliteDefeatBonusCoins = 15;
         [SerializeField] private int eliteHealthPickupHealAmount = 35;
         [SerializeField] private float eliteScale = 1.45f;
         [SerializeField] private Color eliteColor = new Color(0.65f, 0.2f, 1f, 1f);
         [SerializeField] private float eliteWarningDuration = 2.25f;
+        [SerializeField] private string eliteDisplayName = "MINI BOSS";
         [SerializeField] private bool spawnOnStart = true;
 
         private float nextSpawnTime;
         private RunStats runStats;
+        private Health activeEliteHealth;
         private bool eliteSpawned;
         private bool fastEnemyNoticeShown;
         private bool tankEnemyNoticeShown;
@@ -52,6 +55,8 @@ namespace PawVoyage.Systems
         private float variantNoticeEndTime;
         private string variantNoticeText = string.Empty;
         private GUIStyle eliteWarningStyle;
+        private GUIStyle eliteHealthLabelStyle;
+        private Texture2D whiteTexture;
 
         public static WaveSpawner Instance { get; private set; }
 
@@ -82,6 +87,7 @@ namespace PawVoyage.Systems
         public int CurrentAliveEnemies => CountAliveEnemies();
         public int CurrentMaxAliveEnemies => GetCurrentMaxAliveEnemies();
         public float CurrentSpawnInterval => GetCurrentSpawnInterval();
+        public bool IsEliteActive => activeEliteHealth != null && activeEliteHealth.CurrentHp > 0;
 
         private void Awake()
         {
@@ -93,6 +99,11 @@ namespace PawVoyage.Systems
             if (Instance == this)
             {
                 Instance = null;
+            }
+
+            if (activeEliteHealth != null)
+            {
+                activeEliteHealth.Died -= OnEliteDied;
             }
         }
 
@@ -133,6 +144,8 @@ namespace PawVoyage.Systems
             {
                 GUI.Label(new Rect(0f, Screen.height * 0.26f, Screen.width, 42f), variantNoticeText, eliteWarningStyle);
             }
+
+            DrawEliteHealthBar();
         }
 
         private void SpawnEnemy()
@@ -268,6 +281,7 @@ namespace PawVoyage.Systems
             if (enemy.TryGetComponent(out Health health))
             {
                 health.SetBaseMaxHp(eliteMaxHp, true);
+                TrackEliteHealth(health);
             }
 
             if (enemy.TryGetComponent(out ContactDamage contactDamage))
@@ -286,6 +300,41 @@ namespace PawVoyage.Systems
             if (enemy.TryGetComponent(out SpriteRenderer spriteRenderer))
             {
                 spriteRenderer.color = eliteColor;
+            }
+        }
+
+        private void TrackEliteHealth(Health health)
+        {
+            if (activeEliteHealth != null)
+            {
+                activeEliteHealth.Died -= OnEliteDied;
+            }
+
+            activeEliteHealth = health;
+            activeEliteHealth.Died += OnEliteDied;
+        }
+
+        private void OnEliteDied(Health deadHealth)
+        {
+            if (deadHealth != activeEliteHealth)
+            {
+                return;
+            }
+
+            activeEliteHealth.Died -= OnEliteDied;
+            activeEliteHealth = null;
+
+            int bonusCoins = Mathf.Max(0, eliteDefeatBonusCoins);
+            if (bonusCoins > 0)
+            {
+                runStats ??= RunStats.Instance;
+                runStats?.AddBonusCoins(bonusCoins);
+                GameSfx.PlayCoin();
+                ShowVariantNotice($"ELITE DEFEATED  +{bonusCoins} COINS");
+            }
+            else
+            {
+                ShowVariantNotice("ELITE DEFEATED");
             }
         }
 
@@ -439,6 +488,57 @@ namespace PawVoyage.Systems
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = new Color(1f, 0.35f, 0.2f, 1f) }
             };
+
+            eliteHealthLabelStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 15,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = Color.white }
+            };
+
+            whiteTexture = new Texture2D(1, 1);
+            whiteTexture.SetPixel(0, 0, Color.white);
+            whiteTexture.Apply();
+        }
+
+        private void DrawEliteHealthBar()
+        {
+            if (!IsEliteActive || whiteTexture == null)
+            {
+                return;
+            }
+
+            float width = Mathf.Min(520f, Screen.width - 56f);
+            Rect frameRect = new Rect(Screen.width * 0.5f - width * 0.5f, 62f, width, 26f);
+            Rect fillRect = new Rect(frameRect.x + 3f, frameRect.y + 3f, (frameRect.width - 6f) * GetEliteHealthRatio(), frameRect.height - 6f);
+
+            DrawGuiRect(new Rect(frameRect.x - 2f, frameRect.y - 2f, frameRect.width + 4f, frameRect.height + 4f), Color.black);
+            DrawGuiRect(frameRect, new Color(0.13f, 0.05f, 0.18f, 0.92f));
+            DrawGuiRect(fillRect, new Color(0.77f, 0.16f, 1f, 0.95f));
+
+            GUI.Label(
+                frameRect,
+                $"{eliteDisplayName}  {activeEliteHealth.CurrentHp}/{activeEliteHealth.MaxHp}",
+                eliteHealthLabelStyle);
+        }
+
+        private float GetEliteHealthRatio()
+        {
+            if (activeEliteHealth == null || activeEliteHealth.MaxHp <= 0)
+            {
+                return 0f;
+            }
+
+            return Mathf.Clamp01((float)activeEliteHealth.CurrentHp / activeEliteHealth.MaxHp);
+        }
+
+        private void DrawGuiRect(Rect rect, Color color)
+        {
+            Color previousColor = GUI.color;
+            GUI.color = color;
+            GUI.DrawTexture(rect, whiteTexture);
+            GUI.color = previousColor;
         }
 
         private readonly struct EnemyVariantTuning
