@@ -21,6 +21,7 @@ namespace PawVoyage.Combat
         private float nextDamageTime;
 
         public event Action<Health, int, bool> Damaged;
+        public event Action<Health, int> Healed;
         public event Action<Health> Died;
 
         /// <summary>
@@ -80,7 +81,14 @@ namespace PawVoyage.Combat
                 return;
             }
 
+            int previousHp = currentHp;
             currentHp = Mathf.Min(MaxHp, currentHp + Mathf.Max(0, amount));
+            int healedAmount = currentHp - previousHp;
+
+            if (healedAmount > 0)
+            {
+                Healed?.Invoke(this, healedAmount);
+            }
         }
 
         /// <summary>

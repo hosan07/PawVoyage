@@ -21,18 +21,30 @@ namespace PawVoyage.Combat
             popupObject.transform.position = worldPosition;
 
             DamagePopup popup = popupObject.AddComponent<DamagePopup>();
-            popup.Initialize(amount, isCritical);
+            popup.Initialize(amount.ToString(), isCritical ? new Color(1f, 0.9f, 0.2f, 1f) : Color.white);
         }
 
-        private void Initialize(int amount, bool isCritical)
+        /// <summary>
+        /// 회복량을 초록색 팝업으로 표시합니다.
+        /// </summary>
+        public static void SpawnHealing(Vector3 worldPosition, int amount)
+        {
+            GameObject popupObject = new GameObject("HealingPopup");
+            popupObject.transform.position = worldPosition;
+
+            DamagePopup popup = popupObject.AddComponent<DamagePopup>();
+            popup.Initialize($"+{Mathf.Max(0, amount)}", new Color(0.25f, 1f, 0.45f, 1f));
+        }
+
+        private void Initialize(string text, Color color)
         {
             textMesh = gameObject.AddComponent<TextMesh>();
-            textMesh.text = amount.ToString();
+            textMesh.text = text;
             textMesh.anchor = TextAnchor.MiddleCenter;
             textMesh.alignment = TextAlignment.Center;
             textMesh.fontSize = Mathf.RoundToInt(fontSize * 100f);
             textMesh.characterSize = 0.1f;
-            textMesh.color = isCritical ? new Color(1f, 0.9f, 0.2f, 1f) : Color.white;
+            textMesh.color = color;
 
             MeshRenderer meshRenderer = textMesh.GetComponent<MeshRenderer>();
             meshRenderer.sortingOrder = 20;
