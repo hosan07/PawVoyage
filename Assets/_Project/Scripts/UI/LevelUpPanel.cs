@@ -15,7 +15,9 @@ namespace PawVoyage.UI
         MoveSpeed,
         ProjectileCount,
         Pierce,
-        Range
+        Range,
+        AuraWeapon,
+        BoomerangWeapon
     }
 
     /// <summary>
@@ -24,9 +26,14 @@ namespace PawVoyage.UI
     [RequireComponent(typeof(PlayerExperience))]
     [RequireComponent(typeof(PlayerController))]
     [RequireComponent(typeof(AutoAttack))]
+    [RequireComponent(typeof(SecondaryWeaponController))]
     [RequireComponent(typeof(Health))]
     public class LevelUpPanel : MonoBehaviour
     {
+        private const int WeaponRewardWeight = 45;
+        private const int PassiveRewardWeight = 35;
+        private const int UtilityRewardWeight = 20;
+
         [SerializeField] private int damageBonus = 2;
         [SerializeField] private float attackRateBonus = 0.15f;
         [SerializeField] private int maxHpBonus = 20;
@@ -35,30 +42,52 @@ namespace PawVoyage.UI
         [SerializeField] private int projectileBonus = 1;
         [SerializeField] private int pierceBonus = 1;
         [SerializeField] private float rangeBonus = 0.18f;
+        [SerializeField] private WeaponData auraWeapon = null;
+        [SerializeField] private WeaponData boomerangWeapon = null;
         [SerializeField, Range(1, 5)] private int visibleRewardCount = 3;
 
         private PlayerExperience playerExperience;
         private PlayerController playerController;
         private AutoAttack autoAttack;
+        private SecondaryWeaponController secondaryWeaponController;
         private Health health;
         private GUIStyle titleStyle;
         private GUIStyle bodyStyle;
         private GUIStyle buttonStyle;
         private int pendingLevelUps;
         private float previousTimeScale = 1f;
-        private readonly LevelUpRewardType[] rewardPool =
+        private readonly LevelUpRewardType[] weaponRewardPool =
+        {
+            LevelUpRewardType.AuraWeapon,
+            LevelUpRewardType.BoomerangWeapon
+        };
+
+        private readonly LevelUpRewardType[] passiveRewardPool =
         {
             LevelUpRewardType.Damage,
             LevelUpRewardType.AttackSpeed,
-            LevelUpRewardType.MaxHp,
-            LevelUpRewardType.PickupRadius,
-            LevelUpRewardType.MoveSpeed,
             LevelUpRewardType.ProjectileCount,
             LevelUpRewardType.Pierce,
             LevelUpRewardType.Range
         };
 
-        private readonly LevelUpRewardType[] visibleRewards = new LevelUpRewardType[8];
+        private readonly LevelUpRewardType[] utilityRewardPool =
+        {
+            LevelUpRewardType.MaxHp,
+            LevelUpRewardType.PickupRadius,
+            LevelUpRewardType.MoveSpeed
+        };
+
+        private readonly LevelUpRewardType[] fallbackRewards =
+        {
+            LevelUpRewardType.Damage,
+            LevelUpRewardType.AttackSpeed,
+            LevelUpRewardType.MaxHp,
+            LevelUpRewardType.PickupRadius,
+            LevelUpRewardType.MoveSpeed
+        };
+
+        private readonly LevelUpRewardType[] visibleRewards = new LevelUpRewardType[10];
         private readonly Rect[] rewardButtonRects = new Rect[5];
 
         private bool IsOpen => pendingLevelUps > 0;
@@ -68,6 +97,7 @@ namespace PawVoyage.UI
             playerExperience = GetComponent<PlayerExperience>();
             playerController = GetComponent<PlayerController>();
             autoAttack = GetComponent<AutoAttack>();
+            secondaryWeaponController = GetComponent<SecondaryWeaponController>();
             health = GetComponent<Health>();
         }
 
@@ -160,6 +190,12 @@ namespace PawVoyage.UI
                 case LevelUpRewardType.Range:
                     ApplyRangeUpgrade();
                     break;
+                case LevelUpRewardType.AuraWeapon:
+                    ApplySecondaryWeapon(auraWeapon);
+                    break;
+                case LevelUpRewardType.BoomerangWeapon:
+                    ApplySecondaryWeapon(boomerangWeapon);
+                    break;
             }
         }
 
@@ -249,6 +285,19 @@ namespace PawVoyage.UI
 
             autoAttack.AddRangeMultiplier(rangeBonus);
             CloseOneSelection();
+        }
+
+        private void ApplySecondaryWeapon(WeaponData weaponData)
+        {
+            if (!IsOpen)
+            {
+                return;
+            }
+
+            if (secondaryWeaponController.AcquireOrUpgradeWeapon(weaponData))
+            {
+                CloseOneSelection();
+            }
         }
 
         private void CloseOneSelection()
@@ -368,21 +417,84 @@ namespace PawVoyage.UI
 
         private void RollVisibleRewards()
         {
-            for (int i = 0; i < rewardPool.Length; i++)
-            {
-                visibleRewards[i] = rewardPool[i];
-            }
-
+            int count = GetVisibleRewardCount();
             for (int i = 0; i < visibleRewards.Length; i++)
             {
-                int swapIndex = Random.Range(i, visibleRewards.Length);
-                (visibleRewards[i], visibleRewards[swapIndex]) = (visibleRewards[swapIndex], visibleRewards[i]);
+                visibleRewards[i] = LevelUpRewardType.Damage;
+            }
+
+            int filledCount = 0;
+            int safety = 0;
+            while (filledCount < count && safety < 60)
+            {
+                safety++;
+                LevelUpRewardType rewardType = PickWeightedReward();
+                if (ContainsVisibleReward(rewardType, filledCount) || !CanOfferReward(rewardType))
+                {
+                    continue;
+                }
+
+                visibleRewards[filledCount] = rewardType;
+                filledCount++;
+            }
+
+            for (int i = filledCount; i < count; i++)
+            {
+                visibleRewards[i] = GetFallbackReward(i);
+                for (int j = 0; j < fallbackRewards.Length && ContainsVisibleReward(visibleRewards[i], i); j++)
+                {
+                    visibleRewards[i] = fallbackRewards[(i + j + 1) % fallbackRewards.Length];
+                }
             }
         }
 
         private int GetVisibleRewardCount()
         {
-            return Mathf.Clamp(visibleRewardCount, 1, rewardPool.Length);
+            return Mathf.Clamp(visibleRewardCount, 1, rewardButtonRects.Length);
+        }
+
+        private LevelUpRewardType PickWeightedReward()
+        {
+            int roll = Random.Range(0, WeaponRewardWeight + PassiveRewardWeight + UtilityRewardWeight);
+            if (roll < WeaponRewardWeight)
+            {
+                return weaponRewardPool[Random.Range(0, weaponRewardPool.Length)];
+            }
+
+            if (roll < WeaponRewardWeight + PassiveRewardWeight)
+            {
+                return passiveRewardPool[Random.Range(0, passiveRewardPool.Length)];
+            }
+
+            return utilityRewardPool[Random.Range(0, utilityRewardPool.Length)];
+        }
+
+        private bool ContainsVisibleReward(LevelUpRewardType rewardType, int filledCount)
+        {
+            for (int i = 0; i < filledCount; i++)
+            {
+                if (visibleRewards[i] == rewardType)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool CanOfferReward(LevelUpRewardType rewardType)
+        {
+            return rewardType switch
+            {
+                LevelUpRewardType.AuraWeapon => auraWeapon != null && (secondaryWeaponController.HasWeapon(auraWeapon) || secondaryWeaponController.EquippedCount < secondaryWeaponController.MaxSecondaryWeapons),
+                LevelUpRewardType.BoomerangWeapon => boomerangWeapon != null && (secondaryWeaponController.HasWeapon(boomerangWeapon) || secondaryWeaponController.EquippedCount < secondaryWeaponController.MaxSecondaryWeapons),
+                _ => true
+            };
+        }
+
+        private LevelUpRewardType GetFallbackReward(int index)
+        {
+            return fallbackRewards[index % fallbackRewards.Length];
         }
 
         private string GetRewardLabel(LevelUpRewardType rewardType)
@@ -397,8 +509,22 @@ namespace PawVoyage.UI
                 LevelUpRewardType.ProjectileCount => $"+{projectileBonus} Projectile",
                 LevelUpRewardType.Pierce => $"+{pierceBonus} Pierce",
                 LevelUpRewardType.Range => $"+{Mathf.RoundToInt(rangeBonus * 100f)}% Attack Range",
+                LevelUpRewardType.AuraWeapon => GetWeaponRewardLabel(auraWeapon),
+                LevelUpRewardType.BoomerangWeapon => GetWeaponRewardLabel(boomerangWeapon),
                 _ => "Unknown Reward"
             };
+        }
+
+        private string GetWeaponRewardLabel(WeaponData weaponData)
+        {
+            if (weaponData == null)
+            {
+                return "Weapon Slot";
+            }
+
+            return secondaryWeaponController.HasWeapon(weaponData)
+                ? $"{weaponData.DisplayName} Upgrade"
+                : $"Get {weaponData.DisplayName}";
         }
 
         private void EnsureStyles()

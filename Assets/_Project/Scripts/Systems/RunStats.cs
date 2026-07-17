@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using PawVoyage.Data;
 
 namespace PawVoyage.Systems
 {
@@ -9,6 +10,7 @@ namespace PawVoyage.Systems
     public class RunStats : MonoBehaviour
     {
         [SerializeField] private float clearTimeSeconds = 30f;
+        [SerializeField] private StageClearCondition clearCondition = StageClearCondition.SurviveTime;
 
         public static RunStats Instance { get; private set; }
 
@@ -19,6 +21,7 @@ namespace PawVoyage.Systems
         public int CoinsCollected { get; private set; }
         public int BonusCoinsCollected { get; private set; }
         public float ClearTimeSeconds => Mathf.Max(1f, clearTimeSeconds);
+        public StageClearCondition ClearCondition => clearCondition;
         public bool IsCleared { get; private set; }
 
         private void Awake()
@@ -43,11 +46,33 @@ namespace PawVoyage.Systems
 
             ElapsedSeconds += Time.deltaTime;
 
-            if (ElapsedSeconds >= ClearTimeSeconds)
+            if (clearCondition == StageClearCondition.SurviveTime && ElapsedSeconds >= ClearTimeSeconds)
             {
-                IsCleared = true;
-                RunCleared?.Invoke();
+                CompleteRun();
             }
+        }
+
+        /// <summary>
+        /// 스테이지 데이터 기준으로 클리어 시간과 조건을 갱신합니다.
+        /// </summary>
+        public void ConfigureStage(float targetClearTimeSeconds, StageClearCondition stageClearCondition)
+        {
+            clearTimeSeconds = Mathf.Max(1f, targetClearTimeSeconds);
+            clearCondition = stageClearCondition;
+        }
+
+        /// <summary>
+        /// 현재 런을 클리어 상태로 전환합니다.
+        /// </summary>
+        public void CompleteRun()
+        {
+            if (IsCleared)
+            {
+                return;
+            }
+
+            IsCleared = true;
+            RunCleared?.Invoke();
         }
 
         /// <summary>

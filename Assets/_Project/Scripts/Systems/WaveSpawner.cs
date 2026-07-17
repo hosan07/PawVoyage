@@ -1,5 +1,6 @@
 using PawVoyage.Enemy;
 using PawVoyage.Combat;
+using PawVoyage.Data;
 using UnityEngine;
 
 namespace PawVoyage.Systems
@@ -19,6 +20,12 @@ namespace PawVoyage.Systems
         [SerializeField] private EnemyController enemyPrefab = null;
         [SerializeField] private Transform player;
         [SerializeField] private string playerName = "Player";
+        [SerializeField] private StageData stageData = null;
+        [SerializeField] private StageRuntimeMode stageMode = StageRuntimeMode.Test;
+        [SerializeField] private MonsterData normalMonsterData = null;
+        [SerializeField] private MonsterData fastMonsterData = null;
+        [SerializeField] private MonsterData tankMonsterData = null;
+        [SerializeField] private MonsterData eliteMonsterData = null;
         [SerializeField] private float spawnInterval = 1.5f;
         [SerializeField] private float spawnRadius = 7f;
         [SerializeField] private int maxAliveEnemies = 20;
@@ -65,17 +72,17 @@ namespace PawVoyage.Systems
             get
             {
                 float elapsedSeconds = GetElapsedSeconds();
-                if (elapsedSeconds >= eliteSpawnTimeSeconds)
+                if (elapsedSeconds >= GetEliteSpawnTime())
                 {
                     return "ELITE";
                 }
 
-                if (elapsedSeconds >= tankEnemyStartTimeSeconds)
+                if (elapsedSeconds >= GetTankEnemyStartTime())
                 {
                     return "TANK";
                 }
 
-                if (elapsedSeconds >= fastEnemyStartTimeSeconds)
+                if (elapsedSeconds >= GetFastEnemyStartTime())
                 {
                     return "FAST";
                 }
@@ -111,7 +118,8 @@ namespace PawVoyage.Systems
         {
             FindPlayerIfNeeded();
             runStats = RunStats.Instance;
-            nextSpawnTime = spawnOnStart ? Time.time : Time.time + spawnInterval;
+            ConfigureRunStats();
+            nextSpawnTime = spawnOnStart ? Time.time : Time.time + GetCurrentSpawnInterval();
         }
 
         private void Update()
@@ -161,7 +169,7 @@ namespace PawVoyage.Systems
 
         private void TrySpawnElite()
         {
-            if (eliteSpawned || player == null || GetElapsedSeconds() < eliteSpawnTimeSeconds)
+            if (eliteSpawned || player == null || GetElapsedSeconds() < GetEliteSpawnTime())
             {
                 return;
             }
@@ -180,13 +188,13 @@ namespace PawVoyage.Systems
         private void TryShowVariantNotice()
         {
             float elapsedSeconds = GetElapsedSeconds();
-            if (!fastEnemyNoticeShown && elapsedSeconds >= fastEnemyStartTimeSeconds)
+            if (!fastEnemyNoticeShown && elapsedSeconds >= GetFastEnemyStartTime())
             {
                 fastEnemyNoticeShown = true;
                 ShowVariantNotice("FAST ENEMIES JOINED");
             }
 
-            if (!tankEnemyNoticeShown && elapsedSeconds >= tankEnemyStartTimeSeconds)
+            if (!tankEnemyNoticeShown && elapsedSeconds >= GetTankEnemyStartTime())
             {
                 tankEnemyNoticeShown = true;
                 ShowVariantNotice("TANK ENEMIES JOINED");
@@ -230,6 +238,13 @@ namespace PawVoyage.Systems
 
         private void ConfigureEnemyStats(EnemyController enemy, EnemyVariantType variantType)
         {
+            MonsterData monsterData = GetMonsterData(variantType);
+            if (monsterData != null)
+            {
+                ConfigureEnemyStats(enemy, monsterData);
+                return;
+            }
+
             EnemyVariantTuning tuning = GetEnemyVariantTuning(variantType);
 
             if (enemy.TryGetComponent(out Health health))
@@ -272,34 +287,82 @@ namespace PawVoyage.Systems
 
         private void ConfigureEliteStats(EnemyController enemy)
         {
-            ConfigureEnemyStats(enemy);
+            MonsterData monsterData = eliteMonsterData;
+            if (monsterData != null)
+            {
+                ConfigureEnemyStats(enemy, monsterData);
+            }
+            else
+            {
+                ConfigureEnemyStats(enemy);
+            }
 
             enemy.gameObject.name = "EliteEnemy";
-            enemy.transform.localScale = Vector3.one * Mathf.Max(0.1f, eliteScale);
-            enemy.SetMoveSpeed(eliteMoveSpeed);
+            enemy.transform.localScale = Vector3.one * Mathf.Max(0.1f, monsterData != null ? monsterData.SizeScale : eliteScale);
+            enemy.SetMoveSpeed(monsterData != null ? monsterData.MoveSpeed : eliteMoveSpeed);
 
             if (enemy.TryGetComponent(out Health health))
             {
-                health.SetBaseMaxHp(eliteMaxHp, true);
+                health.SetBaseMaxHp(monsterData != null ? monsterData.MaxHp : eliteMaxHp, true);
                 TrackEliteHealth(health);
             }
 
             if (enemy.TryGetComponent(out ContactDamage contactDamage))
             {
-                contactDamage.SetDamage(eliteContactDamage);
+                contactDamage.SetDamage(monsterData != null ? monsterData.ContactDamage : eliteContactDamage);
             }
 
             if (enemy.TryGetComponent(out EnemyReward enemyReward))
             {
-                enemyReward.SetExperienceAmount(eliteExperienceAmount);
-                enemyReward.SetCoinAmount(eliteCoinAmount);
-                enemyReward.SetHealthPickupDropChance(1f);
-                enemyReward.SetHealthPickupHealAmount(eliteHealthPickupHealAmount);
+                enemyReward.SetExperienceAmount(monsterData != null ? monsterData.ExpReward : eliteExperienceAmount);
+                enemyReward.SetCoinAmount(monsterData != null ? monsterData.CoinReward : eliteCoinAmount);
+                enemyReward.SetHealthPickupDropChance(monsterData != null ? monsterData.HealthPickupDropChance : 1f);
+                enemyReward.SetHealthPickupHealAmount(monsterData != null ? monsterData.HealthPickupHealAmount : eliteHealthPickupHealAmount);
             }
 
             if (enemy.TryGetComponent(out SpriteRenderer spriteRenderer))
             {
-                spriteRenderer.color = eliteColor;
+                spriteRenderer.color = monsterData != null ? monsterData.VisualHint : eliteColor;
+            }
+        }
+
+        private void ConfigureEnemyStats(EnemyController enemy, MonsterData monsterData)
+        {
+            if (enemy.TryGetComponent(out Health health))
+            {
+                health.SetBaseMaxHp(monsterData.MaxHp, true);
+            }
+
+            if (enemy.TryGetComponent(out ContactDamage contactDamage))
+            {
+                contactDamage.SetDamage(monsterData.ContactDamage);
+            }
+
+            enemy.gameObject.name = monsterData.DisplayName;
+            enemy.transform.localScale = Vector3.one * monsterData.SizeScale;
+            enemy.SetMoveSpeed(monsterData.MoveSpeed);
+
+            if (!enemy.TryGetComponent<EnemyHitFeedback>(out _))
+            {
+                enemy.gameObject.AddComponent<EnemyHitFeedback>();
+            }
+
+            if (!enemy.TryGetComponent<EnemyDeathFeedback>(out _))
+            {
+                enemy.gameObject.AddComponent<EnemyDeathFeedback>();
+            }
+
+            if (enemy.TryGetComponent(out EnemyReward enemyReward))
+            {
+                enemyReward.SetExperienceAmount(monsterData.ExpReward);
+                enemyReward.SetCoinAmount(monsterData.CoinReward);
+                enemyReward.SetHealthPickupDropChance(monsterData.HealthPickupDropChance);
+                enemyReward.SetHealthPickupHealAmount(monsterData.HealthPickupHealAmount);
+            }
+
+            if (enemy.TryGetComponent(out SpriteRenderer spriteRenderer))
+            {
+                spriteRenderer.color = monsterData.VisualHint;
             }
         }
 
@@ -336,13 +399,19 @@ namespace PawVoyage.Systems
             {
                 ShowVariantNotice("ELITE DEFEATED");
             }
+
+            if (GetClearCondition() == StageClearCondition.MiniBossDefeat)
+            {
+                runStats ??= RunStats.Instance;
+                runStats?.CompleteRun();
+            }
         }
 
         private EnemyVariantType ChooseEnemyVariant()
         {
             float elapsedSeconds = GetElapsedSeconds();
-            bool canSpawnTank = elapsedSeconds >= tankEnemyStartTimeSeconds;
-            bool canSpawnFast = elapsedSeconds >= fastEnemyStartTimeSeconds;
+            bool canSpawnTank = elapsedSeconds >= GetTankEnemyStartTime();
+            bool canSpawnFast = elapsedSeconds >= GetFastEnemyStartTime();
 
             if (!canSpawnFast)
             {
@@ -431,7 +500,7 @@ namespace PawVoyage.Systems
                 runStats = RunStats.Instance;
             }
 
-            return runStats == null ? 0f : Mathf.Clamp01(runStats.ElapsedSeconds / runStats.ClearTimeSeconds);
+            return runStats == null ? 0f : Mathf.Clamp01(runStats.ElapsedSeconds / Mathf.Max(1f, GetClearTimeSeconds()));
         }
 
         private float GetElapsedSeconds()
@@ -446,13 +515,81 @@ namespace PawVoyage.Systems
 
         private float GetCurrentSpawnInterval()
         {
-            return Mathf.Lerp(spawnInterval, minimumSpawnInterval, GetRunProgress());
+            StageModeConfig config = GetStageConfig();
+            return Mathf.Lerp(config.spawnIntervalStart, config.spawnIntervalEnd, GetRunProgress());
         }
 
         private int GetCurrentMaxAliveEnemies()
         {
-            int scaledMax = Mathf.RoundToInt(Mathf.Lerp(maxAliveEnemies, finalMaxAliveEnemies, GetRunProgress()));
+            StageModeConfig config = GetStageConfig();
+            int scaledMax = Mathf.RoundToInt(Mathf.Lerp(config.enemyCapStart, config.enemyCapEnd, GetRunProgress()));
             return Mathf.Max(1, scaledMax);
+        }
+
+        private void ConfigureRunStats()
+        {
+            if (runStats == null)
+            {
+                return;
+            }
+
+            runStats.ConfigureStage(GetClearTimeSeconds(), GetClearCondition());
+        }
+
+        private StageModeConfig GetStageConfig()
+        {
+            if (stageData != null)
+            {
+                return stageData.GetConfig(stageMode);
+            }
+
+            return new StageModeConfig
+            {
+                clearTimeSeconds = 30f,
+                fastEnemyStartTime = fastEnemyStartTimeSeconds,
+                tankEnemyStartTime = tankEnemyStartTimeSeconds,
+                eliteSpawnTime = eliteSpawnTimeSeconds,
+                spawnIntervalStart = spawnInterval,
+                spawnIntervalEnd = minimumSpawnInterval,
+                enemyCapStart = maxAliveEnemies,
+                enemyCapEnd = finalMaxAliveEnemies,
+                clearCondition = StageClearCondition.SurviveTime
+            };
+        }
+
+        private float GetClearTimeSeconds()
+        {
+            return Mathf.Max(1f, GetStageConfig().clearTimeSeconds);
+        }
+
+        private StageClearCondition GetClearCondition()
+        {
+            return GetStageConfig().clearCondition;
+        }
+
+        private float GetFastEnemyStartTime()
+        {
+            return Mathf.Max(0f, GetStageConfig().fastEnemyStartTime);
+        }
+
+        private float GetTankEnemyStartTime()
+        {
+            return Mathf.Max(0f, GetStageConfig().tankEnemyStartTime);
+        }
+
+        private float GetEliteSpawnTime()
+        {
+            return Mathf.Max(0f, GetStageConfig().eliteSpawnTime);
+        }
+
+        private MonsterData GetMonsterData(EnemyVariantType variantType)
+        {
+            return variantType switch
+            {
+                EnemyVariantType.Fast => fastMonsterData,
+                EnemyVariantType.Tank => tankMonsterData,
+                _ => normalMonsterData
+            };
         }
 
         private int GetCurrentEnemyMaxHp()

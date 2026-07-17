@@ -290,6 +290,7 @@ GameObject:
   - component: {fileID: 1807036301}
   - component: {fileID: 1807036302}
   - component: {fileID: 1807036303}
+  - component: {fileID: 1807036318}
   - component: {fileID: 1807036304}
   - component: {fileID: 1807036305}
   - component: {fileID: 1807036306}
@@ -577,6 +578,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.Combat.WeaponController
   primaryWeapon: {fileID: 11400000, guid: 12f45b7763be4b07b79de248c9b14a72, type: 2}
   autoAttack: {fileID: 1807036300}
+--- !u!114 &1807036318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1807036295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32abdbb0126a4bb989fcd74861f097f0, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.Combat.SecondaryWeaponController
+  maxSecondaryWeapons: 3
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  targetTag: Enemy
 --- !u!114 &1807036304
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -629,6 +647,8 @@ MonoBehaviour:
   projectileBonus: 1
   pierceBonus: 1
   rangeBonus: 0.18
+  auraWeapon: {fileID: 11400000, guid: 12f62dfeb98d460c90826eaeb58ac2b1, type: 2}
+  boomerangWeapon: {fileID: 11400000, guid: 614a651b3312468b8b6a8e4ded80d5a0, type: 2}
   visibleRewardCount: 3
 --- !u!114 &1807036315
 MonoBehaviour:
@@ -724,6 +744,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.Systems.RunStats
   clearTimeSeconds: 30
+  clearCondition: 1
 --- !u!114 &1807036310
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -788,6 +809,12 @@ MonoBehaviour:
   enemyPrefab: {fileID: 0}
   player: {fileID: 1807036298}
   playerName: Player
+  stageData: {fileID: 11400000, guid: 87bc2655f34e4a30bcbefb7debc5f2af, type: 2}
+  stageMode: 0
+  normalMonsterData: {fileID: 11400000, guid: a12838df9ab04a69b70d75e9a0a30001, type: 2}
+  fastMonsterData: {fileID: 11400000, guid: 11c5429775e84835b8d2e3584b418801, type: 2}
+  tankMonsterData: {fileID: 11400000, guid: 8ddfa2f0cc3144f1a905f8fc39992452, type: 2}
+  eliteMonsterData: {fileID: 11400000, guid: e57bbcf003674f11a27dce2608386112, type: 2}
   spawnInterval: 1.5
   spawnRadius: 4.5
   maxAliveEnemies: 20

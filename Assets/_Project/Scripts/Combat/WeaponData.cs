@@ -11,7 +11,9 @@ namespace PawVoyage.Combat
     public enum WeaponAttackType
     {
         Projectile,
-        Direct
+        Direct,
+        Aura,
+        Boomerang
     }
 
     /// <summary>
