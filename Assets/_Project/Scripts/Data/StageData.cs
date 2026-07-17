@@ -78,13 +78,13 @@ namespace PawVoyage.Data
             {
                 durationPreset = StageDurationPreset.Mvp180Seconds,
                 clearTimeSeconds = 180f,
-                fastEnemyStartTime = 35f,
-                tankEnemyStartTime = 85f,
+                fastEnemyStartTime = 32f,
+                tankEnemyStartTime = 75f,
                 eliteSpawnTime = 150f,
-                spawnIntervalStart = 1.45f,
-                spawnIntervalEnd = 0.42f,
-                enemyCapStart = 24,
-                enemyCapEnd = 70,
+                spawnIntervalStart = 1.25f,
+                spawnIntervalEnd = 0.5f,
+                enemyCapStart = 18,
+                enemyCapEnd = 56,
                 clearCondition = StageClearCondition.MiniBossDefeat
             };
         }

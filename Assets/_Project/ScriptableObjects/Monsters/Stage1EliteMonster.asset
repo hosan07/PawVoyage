@@ -15,11 +15,11 @@ MonoBehaviour:
   monsterId: stage1_elite
   displayName: Mini Boss
   role: 3
-  maxHp: 120
+  maxHp: 280
   contactDamage: 5
   moveSpeed: 1.35
   sizeScale: 1.45
-  expReward: 8
+  expReward: 12
   coinReward: 12
   healthPickupDropChance: 1
   healthPickupHealAmount: 35

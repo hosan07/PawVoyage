@@ -28,11 +28,11 @@ MonoBehaviour:
   mvpConfig:
     durationPreset: 1
     clearTimeSeconds: 180
-    fastEnemyStartTime: 35
-    tankEnemyStartTime: 85
+    fastEnemyStartTime: 32
+    tankEnemyStartTime: 75
     eliteSpawnTime: 150
-    spawnIntervalStart: 1.45
-    spawnIntervalEnd: 0.42
-    enemyCapStart: 24
-    enemyCapEnd: 70
+    spawnIntervalStart: 1.25
+    spawnIntervalEnd: 0.5
+    enemyCapStart: 18
+    enemyCapEnd: 56
     clearCondition: 1

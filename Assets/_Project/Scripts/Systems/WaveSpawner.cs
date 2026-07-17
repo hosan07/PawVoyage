@@ -21,7 +21,7 @@ namespace PawVoyage.Systems
         [SerializeField] private Transform player;
         [SerializeField] private string playerName = "Player";
         [SerializeField] private StageData stageData = null;
-        [SerializeField] private StageRuntimeMode stageMode = StageRuntimeMode.Test;
+        [SerializeField] private StageRuntimeMode stageMode = StageRuntimeMode.Mvp;
         [SerializeField] private MonsterData normalMonsterData = null;
         [SerializeField] private MonsterData fastMonsterData = null;
         [SerializeField] private MonsterData tankMonsterData = null;

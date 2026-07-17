@@ -19,7 +19,7 @@ MonoBehaviour:
   contactDamage: 1
   moveSpeed: 2
   sizeScale: 0.75
-  expReward: 1
+  expReward: 2
   coinReward: 1
   healthPickupDropChance: 0.08
   healthPickupHealAmount: 15

@@ -743,7 +743,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7c151ff52e846bd83ef997c88dfe20d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PawVoyage.Systems.RunStats
-  clearTimeSeconds: 30
+  clearTimeSeconds: 180
   clearCondition: 1
 --- !u!114 &1807036310
 MonoBehaviour:
@@ -810,7 +810,7 @@ MonoBehaviour:
   player: {fileID: 1807036298}
   playerName: Player
   stageData: {fileID: 11400000, guid: 87bc2655f34e4a30bcbefb7debc5f2af, type: 2}
-  stageMode: 0
+  stageMode: 1
   normalMonsterData: {fileID: 11400000, guid: a12838df9ab04a69b70d75e9a0a30001, type: 2}
   fastMonsterData: {fileID: 11400000, guid: 11c5429775e84835b8d2e3584b418801, type: 2}
   tankMonsterData: {fileID: 11400000, guid: 8ddfa2f0cc3144f1a905f8fc39992452, type: 2}
