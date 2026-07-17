@@ -29,6 +29,8 @@ namespace PawVoyage.Enemy
 
         private Rigidbody2D rb;
         private Health health;
+        private SpriteRenderer spriteRenderer;
+        private Color baseColor = Color.white;
         private float nextChargeTime;
         private float chargeStateEndTime;
         private Vector2 chargeDirection = Vector2.right;
@@ -66,6 +68,23 @@ namespace PawVoyage.Enemy
             behaviorType = value;
         }
 
+        /// <summary>
+        /// 패턴 예고 표시 후 돌아갈 기본 표시 색상을 설정합니다.
+        /// </summary>
+        public void SetVisualBaseColor(Color color)
+        {
+            baseColor = color;
+            if (spriteRenderer == null)
+            {
+                spriteRenderer = GetComponent<SpriteRenderer>();
+            }
+
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.color = baseColor;
+            }
+        }
+
         private void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
@@ -75,6 +94,11 @@ namespace PawVoyage.Enemy
 
             EnsureCollider();
             EnsureFallbackVisual();
+            spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                baseColor = spriteRenderer.color;
+            }
         }
 
         private void Update()
@@ -83,6 +107,8 @@ namespace PawVoyage.Enemy
             {
                 FindTarget();
             }
+
+            UpdateVisualState();
         }
 
         private void FixedUpdate()
@@ -181,6 +207,30 @@ namespace PawVoyage.Enemy
         private bool IsEliteEnraged()
         {
             return health != null && health.CurrentHp <= Mathf.CeilToInt(health.MaxHp * eliteEnrageHpRatio);
+        }
+
+        private void UpdateVisualState()
+        {
+            if (spriteRenderer == null)
+            {
+                return;
+            }
+
+            if (chargeState == ChargeState.Windup)
+            {
+                float pulse = Mathf.PingPong(Time.time * 8f, 1f);
+                spriteRenderer.color = Color.Lerp(baseColor, Color.white, 0.35f + pulse * 0.45f);
+                return;
+            }
+
+            if (behaviorType == MonsterBehaviorType.EliteBrute && IsEliteEnraged())
+            {
+                float pulse = Mathf.PingPong(Time.time * 4f, 1f);
+                spriteRenderer.color = Color.Lerp(baseColor, new Color(1f, 0.08f, 0.08f, 1f), 0.35f + pulse * 0.25f);
+                return;
+            }
+
+            spriteRenderer.color = baseColor;
         }
 
         private void FindTarget()

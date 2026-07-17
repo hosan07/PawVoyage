@@ -17,6 +17,7 @@ namespace PawVoyage.UI
         [SerializeField] private string resetText = "RESET RECORDS";
         [SerializeField] private string dogText = "DOG";
         [SerializeField] private string catText = "CAT";
+        [SerializeField] private int devCoinGrantAmount = 500;
 
         private readonly MetaUpgradeType[] shopUpgrades =
         {
@@ -72,6 +73,7 @@ namespace PawVoyage.UI
 
             DrawAnimalSelector();
             DrawShop();
+            DrawDeveloperPanel();
             DrawShopFeedback();
 
             if (GUI.Button(GetStartButtonRect(), startText, buttonStyle))
@@ -108,6 +110,14 @@ namespace PawVoyage.UI
             else if (GetCatButtonRect().Contains(guiPosition))
             {
                 AnimalSelectionData.SelectAnimal(SelectedAnimalType.Cat);
+            }
+            else if (GetDevCoinButtonRect().Contains(guiPosition))
+            {
+                GrantDeveloperCoins();
+            }
+            else if (GetDevResetUpgradeButtonRect().Contains(guiPosition))
+            {
+                ResetDeveloperUpgrades();
             }
 
             for (int i = 0; i < shopUpgrades.Length; i++)
@@ -185,6 +195,47 @@ namespace PawVoyage.UI
             }
         }
 
+        private void DrawDeveloperPanel()
+        {
+            Rect devRect = GetDeveloperRect();
+            GUI.Box(devRect, GUIContent.none);
+            GUI.Label(new Rect(devRect.x + 16f, devRect.y + 8f, devRect.width - 32f, 22f), "DEV MODE", shopTitleStyle);
+
+            if (GUI.Button(GetDevCoinButtonRect(), $"+{devCoinGrantAmount} COINS", secondaryButtonStyle))
+            {
+                GrantDeveloperCoins();
+            }
+
+            if (GUI.Button(GetDevResetUpgradeButtonRect(), "RESET UPGRADES", secondaryButtonStyle))
+            {
+                ResetDeveloperUpgrades();
+            }
+        }
+
+        private void GrantDeveloperCoins()
+        {
+            if (lastShopActionFrame == Time.frameCount)
+            {
+                return;
+            }
+
+            lastShopActionFrame = Time.frameCount;
+            RunResultData.AddCoins(devCoinGrantAmount);
+            ShowShopFeedback($"+{devCoinGrantAmount} dev coins added.");
+        }
+
+        private void ResetDeveloperUpgrades()
+        {
+            if (lastShopActionFrame == Time.frameCount)
+            {
+                return;
+            }
+
+            lastShopActionFrame = Time.frameCount;
+            MetaProgressionData.ResetUpgrades();
+            ShowShopFeedback("Upgrade levels reset.");
+        }
+
         private void TryBuyUpgrade(MetaUpgradeType upgradeType)
         {
             if (lastShopActionFrame == Time.frameCount)
@@ -220,8 +271,8 @@ namespace PawVoyage.UI
                 return;
             }
 
-            Rect shopRect = GetShopRect();
-            GUI.Label(new Rect(shopRect.x + 20f, shopRect.y + shopRect.height + 8f, shopRect.width - 40f, 28f), shopFeedbackText, feedbackStyle);
+            Rect devRect = GetDeveloperRect();
+            GUI.Label(new Rect(devRect.x + 20f, devRect.y + devRect.height + 8f, devRect.width - 40f, 28f), shopFeedbackText, feedbackStyle);
         }
 
         private void ShowShopFeedback(string message)
@@ -305,6 +356,24 @@ namespace PawVoyage.UI
         {
             Rect shopRect = GetShopRect();
             return new Rect(shopRect.x + 20f, shopRect.y + 70f + index * 46f, shopRect.width - 40f, 40f);
+        }
+
+        private static Rect GetDeveloperRect()
+        {
+            Rect shopRect = GetShopRect();
+            return new Rect(shopRect.x, shopRect.y + shopRect.height + 16f, shopRect.width, 92f);
+        }
+
+        private static Rect GetDevCoinButtonRect()
+        {
+            Rect devRect = GetDeveloperRect();
+            return new Rect(devRect.x + 20f, devRect.y + 42f, devRect.width * 0.5f - 28f, 36f);
+        }
+
+        private static Rect GetDevResetUpgradeButtonRect()
+        {
+            Rect devRect = GetDeveloperRect();
+            return new Rect(devRect.x + devRect.width * 0.5f + 8f, devRect.y + 42f, devRect.width * 0.5f - 28f, 36f);
         }
 
         private static bool IsWideLayout()

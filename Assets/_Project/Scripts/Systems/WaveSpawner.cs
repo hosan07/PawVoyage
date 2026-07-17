@@ -20,9 +20,9 @@ namespace PawVoyage.Systems
         private const float HpScaleStart = 0.75f;
         private const float HpScaleMid = 1.55f;
         private const float HpScaleEnd = 2.45f;
-        private const float DamageScaleStart = 1f;
-        private const float DamageScaleMid = 1.65f;
-        private const float DamageScaleEnd = 2.4f;
+        private const float DamageScaleStart = 1.15f;
+        private const float DamageScaleMid = 1.95f;
+        private const float DamageScaleEnd = 2.85f;
         private const float SpeedScaleStart = 0.92f;
         private const float SpeedScaleMid = 1.18f;
         private const float SpeedScaleEnd = 1.38f;
@@ -293,10 +293,7 @@ namespace PawVoyage.Systems
                 enemyReward.SetHealthPickupDropChance(tuning.HealthPickupDropChance);
             }
 
-            if (enemy.TryGetComponent(out SpriteRenderer spriteRenderer))
-            {
-                spriteRenderer.color = tuning.Color;
-            }
+            enemy.SetVisualBaseColor(tuning.Color);
         }
 
         private void ConfigureEliteStats(EnemyController enemy)
@@ -326,7 +323,7 @@ namespace PawVoyage.Systems
             if (enemy.TryGetComponent(out ContactDamage contactDamage))
             {
                 int baseDamage = monsterData != null ? monsterData.ContactDamage : eliteContactDamage;
-                contactDamage.SetDamage(Mathf.Max(baseDamage + 2, Mathf.RoundToInt(baseDamage * 1.4f)));
+                contactDamage.SetDamage(Mathf.Max(baseDamage + 3, Mathf.RoundToInt(baseDamage * 1.65f)));
                 contactDamage.SetHitCooldown(0.28f);
             }
 
@@ -338,10 +335,7 @@ namespace PawVoyage.Systems
                 enemyReward.SetHealthPickupHealAmount(monsterData != null ? monsterData.HealthPickupHealAmount : eliteHealthPickupHealAmount);
             }
 
-            if (enemy.TryGetComponent(out SpriteRenderer spriteRenderer))
-            {
-                spriteRenderer.color = monsterData != null ? monsterData.VisualHint : eliteColor;
-            }
+            enemy.SetVisualBaseColor(monsterData != null ? monsterData.VisualHint : eliteColor);
         }
 
         private void ConfigureEnemyStats(EnemyController enemy, MonsterData monsterData)
@@ -380,10 +374,7 @@ namespace PawVoyage.Systems
                 enemyReward.SetHealthPickupHealAmount(monsterData.HealthPickupHealAmount);
             }
 
-            if (enemy.TryGetComponent(out SpriteRenderer spriteRenderer))
-            {
-                spriteRenderer.color = monsterData.VisualHint;
-            }
+            enemy.SetVisualBaseColor(monsterData.VisualHint);
         }
 
         private void TrackEliteHealth(Health health)

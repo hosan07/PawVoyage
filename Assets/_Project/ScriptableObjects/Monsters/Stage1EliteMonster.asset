@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Mini Boss
   role: 3
   maxHp: 280
-  contactDamage: 6
+  contactDamage: 7
   moveSpeed: 1.45
   behaviorType: 3
   sizeScale: 1.45

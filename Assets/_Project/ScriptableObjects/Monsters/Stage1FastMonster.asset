@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Orange Dasher
   role: 1
   maxHp: 21
-  contactDamage: 1
+  contactDamage: 2
   moveSpeed: 3.3
   behaviorType: 1
   sizeScale: 0.58
