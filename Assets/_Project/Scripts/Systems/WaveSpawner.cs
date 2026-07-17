@@ -4,6 +4,13 @@ using UnityEngine;
 
 namespace PawVoyage.Systems
 {
+    internal enum EnemyVariantType
+    {
+        Normal,
+        Fast,
+        Tank
+    }
+
     /// <summary>
     /// 일정 간격으로 플레이어 주변에 적을 생성합니다.
     /// </summary>
@@ -22,6 +29,8 @@ namespace PawVoyage.Systems
         [SerializeField] private int enemyBaseContactDamage = 1;
         [SerializeField] private int enemyFinalContactDamage = 3;
         [SerializeField] private float enemyMoveSpeed = 2f;
+        [SerializeField] private float fastEnemyStartTimeSeconds = 8f;
+        [SerializeField] private float tankEnemyStartTimeSeconds = 16f;
         [SerializeField] private float eliteSpawnTimeSeconds = 18f;
         [SerializeField] private int eliteMaxHp = 260;
         [SerializeField] private int eliteContactDamage = 5;
@@ -37,7 +46,11 @@ namespace PawVoyage.Systems
         private float nextSpawnTime;
         private RunStats runStats;
         private bool eliteSpawned;
+        private bool fastEnemyNoticeShown;
+        private bool tankEnemyNoticeShown;
         private float eliteWarningEndTime;
+        private float variantNoticeEndTime;
+        private string variantNoticeText = string.Empty;
         private GUIStyle eliteWarningStyle;
 
         private void Start()
@@ -58,19 +71,24 @@ namespace PawVoyage.Systems
             }
 
             TrySpawnElite();
+            TryShowVariantNotice();
             SpawnEnemy();
             nextSpawnTime = Time.time + GetCurrentSpawnInterval();
         }
 
         private void OnGUI()
         {
-            if (Time.unscaledTime >= eliteWarningEndTime)
+            EnsureEliteWarningStyle();
+
+            if (Time.unscaledTime < eliteWarningEndTime)
             {
-                return;
+                GUI.Label(new Rect(0f, Screen.height * 0.2f, Screen.width, 42f), "ELITE INCOMING", eliteWarningStyle);
             }
 
-            EnsureEliteWarningStyle();
-            GUI.Label(new Rect(0f, Screen.height * 0.2f, Screen.width, 42f), "ELITE INCOMING", eliteWarningStyle);
+            if (Time.unscaledTime < variantNoticeEndTime)
+            {
+                GUI.Label(new Rect(0f, Screen.height * 0.26f, Screen.width, 42f), variantNoticeText, eliteWarningStyle);
+            }
         }
 
         private void SpawnEnemy()
@@ -80,7 +98,7 @@ namespace PawVoyage.Systems
                 ? Instantiate(enemyPrefab, spawnPosition, Quaternion.identity)
                 : CreateFallbackEnemy(spawnPosition);
 
-            ConfigureEnemyStats(enemy);
+            ConfigureEnemyStats(enemy, ChooseEnemyVariant());
             enemy.Target = player;
         }
 
@@ -100,6 +118,28 @@ namespace PawVoyage.Systems
 
             ConfigureEliteStats(elite);
             elite.Target = player;
+        }
+
+        private void TryShowVariantNotice()
+        {
+            float elapsedSeconds = GetElapsedSeconds();
+            if (!fastEnemyNoticeShown && elapsedSeconds >= fastEnemyStartTimeSeconds)
+            {
+                fastEnemyNoticeShown = true;
+                ShowVariantNotice("FAST ENEMIES JOINED");
+            }
+
+            if (!tankEnemyNoticeShown && elapsedSeconds >= tankEnemyStartTimeSeconds)
+            {
+                tankEnemyNoticeShown = true;
+                ShowVariantNotice("TANK ENEMIES JOINED");
+            }
+        }
+
+        private void ShowVariantNotice(string message)
+        {
+            variantNoticeText = message;
+            variantNoticeEndTime = Time.unscaledTime + Mathf.Max(0f, eliteWarningDuration);
         }
 
         private Vector2 GetSpawnPosition()
@@ -128,17 +168,27 @@ namespace PawVoyage.Systems
 
         private void ConfigureEnemyStats(EnemyController enemy)
         {
+            ConfigureEnemyStats(enemy, EnemyVariantType.Normal);
+        }
+
+        private void ConfigureEnemyStats(EnemyController enemy, EnemyVariantType variantType)
+        {
+            EnemyVariantTuning tuning = GetEnemyVariantTuning(variantType);
+
             if (enemy.TryGetComponent(out Health health))
             {
-                health.SetBaseMaxHp(GetCurrentEnemyMaxHp(), true);
+                int maxHp = Mathf.RoundToInt(GetCurrentEnemyMaxHp() * tuning.MaxHpMultiplier);
+                health.SetBaseMaxHp(maxHp, true);
             }
 
             if (enemy.TryGetComponent(out ContactDamage contactDamage))
             {
-                contactDamage.SetDamage(GetCurrentEnemyContactDamage());
+                contactDamage.SetDamage(GetCurrentEnemyContactDamage() + tuning.ContactDamageBonus);
             }
 
-            enemy.SetMoveSpeed(enemyMoveSpeed);
+            enemy.gameObject.name = tuning.Name;
+            enemy.transform.localScale = Vector3.one * tuning.Scale;
+            enemy.SetMoveSpeed(enemyMoveSpeed * tuning.MoveSpeedMultiplier);
 
             if (!enemy.TryGetComponent<EnemyHitFeedback>(out _))
             {
@@ -148,6 +198,18 @@ namespace PawVoyage.Systems
             if (!enemy.TryGetComponent<EnemyDeathFeedback>(out _))
             {
                 enemy.gameObject.AddComponent<EnemyDeathFeedback>();
+            }
+
+            if (enemy.TryGetComponent(out EnemyReward enemyReward))
+            {
+                enemyReward.SetExperienceAmount(tuning.ExperienceAmount);
+                enemyReward.SetCoinAmount(tuning.CoinAmount);
+                enemyReward.SetHealthPickupDropChance(tuning.HealthPickupDropChance);
+            }
+
+            if (enemy.TryGetComponent(out SpriteRenderer spriteRenderer))
+            {
+                spriteRenderer.color = tuning.Color;
             }
         }
 
@@ -181,6 +243,73 @@ namespace PawVoyage.Systems
             {
                 spriteRenderer.color = eliteColor;
             }
+        }
+
+        private EnemyVariantType ChooseEnemyVariant()
+        {
+            float elapsedSeconds = GetElapsedSeconds();
+            bool canSpawnTank = elapsedSeconds >= tankEnemyStartTimeSeconds;
+            bool canSpawnFast = elapsedSeconds >= fastEnemyStartTimeSeconds;
+
+            if (!canSpawnFast)
+            {
+                return EnemyVariantType.Normal;
+            }
+
+            int normalWeight = 100;
+            int fastWeight = canSpawnFast ? Mathf.RoundToInt(Mathf.Lerp(20f, 42f, GetRunProgress())) : 0;
+            int tankWeight = canSpawnTank ? Mathf.RoundToInt(Mathf.Lerp(12f, 32f, GetRunProgress())) : 0;
+            int totalWeight = normalWeight + fastWeight + tankWeight;
+            int roll = Random.Range(0, totalWeight);
+
+            if (roll < tankWeight)
+            {
+                return EnemyVariantType.Tank;
+            }
+
+            if (roll < tankWeight + fastWeight)
+            {
+                return EnemyVariantType.Fast;
+            }
+
+            return EnemyVariantType.Normal;
+        }
+
+        private static EnemyVariantTuning GetEnemyVariantTuning(EnemyVariantType variantType)
+        {
+            return variantType switch
+            {
+                EnemyVariantType.Fast => new EnemyVariantTuning(
+                    "FastEnemy",
+                    maxHpMultiplier: 0.7f,
+                    moveSpeedMultiplier: 1.65f,
+                    contactDamageBonus: 0,
+                    experienceAmount: 1,
+                    coinAmount: 1,
+                    healthPickupDropChance: 0.04f,
+                    scale: 0.58f,
+                    color: new Color(1f, 0.58f, 0.1f, 1f)),
+                EnemyVariantType.Tank => new EnemyVariantTuning(
+                    "TankEnemy",
+                    maxHpMultiplier: 1.85f,
+                    moveSpeedMultiplier: 0.72f,
+                    contactDamageBonus: 1,
+                    experienceAmount: 2,
+                    coinAmount: 3,
+                    healthPickupDropChance: 0.12f,
+                    scale: 1.05f,
+                    color: new Color(0.95f, 0.12f, 0.35f, 1f)),
+                _ => new EnemyVariantTuning(
+                    "Enemy",
+                    maxHpMultiplier: 1f,
+                    moveSpeedMultiplier: 1f,
+                    contactDamageBonus: 0,
+                    experienceAmount: 1,
+                    coinAmount: 1,
+                    healthPickupDropChance: 0.08f,
+                    scale: 0.75f,
+                    color: Color.red)
+            };
         }
 
         private void FindPlayerIfNeeded()
@@ -266,6 +395,41 @@ namespace PawVoyage.Systems
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = new Color(1f, 0.35f, 0.2f, 1f) }
             };
+        }
+
+        private readonly struct EnemyVariantTuning
+        {
+            public EnemyVariantTuning(
+                string name,
+                float maxHpMultiplier,
+                float moveSpeedMultiplier,
+                int contactDamageBonus,
+                int experienceAmount,
+                int coinAmount,
+                float healthPickupDropChance,
+                float scale,
+                Color color)
+            {
+                Name = name;
+                MaxHpMultiplier = maxHpMultiplier;
+                MoveSpeedMultiplier = moveSpeedMultiplier;
+                ContactDamageBonus = contactDamageBonus;
+                ExperienceAmount = experienceAmount;
+                CoinAmount = coinAmount;
+                HealthPickupDropChance = healthPickupDropChance;
+                Scale = Mathf.Max(0.1f, scale);
+                Color = color;
+            }
+
+            public string Name { get; }
+            public float MaxHpMultiplier { get; }
+            public float MoveSpeedMultiplier { get; }
+            public int ContactDamageBonus { get; }
+            public int ExperienceAmount { get; }
+            public int CoinAmount { get; }
+            public float HealthPickupDropChance { get; }
+            public float Scale { get; }
+            public Color Color { get; }
         }
     }
 }

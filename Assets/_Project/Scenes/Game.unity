@@ -776,6 +776,8 @@ MonoBehaviour:
   enemyBaseContactDamage: 1
   enemyFinalContactDamage: 3
   enemyMoveSpeed: 2
+  fastEnemyStartTimeSeconds: 8
+  tankEnemyStartTimeSeconds: 16
   eliteSpawnTimeSeconds: 18
   eliteMaxHp: 260
   eliteContactDamage: 5
