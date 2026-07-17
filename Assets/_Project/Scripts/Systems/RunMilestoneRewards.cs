@@ -92,7 +92,7 @@ namespace PawVoyage.Systems
                 return;
             }
 
-            runStats.AddCoins(safeCoinAmount);
+            runStats.AddBonusCoins(safeCoinAmount);
             GameSfx.PlayCoin();
             noticeText = $"{reason}  +{safeCoinAmount} Coins";
             noticeEndTime = Time.unscaledTime + Mathf.Max(0.1f, noticeDuration);

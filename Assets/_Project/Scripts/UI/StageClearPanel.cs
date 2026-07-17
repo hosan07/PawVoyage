@@ -77,8 +77,8 @@ namespace PawVoyage.UI
             GUI.Box(panelRect, GUIContent.none);
             GUI.Label(new Rect(panelRect.x + 24f, panelRect.y + 28f, panelRect.width - 48f, 38f), titleText, titleStyle);
             GUI.Label(
-                new Rect(panelRect.x + 32f, panelRect.y + 78f, panelRect.width - 64f, 62f),
-                $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}   Coins {runStats.CoinsCollected}",
+                new Rect(panelRect.x + 32f, panelRect.y + 78f, panelRect.width - 64f, 82f),
+                GetRunSummaryText(),
                 bodyStyle);
 
             if (GUI.Button(GetRetryButtonRect(), retryText, buttonStyle))
@@ -134,21 +134,21 @@ namespace PawVoyage.UI
         {
             return new Rect(
                 Screen.width * 0.5f - 190f,
-                Screen.height * 0.5f - 130f,
+                Screen.height * 0.5f - 140f,
                 380f,
-                260f);
+                280f);
         }
 
         private static Rect GetRetryButtonRect()
         {
             Rect panelRect = GetPanelRect();
-            return new Rect(panelRect.x + 48f, panelRect.y + 174f, 132f, 48f);
+            return new Rect(panelRect.x + 48f, panelRect.y + 192f, 132f, 48f);
         }
 
         private static Rect GetMenuButtonRect()
         {
             Rect panelRect = GetPanelRect();
-            return new Rect(panelRect.x + panelRect.width - 180f, panelRect.y + 174f, 132f, 48f);
+            return new Rect(panelRect.x + panelRect.width - 180f, panelRect.y + 192f, 132f, 48f);
         }
 
         private void OnRunCleared()
@@ -174,6 +174,12 @@ namespace PawVoyage.UI
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(mainMenuSceneName);
+        }
+
+        private string GetRunSummaryText()
+        {
+            string bonusText = runStats.BonusCoinsCollected > 0 ? $" (+{runStats.BonusCoinsCollected} Bonus)" : string.Empty;
+            return $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}\nCoins {runStats.CoinsCollected}{bonusText}";
         }
 
         private void EnsureStyles()

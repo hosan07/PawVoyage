@@ -77,7 +77,7 @@ namespace PawVoyage.UI
 
             GUI.Box(panelRect, GUIContent.none);
             GUI.Label(new Rect(panelRect.x + 24f, panelRect.y + 28f, panelRect.width - 48f, 38f), titleText, titleStyle);
-            GUI.Label(new Rect(panelRect.x + 32f, panelRect.y + 76f, panelRect.width - 64f, 42f), "Run ended. Try again with a fresh start.", bodyStyle);
+            GUI.Label(new Rect(panelRect.x + 32f, panelRect.y + 76f, panelRect.width - 64f, 76f), GetRunSummaryText(), bodyStyle);
 
             if (GUI.Button(GetRetryButtonRect(), retryText, buttonStyle))
             {
@@ -132,21 +132,21 @@ namespace PawVoyage.UI
         {
             return new Rect(
                 Screen.width * 0.5f - 175f,
-                Screen.height * 0.5f - 115f,
+                Screen.height * 0.5f - 135f,
                 350f,
-                230f);
+                270f);
         }
 
         private static Rect GetRetryButtonRect()
         {
             Rect panelRect = GetPanelRect();
-            return new Rect(panelRect.x + 38f, panelRect.y + 145f, 132f, 48f);
+            return new Rect(panelRect.x + 38f, panelRect.y + 178f, 132f, 48f);
         }
 
         private static Rect GetMenuButtonRect()
         {
             Rect panelRect = GetPanelRect();
-            return new Rect(panelRect.x + panelRect.width - 170f, panelRect.y + 145f, 132f, 48f);
+            return new Rect(panelRect.x + panelRect.width - 170f, panelRect.y + 178f, 132f, 48f);
         }
 
         private void OnPlayerDied(Health deadHealth)
@@ -183,6 +183,26 @@ namespace PawVoyage.UI
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(mainMenuSceneName);
+        }
+
+        private static string GetRunSummaryText()
+        {
+            RunStats runStats = RunStats.Instance;
+            if (runStats == null)
+            {
+                return "Run ended. Try again with a fresh start.";
+            }
+
+            string bonusText = runStats.BonusCoinsCollected > 0 ? $" (+{runStats.BonusCoinsCollected} Bonus)" : string.Empty;
+            return $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}\nCoins {runStats.CoinsCollected}{bonusText}";
+        }
+
+        private static string FormatTime(float seconds)
+        {
+            int totalSeconds = Mathf.Max(0, Mathf.FloorToInt(seconds));
+            int minutes = totalSeconds / 60;
+            int remainingSeconds = totalSeconds % 60;
+            return $"{minutes:00}:{remainingSeconds:00}";
         }
 
         private void EnsureStyles()

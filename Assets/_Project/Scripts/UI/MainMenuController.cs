@@ -31,6 +31,10 @@ namespace PawVoyage.UI
         private GUIStyle buttonStyle;
         private GUIStyle secondaryButtonStyle;
         private GUIStyle shopTitleStyle;
+        private GUIStyle feedbackStyle;
+        private string shopFeedbackText = string.Empty;
+        private float shopFeedbackEndTime;
+        private int lastShopActionFrame = -1;
 
         private void Awake()
         {
@@ -65,6 +69,7 @@ namespace PawVoyage.UI
             GUI.Label(new Rect(infoRect.x + 28f, infoRect.y + 22f, infoRect.width - 56f, infoRect.height - 44f), GetRecordText(), bodyStyle);
 
             DrawShop();
+            DrawShopFeedback();
 
             if (GUI.Button(GetStartButtonRect(), startText, buttonStyle))
             {
@@ -145,9 +150,49 @@ namespace PawVoyage.UI
             }
         }
 
-        private static void TryBuyUpgrade(MetaUpgradeType upgradeType)
+        private void TryBuyUpgrade(MetaUpgradeType upgradeType)
         {
-            MetaProgressionData.TryPurchase(upgradeType);
+            if (lastShopActionFrame == Time.frameCount)
+            {
+                return;
+            }
+
+            lastShopActionFrame = Time.frameCount;
+
+            if (MetaProgressionData.IsMaxLevel(upgradeType))
+            {
+                ShowShopFeedback($"{MetaProgressionData.GetDisplayName(upgradeType)} is already maxed.");
+                return;
+            }
+
+            int cost = MetaProgressionData.GetCost(upgradeType);
+            if (RunResultData.TotalCoins < cost)
+            {
+                ShowShopFeedback($"Need {cost - RunResultData.TotalCoins} more coins.");
+                return;
+            }
+
+            if (MetaProgressionData.TryPurchase(upgradeType))
+            {
+                ShowShopFeedback($"{MetaProgressionData.GetDisplayName(upgradeType)} upgraded!");
+            }
+        }
+
+        private void DrawShopFeedback()
+        {
+            if (Time.unscaledTime >= shopFeedbackEndTime || string.IsNullOrEmpty(shopFeedbackText))
+            {
+                return;
+            }
+
+            Rect shopRect = GetShopRect();
+            GUI.Label(new Rect(shopRect.x + 20f, shopRect.y + shopRect.height + 8f, shopRect.width - 40f, 28f), shopFeedbackText, feedbackStyle);
+        }
+
+        private void ShowShopFeedback(string message)
+        {
+            shopFeedbackText = message;
+            shopFeedbackEndTime = Time.unscaledTime + 2.2f;
         }
 
         private static bool TryGetPressedScreenPosition(out Vector2 screenPosition)
@@ -270,6 +315,14 @@ namespace PawVoyage.UI
                 fontSize = 20,
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = Color.white }
+            };
+
+            feedbackStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 15,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = new Color(1f, 0.86f, 0.18f, 1f) }
             };
         }
     }
