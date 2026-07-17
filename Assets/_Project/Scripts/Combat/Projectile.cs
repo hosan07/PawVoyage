@@ -1,4 +1,5 @@
 using UnityEngine;
+using PawVoyage.Enemy;
 using PawVoyage.Systems;
 
 namespace PawVoyage.Combat
@@ -10,18 +11,23 @@ namespace PawVoyage.Combat
     public class Projectile : MonoBehaviour
     {
         [SerializeField] private float lifetime = 3f;
+        [SerializeField] private bool createFallbackVisual = true;
+        [SerializeField] private Color fallbackColor = new Color(1f, 0.92f, 0.1f, 1f);
 
         private Vector2 direction = Vector2.right;
         private float speed = 10f;
         private int damage = 1;
+        private int pierceRemaining;
         private LayerMask targetLayers = ~0;
         private string targetTag = "Enemy";
         private float despawnTime;
+        private SpriteRenderer spriteRenderer;
 
         private void Awake()
         {
             Collider2D projectileCollider = GetComponent<Collider2D>();
             projectileCollider.isTrigger = true;
+            EnsureFallbackVisual();
         }
 
         private void OnEnable()
@@ -58,28 +64,66 @@ namespace PawVoyage.Combat
                 GameSfx.PlayEnemyHit();
             }
 
-            Destroy(gameObject);
+            if (pierceRemaining <= 0)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            pierceRemaining--;
         }
 
         /// <summary>
         /// 투사체 이동과 피해 데이터를 초기화합니다.
         /// </summary>
-        public void Initialize(Vector2 fireDirection, float fireSpeed, int attackDamage, LayerMask layers, string requiredTag)
+        public void Initialize(Vector2 fireDirection, float fireSpeed, int attackDamage, LayerMask layers, string requiredTag, int pierceCount = 0)
         {
             direction = fireDirection.sqrMagnitude > 0.001f ? fireDirection.normalized : Vector2.right;
             speed = Mathf.Max(0f, fireSpeed);
             damage = Mathf.Max(0, attackDamage);
+            pierceRemaining = Mathf.Max(0, pierceCount);
             targetLayers = layers;
             targetTag = requiredTag;
             despawnTime = Time.time + lifetime;
+            transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);
         }
 
         private bool IsValidTarget(Collider2D other)
         {
             bool isTargetLayer = (targetLayers.value & (1 << other.gameObject.layer)) != 0;
-            bool isTargetTag = string.IsNullOrWhiteSpace(targetTag) || other.gameObject.tag == targetTag;
+            bool isTargetTag = other.GetComponent<EnemyController>() != null
+                || string.IsNullOrWhiteSpace(targetTag)
+                || other.gameObject.tag == targetTag;
 
             return isTargetLayer && isTargetTag;
+        }
+
+        private void EnsureFallbackVisual()
+        {
+            if (!createFallbackVisual || GetComponent<SpriteRenderer>() != null)
+            {
+                return;
+            }
+
+            spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
+            spriteRenderer.sprite = CreateSquareSprite();
+            spriteRenderer.color = fallbackColor;
+            spriteRenderer.sortingOrder = 5;
+            transform.localScale = new Vector3(0.42f, 0.14f, 1f);
+        }
+
+        private static Sprite CreateSquareSprite()
+        {
+            Texture2D texture = new Texture2D(8, 8);
+            Color[] pixels = new Color[8 * 8];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = Color.white;
+            }
+
+            texture.SetPixels(pixels);
+            texture.Apply();
+            return Sprite.Create(texture, new Rect(0f, 0f, 8f, 8f), new Vector2(0.5f, 0.5f), 8f);
         }
     }
 }

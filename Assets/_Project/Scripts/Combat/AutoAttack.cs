@@ -123,7 +123,7 @@ namespace PawVoyage.Combat
             Vector2 direction = ((Vector2)target.position - origin).normalized;
 
             int projectileCount = GetProjectileCount();
-            if (projectilePrefab != null && GetAttackType() == WeaponAttackType.Projectile)
+            if (GetAttackType() == WeaponAttackType.Projectile)
             {
                 FireProjectiles(origin, direction, projectileCount);
                 return;
@@ -151,9 +151,20 @@ namespace PawVoyage.Combat
             {
                 float angle = startAngle + spreadStep * i;
                 Vector2 fireDirection = Quaternion.Euler(0f, 0f, angle) * direction;
-                Projectile projectile = Instantiate(projectilePrefab, origin, Quaternion.identity);
-                projectile.Initialize(fireDirection, GetProjectileSpeed(), CalculateDamage(), targetLayers, targetTag);
+                Projectile projectile = projectilePrefab != null
+                    ? Instantiate(projectilePrefab, origin, Quaternion.identity)
+                    : CreateFallbackProjectile(origin);
+                projectile.Initialize(fireDirection, GetProjectileSpeed(), CalculateDamage(), targetLayers, targetTag, GetPierceCount());
             }
+        }
+
+        private static Projectile CreateFallbackProjectile(Vector2 origin)
+        {
+            GameObject projectileObject = new GameObject("Projectile");
+            projectileObject.transform.position = origin;
+            CircleCollider2D projectileCollider = projectileObject.AddComponent<CircleCollider2D>();
+            projectileCollider.radius = 0.14f;
+            return projectileObject.AddComponent<Projectile>();
         }
 
         private bool MatchesTargetTag(Collider2D candidate)
@@ -195,6 +206,12 @@ namespace PawVoyage.Combat
         {
             int baseCount = weaponData != null ? weaponData.BaseProjectileCount : 1;
             return baseCount + combatStats.ProjectileBonus;
+        }
+
+        private int GetPierceCount()
+        {
+            int basePierce = weaponData != null ? weaponData.BasePierce : 0;
+            return basePierce + combatStats.PierceBonus;
         }
 
         private WeaponAttackType GetAttackType()
