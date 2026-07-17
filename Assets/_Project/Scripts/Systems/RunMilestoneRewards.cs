@@ -12,13 +12,19 @@ namespace PawVoyage.Systems
         [SerializeField] private float[] timeMilestones = { 10f, 20f, 30f };
         [SerializeField] private int[] timeBonusCoins = { 8, 12, 20 };
         [SerializeField] private float noticeDuration = 2.2f;
+        [SerializeField] private Vector2 trackerOffset = new Vector2(24f, 36f);
+        [SerializeField] private Vector2 trackerSize = new Vector2(310f, 126f);
 
         private bool[] claimedKillMilestones;
         private bool[] claimedTimeMilestones;
         private RunStats runStats;
         private GUIStyle noticeStyle;
         private GUIStyle trackerStyle;
+        private GUIStyle titleStyle;
+        private GUIStyle smallStyle;
+        private Texture2D whiteTexture;
         private string noticeText = string.Empty;
+        private string lastRewardText = "No rewards yet";
         private float noticeEndTime;
 
         private void Awake()
@@ -48,7 +54,7 @@ namespace PawVoyage.Systems
             }
 
             EnsureStyles();
-            GUI.Label(new Rect(Screen.width * 0.5f - 170f, 84f, 340f, 42f), GetNextGoalText(), trackerStyle);
+            DrawTrackerCard();
 
             if (Time.unscaledTime < noticeEndTime)
             {
@@ -95,56 +101,92 @@ namespace PawVoyage.Systems
             runStats.AddBonusCoins(safeCoinAmount);
             GameSfx.PlayCoin();
             noticeText = $"{reason}  +{safeCoinAmount} Coins";
+            lastRewardText = $"+{safeCoinAmount} Coins  {reason}";
             noticeEndTime = Time.unscaledTime + Mathf.Max(0.1f, noticeDuration);
         }
 
-        private string GetNextGoalText()
+        private void DrawTrackerCard()
         {
-            string killGoal = GetNextKillGoalText();
-            string timeGoal = GetNextTimeGoalText();
+            Rect cardRect = GetTrackerRect();
+            DrawRect(cardRect, new Color(0.04f, 0.05f, 0.06f, 0.78f));
+            DrawRect(new Rect(cardRect.x, cardRect.y, 4f, cardRect.height), new Color(1f, 0.82f, 0.16f, 0.95f));
 
-            if (string.IsNullOrEmpty(killGoal) && string.IsNullOrEmpty(timeGoal))
-            {
-                return "GOALS COMPLETE";
-            }
+            GUI.Label(new Rect(cardRect.x + 14f, cardRect.y + 8f, cardRect.width - 28f, 20f), "RUN GOALS", titleStyle);
+            DrawGoalRow(new Rect(cardRect.x + 14f, cardRect.y + 36f, cardRect.width - 28f, 28f), GetNextKillGoalLabel(), GetNextKillGoalProgress());
+            DrawGoalRow(new Rect(cardRect.x + 14f, cardRect.y + 70f, cardRect.width - 28f, 28f), GetNextTimeGoalLabel(), GetNextTimeGoalProgress());
 
-            if (string.IsNullOrEmpty(killGoal))
-            {
-                return timeGoal;
-            }
-
-            if (string.IsNullOrEmpty(timeGoal))
-            {
-                return killGoal;
-            }
-
-            return $"{killGoal}   |   {timeGoal}";
+            GUI.Label(
+                new Rect(cardRect.x + 14f, cardRect.y + cardRect.height - 24f, cardRect.width - 28f, 18f),
+                $"BONUS {runStats.BonusCoinsCollected}   LAST {lastRewardText}",
+                smallStyle);
         }
 
-        private string GetNextKillGoalText()
+        private void DrawGoalRow(Rect rowRect, string label, float progress)
+        {
+            Rect barRect = new Rect(rowRect.x, rowRect.y + 17f, rowRect.width, 8f);
+            DrawRect(barRect, new Color(0.16f, 0.16f, 0.16f, 0.9f));
+            DrawRect(new Rect(barRect.x, barRect.y, barRect.width * Mathf.Clamp01(progress), barRect.height), new Color(0.22f, 0.72f, 1f, 0.95f));
+
+            GUI.Label(new Rect(rowRect.x, rowRect.y - 2f, rowRect.width, 18f), label, trackerStyle);
+        }
+
+        private string GetNextKillGoalLabel()
         {
             for (int i = 0; i < killMilestones.Length; i++)
             {
                 if (!claimedKillMilestones[i])
                 {
-                    return $"KILL GOAL {runStats.KillCount}/{killMilestones[i]}";
+                    return $"KILL GOAL {runStats.KillCount}/{killMilestones[i]}  +{GetArrayValue(killBonusCoins, i)} Coins";
                 }
             }
 
-            return string.Empty;
+            return "KILL GOALS COMPLETE";
         }
 
-        private string GetNextTimeGoalText()
+        private string GetNextTimeGoalLabel()
         {
             for (int i = 0; i < timeMilestones.Length; i++)
             {
                 if (!claimedTimeMilestones[i])
                 {
-                    return $"TIME GOAL {FormatTime(runStats.ElapsedSeconds)}/{FormatTime(timeMilestones[i])}";
+                    return $"TIME GOAL {FormatTime(runStats.ElapsedSeconds)}/{FormatTime(timeMilestones[i])}  +{GetArrayValue(timeBonusCoins, i)} Coins";
                 }
             }
 
-            return string.Empty;
+            return "TIME GOALS COMPLETE";
+        }
+
+        private float GetNextKillGoalProgress()
+        {
+            for (int i = 0; i < killMilestones.Length; i++)
+            {
+                if (!claimedKillMilestones[i])
+                {
+                    return killMilestones[i] <= 0 ? 1f : (float)runStats.KillCount / killMilestones[i];
+                }
+            }
+
+            return 1f;
+        }
+
+        private float GetNextTimeGoalProgress()
+        {
+            for (int i = 0; i < timeMilestones.Length; i++)
+            {
+                if (!claimedTimeMilestones[i])
+                {
+                    return timeMilestones[i] <= 0f ? 1f : runStats.ElapsedSeconds / timeMilestones[i];
+                }
+            }
+
+            return 1f;
+        }
+
+        private Rect GetTrackerRect()
+        {
+            float width = Mathf.Min(trackerSize.x, Screen.width - trackerOffset.x * 2f);
+            float height = trackerSize.y;
+            return new Rect(Screen.width - width - trackerOffset.x, trackerOffset.y, width, height);
         }
 
         private void FindRunStatsIfNeeded()
@@ -172,11 +214,39 @@ namespace PawVoyage.Systems
 
             trackerStyle = new GUIStyle(GUI.skin.label)
             {
-                alignment = TextAnchor.MiddleCenter,
-                fontSize = 14,
+                alignment = TextAnchor.MiddleLeft,
+                fontSize = 13,
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = Color.white }
             };
+
+            titleStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleLeft,
+                fontSize = 14,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = new Color(1f, 0.86f, 0.18f, 1f) }
+            };
+
+            smallStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleLeft,
+                fontSize = 11,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = new Color(0.86f, 0.92f, 1f, 1f) }
+            };
+
+            whiteTexture = new Texture2D(1, 1);
+            whiteTexture.SetPixel(0, 0, Color.white);
+            whiteTexture.Apply();
+        }
+
+        private void DrawRect(Rect rect, Color color)
+        {
+            Color previousColor = GUI.color;
+            GUI.color = color;
+            GUI.DrawTexture(rect, whiteTexture);
+            GUI.color = previousColor;
         }
 
         private static int GetArrayValue(int[] values, int index)

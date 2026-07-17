@@ -654,6 +654,8 @@ MonoBehaviour:
   - 12
   - 20
   noticeDuration: 2.2
+  trackerOffset: {x: 24, y: 36}
+  trackerSize: {x: 310, y: 126}
 --- !u!114 &1807036307
 MonoBehaviour:
   m_ObjectHideFlags: 0
