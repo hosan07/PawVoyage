@@ -59,5 +59,29 @@ namespace PawVoyage.Combat
         {
             return Mathf.Max(0, Mathf.FloorToInt(incomingDamage * (1f - DamageReduction)));
         }
+
+        /// <summary>
+        /// 추가 투사체 수를 증가시킵니다.
+        /// </summary>
+        public void AddProjectileBonus(int amount)
+        {
+            projectileBonus += Mathf.Max(0, amount);
+        }
+
+        /// <summary>
+        /// 투사체 관통 수를 증가시킵니다.
+        /// </summary>
+        public void AddPierceBonus(int amount)
+        {
+            pierceBonus += Mathf.Max(0, amount);
+        }
+
+        /// <summary>
+        /// 공격 사거리 배율을 증가시킵니다.
+        /// </summary>
+        public void AddRangeMultiplier(float amount)
+        {
+            rangeMult = Mathf.Max(0.01f, rangeMult + Mathf.Max(0f, amount));
+        }
     }
 }

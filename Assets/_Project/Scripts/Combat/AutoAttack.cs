@@ -54,6 +54,30 @@ namespace PawVoyage.Combat
             attackRateBonusMult = Mathf.Max(0.01f, attackRateBonusMult + Mathf.Max(0f, multiplierBonus));
         }
 
+        /// <summary>
+        /// 레벨업 보상으로 추가 투사체 수를 누적합니다.
+        /// </summary>
+        public void AddProjectileBonus(int amount)
+        {
+            combatStats.AddProjectileBonus(amount);
+        }
+
+        /// <summary>
+        /// 레벨업 보상으로 투사체 관통 수를 누적합니다.
+        /// </summary>
+        public void AddPierceBonus(int amount)
+        {
+            combatStats.AddPierceBonus(amount);
+        }
+
+        /// <summary>
+        /// 레벨업 보상으로 공격 사거리 배율을 누적합니다.
+        /// </summary>
+        public void AddRangeMultiplier(float multiplierBonus)
+        {
+            combatStats.AddRangeMultiplier(multiplierBonus);
+        }
+
         public void SetWeapon(WeaponData newWeaponData)
         {
             weaponData = newWeaponData;

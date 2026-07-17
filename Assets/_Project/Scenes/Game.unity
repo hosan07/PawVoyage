@@ -609,6 +609,9 @@ MonoBehaviour:
   maxHpBonus: 20
   pickupRadiusBonus: 0.25
   moveSpeedBonus: 0.12
+  projectileBonus: 1
+  pierceBonus: 1
+  rangeBonus: 0.18
   visibleRewardCount: 3
 --- !u!114 &1807036315
 MonoBehaviour:

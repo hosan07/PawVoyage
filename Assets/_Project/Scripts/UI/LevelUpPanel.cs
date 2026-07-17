@@ -12,7 +12,10 @@ namespace PawVoyage.UI
         AttackSpeed,
         MaxHp,
         PickupRadius,
-        MoveSpeed
+        MoveSpeed,
+        ProjectileCount,
+        Pierce,
+        Range
     }
 
     /// <summary>
@@ -29,6 +32,9 @@ namespace PawVoyage.UI
         [SerializeField] private int maxHpBonus = 20;
         [SerializeField] private float pickupRadiusBonus = 0.25f;
         [SerializeField] private float moveSpeedBonus = 0.12f;
+        [SerializeField] private int projectileBonus = 1;
+        [SerializeField] private int pierceBonus = 1;
+        [SerializeField] private float rangeBonus = 0.18f;
         [SerializeField, Range(1, 5)] private int visibleRewardCount = 3;
 
         private PlayerExperience playerExperience;
@@ -46,10 +52,13 @@ namespace PawVoyage.UI
             LevelUpRewardType.AttackSpeed,
             LevelUpRewardType.MaxHp,
             LevelUpRewardType.PickupRadius,
-            LevelUpRewardType.MoveSpeed
+            LevelUpRewardType.MoveSpeed,
+            LevelUpRewardType.ProjectileCount,
+            LevelUpRewardType.Pierce,
+            LevelUpRewardType.Range
         };
 
-        private readonly LevelUpRewardType[] visibleRewards = new LevelUpRewardType[5];
+        private readonly LevelUpRewardType[] visibleRewards = new LevelUpRewardType[8];
         private readonly Rect[] rewardButtonRects = new Rect[5];
 
         private bool IsOpen => pendingLevelUps > 0;
@@ -142,6 +151,15 @@ namespace PawVoyage.UI
                 case LevelUpRewardType.MoveSpeed:
                     ApplyMoveSpeedUpgrade();
                     break;
+                case LevelUpRewardType.ProjectileCount:
+                    ApplyProjectileUpgrade();
+                    break;
+                case LevelUpRewardType.Pierce:
+                    ApplyPierceUpgrade();
+                    break;
+                case LevelUpRewardType.Range:
+                    ApplyRangeUpgrade();
+                    break;
             }
         }
 
@@ -197,6 +215,39 @@ namespace PawVoyage.UI
             }
 
             playerController.AddMoveSpeedMultiplier(moveSpeedBonus);
+            CloseOneSelection();
+        }
+
+        private void ApplyProjectileUpgrade()
+        {
+            if (!IsOpen)
+            {
+                return;
+            }
+
+            autoAttack.AddProjectileBonus(projectileBonus);
+            CloseOneSelection();
+        }
+
+        private void ApplyPierceUpgrade()
+        {
+            if (!IsOpen)
+            {
+                return;
+            }
+
+            autoAttack.AddPierceBonus(pierceBonus);
+            CloseOneSelection();
+        }
+
+        private void ApplyRangeUpgrade()
+        {
+            if (!IsOpen)
+            {
+                return;
+            }
+
+            autoAttack.AddRangeMultiplier(rangeBonus);
             CloseOneSelection();
         }
 
@@ -299,6 +350,10 @@ namespace PawVoyage.UI
             {
                 ApplyRewardByIndex(3);
             }
+            else if (keyboard.digit5Key.wasPressedThisFrame || keyboard.numpad5Key.wasPressedThisFrame)
+            {
+                ApplyRewardByIndex(4);
+            }
         }
 
         private void ApplyRewardByIndex(int index)
@@ -339,6 +394,9 @@ namespace PawVoyage.UI
                 LevelUpRewardType.MaxHp => $"+{maxHpBonus} Max HP",
                 LevelUpRewardType.PickupRadius => $"+{Mathf.RoundToInt(pickupRadiusBonus * 100f)}% Pickup Radius",
                 LevelUpRewardType.MoveSpeed => $"+{Mathf.RoundToInt(moveSpeedBonus * 100f)}% Move Speed",
+                LevelUpRewardType.ProjectileCount => $"+{projectileBonus} Projectile",
+                LevelUpRewardType.Pierce => $"+{pierceBonus} Pierce",
+                LevelUpRewardType.Range => $"+{Mathf.RoundToInt(rangeBonus * 100f)}% Attack Range",
                 _ => "Unknown Reward"
             };
         }
