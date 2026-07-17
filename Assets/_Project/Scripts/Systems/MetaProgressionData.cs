@@ -35,6 +35,11 @@ namespace PawVoyage.Systems
             return GetLevel(upgradeType) >= MaxUpgradeLevel;
         }
 
+        public static bool IsAdvancedLevel(MetaUpgradeType upgradeType)
+        {
+            return GetLevel(upgradeType) >= 5;
+        }
+
         public static int GetCost(MetaUpgradeType upgradeType)
         {
             int level = GetLevel(upgradeType);
@@ -60,7 +65,7 @@ namespace PawVoyage.Systems
 
             int earlyCost = baseCost + 4 * 15;
             int lateLevel = level - 4;
-            return earlyCost + lateLevel * lateLevel * 45;
+            return earlyCost + lateLevel * lateLevel * 70 + lateLevel * 35;
         }
 
         public static string GetDisplayName(MetaUpgradeType upgradeType)

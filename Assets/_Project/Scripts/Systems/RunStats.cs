@@ -21,6 +21,8 @@ namespace PawVoyage.Systems
         public int CoinsCollected { get; private set; }
         public int BonusCoinsCollected { get; private set; }
         public int LevelUpCount { get; private set; }
+        public int HitCount { get; private set; }
+        public int DamageTaken { get; private set; }
         public float ClearTimeSeconds => Mathf.Max(1f, clearTimeSeconds);
         public StageClearCondition ClearCondition => clearCondition;
         public bool IsCleared { get; private set; }
@@ -108,6 +110,21 @@ namespace PawVoyage.Systems
         public void AddLevelUp()
         {
             LevelUpCount++;
+        }
+
+        /// <summary>
+        /// 플레이어가 받은 피해 횟수와 총 피해량을 기록합니다.
+        /// </summary>
+        public void AddDamageTaken(int amount)
+        {
+            int safeAmount = Mathf.Max(0, amount);
+            if (safeAmount <= 0)
+            {
+                return;
+            }
+
+            HitCount++;
+            DamageTaken += safeAmount;
         }
 
         /// <summary>

@@ -18,6 +18,7 @@ namespace PawVoyage.UI
         [SerializeField] private string dogText = "DOG";
         [SerializeField] private string catText = "CAT";
         [SerializeField] private int devCoinGrantAmount = 500;
+        [SerializeField] private bool showDeveloperPanel = false;
 
         private readonly MetaUpgradeType[] shopUpgrades =
         {
@@ -58,6 +59,11 @@ namespace PawVoyage.UI
             {
                 StartGame();
             }
+
+            if (keyboard.f10Key.wasPressedThisFrame)
+            {
+                showDeveloperPanel = !showDeveloperPanel;
+            }
         }
 
         private void OnGUI()
@@ -73,7 +79,11 @@ namespace PawVoyage.UI
 
             DrawAnimalSelector();
             DrawShop();
-            DrawDeveloperPanel();
+            if (showDeveloperPanel)
+            {
+                DrawDeveloperPanel();
+            }
+
             DrawShopFeedback();
 
             if (GUI.Button(GetStartButtonRect(), startText, buttonStyle))
@@ -111,11 +121,11 @@ namespace PawVoyage.UI
             {
                 AnimalSelectionData.SelectAnimal(SelectedAnimalType.Cat);
             }
-            else if (GetDevCoinButtonRect().Contains(guiPosition))
+            else if (showDeveloperPanel && GetDevCoinButtonRect().Contains(guiPosition))
             {
                 GrantDeveloperCoins();
             }
-            else if (GetDevResetUpgradeButtonRect().Contains(guiPosition))
+            else if (showDeveloperPanel && GetDevResetUpgradeButtonRect().Contains(guiPosition))
             {
                 ResetDeveloperUpgrades();
             }
@@ -148,6 +158,7 @@ namespace PawVoyage.UI
                 $"Selected {AnimalSelectionData.SelectedAnimalName}   Stage 1 {(RunResultData.Stage1MvpCleared ? "Cleared" : "Uncleared")}\n\n" +
                 $"Last Run\n{result}   Survival {FormatTime(RunResultData.LastElapsedSeconds)}   Kills {RunResultData.LastKillCount}   Coins {RunResultData.LastCoinCount}\n" +
                 $"Level Ups {RunResultData.LastLevelUpCount}   Mini Boss {(RunResultData.LastMiniBossSeen ? "Seen" : "Not Seen")}\n" +
+                $"Damage Taken {RunResultData.LastDamageTaken}   Hits {RunResultData.LastHitCount}\n" +
                 $"Weapons {RunResultData.LastSelectedWeapons}\n\n" +
                 $"Best\nSurvival {FormatTime(RunResultData.BestElapsedSeconds)}   Kills {RunResultData.BestKillCount}\n\n" +
                 $"Coins\nAvailable {RunResultData.TotalCoins}";
@@ -186,7 +197,8 @@ namespace PawVoyage.UI
                 MetaUpgradeType upgradeType = shopUpgrades[i];
                 int level = MetaProgressionData.GetLevel(upgradeType);
                 string costText = MetaProgressionData.IsMaxLevel(upgradeType) ? "MAX" : $"{MetaProgressionData.GetCost(upgradeType)} Coins";
-                string label = $"{MetaProgressionData.GetDisplayName(upgradeType)}  Lv {level}/{MetaProgressionData.MaxLevel}\n{MetaProgressionData.GetEffectText(upgradeType)}   {costText}";
+                string tierText = MetaProgressionData.IsAdvancedLevel(upgradeType) ? "ADVANCED" : "BASIC";
+                string label = $"{MetaProgressionData.GetDisplayName(upgradeType)}  Lv {level}/{MetaProgressionData.MaxLevel}  {tierText}\n{MetaProgressionData.GetEffectText(upgradeType)}   {costText}";
 
                 if (GUI.Button(GetShopButtonRect(i), label, secondaryButtonStyle))
                 {
@@ -271,8 +283,8 @@ namespace PawVoyage.UI
                 return;
             }
 
-            Rect devRect = GetDeveloperRect();
-            GUI.Label(new Rect(devRect.x + 20f, devRect.y + devRect.height + 8f, devRect.width - 40f, 28f), shopFeedbackText, feedbackStyle);
+            Rect anchorRect = showDeveloperPanel ? GetDeveloperRect() : GetShopRect();
+            GUI.Label(new Rect(anchorRect.x + 20f, anchorRect.y + anchorRect.height + 8f, anchorRect.width - 40f, 28f), shopFeedbackText, feedbackStyle);
         }
 
         private void ShowShopFeedback(string message)

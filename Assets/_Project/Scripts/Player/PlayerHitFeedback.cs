@@ -1,5 +1,6 @@
 using System.Collections;
 using PawVoyage.Combat;
+using PawVoyage.Systems;
 using UnityEngine;
 
 namespace PawVoyage.Player
@@ -48,6 +49,7 @@ namespace PawVoyage.Player
             }
 
             DamagePopup.Spawn(transform.position + popupOffset, amount, false);
+            RunStats.Instance?.AddDamageTaken(amount);
             Flash();
         }
 

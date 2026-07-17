@@ -15,6 +15,7 @@ namespace PawVoyage.Data
         Chase,
         Zigzag,
         Charger,
+        Shooter,
         EliteBrute
     }
 

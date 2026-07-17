@@ -79,7 +79,7 @@ namespace PawVoyage.UI
             GUI.Box(panelRect, GUIContent.none);
             GUI.Label(new Rect(panelRect.x + 24f, panelRect.y + 28f, panelRect.width - 48f, 38f), titleText, titleStyle);
             GUI.Label(
-                new Rect(panelRect.x + 32f, panelRect.y + 78f, panelRect.width - 64f, 134f),
+                new Rect(panelRect.x + 32f, panelRect.y + 78f, panelRect.width - 64f, 162f),
                 GetRunSummaryText(),
                 bodyStyle);
 
@@ -136,21 +136,21 @@ namespace PawVoyage.UI
         {
             return new Rect(
                 Screen.width * 0.5f - 190f,
-                Screen.height * 0.5f - 162f,
+                Screen.height * 0.5f - 176f,
                 380f,
-                324f);
+                352f);
         }
 
         private static Rect GetRetryButtonRect()
         {
             Rect panelRect = GetPanelRect();
-            return new Rect(panelRect.x + 48f, panelRect.y + 236f, 132f, 48f);
+            return new Rect(panelRect.x + 48f, panelRect.y + 264f, 132f, 48f);
         }
 
         private static Rect GetMenuButtonRect()
         {
             Rect panelRect = GetPanelRect();
-            return new Rect(panelRect.x + panelRect.width - 180f, panelRect.y + 236f, 132f, 48f);
+            return new Rect(panelRect.x + panelRect.width - 180f, panelRect.y + 264f, 132f, 48f);
         }
 
         private void OnRunCleared()
@@ -168,6 +168,8 @@ namespace PawVoyage.UI
                 runStats.KillCount,
                 runStats.CoinsCollected,
                 runStats.LevelUpCount,
+                runStats.HitCount,
+                runStats.DamageTaken,
                 runStats.SelectedWeaponsSummary,
                 runStats.MiniBossSeen,
                 runStats.IsStage1MvpRun);
@@ -209,7 +211,7 @@ namespace PawVoyage.UI
             string bonusText = runStats.BonusCoinsCollected > 0 ? $" (+{runStats.BonusCoinsCollected} Bonus)" : string.Empty;
             string bossText = runStats.MiniBossSeen ? "Seen" : "Not Seen";
             string clearText = runStats.IsStage1MvpRun ? "Stage 1 MVP Clear Saved" : "Dev Test Clear";
-            return $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}   Coins {runStats.CoinsCollected}{bonusText}\nLevel Ups {runStats.LevelUpCount}   Mini Boss {bossText}\nWeapons {runStats.SelectedWeaponsSummary}\n{clearText}";
+            return $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}   Coins {runStats.CoinsCollected}{bonusText}\nLevel Ups {runStats.LevelUpCount}   Mini Boss {bossText}\nDamage Taken {runStats.DamageTaken}   Hits {runStats.HitCount}\nWeapons {runStats.SelectedWeaponsSummary}\n{clearText}";
         }
 
         private void EnsureStyles()

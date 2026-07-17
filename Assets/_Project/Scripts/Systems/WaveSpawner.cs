@@ -9,7 +9,8 @@ namespace PawVoyage.Systems
     {
         Normal,
         Fast,
-        Tank
+        Tank,
+        Shooter
     }
 
     /// <summary>
@@ -48,6 +49,7 @@ namespace PawVoyage.Systems
         [SerializeField] private float enemyMoveSpeed = 2f;
         [SerializeField] private float fastEnemyStartTimeSeconds = 8f;
         [SerializeField] private float tankEnemyStartTimeSeconds = 16f;
+        [SerializeField] private float shooterEnemyStartTimeSeconds = 90f;
         [SerializeField] private float eliteSpawnTimeSeconds = 18f;
         [SerializeField] private int eliteMaxHp = 260;
         [SerializeField] private int eliteContactDamage = 5;
@@ -68,6 +70,7 @@ namespace PawVoyage.Systems
         private bool eliteSpawned;
         private bool fastEnemyNoticeShown;
         private bool tankEnemyNoticeShown;
+        private bool shooterEnemyNoticeShown;
         private float eliteWarningEndTime;
         private float variantNoticeEndTime;
         private string variantNoticeText = string.Empty;
@@ -85,6 +88,11 @@ namespace PawVoyage.Systems
                 if (elapsedSeconds >= GetEliteSpawnTime())
                 {
                     return "ELITE";
+                }
+
+                if (elapsedSeconds >= GetShooterEnemyStartTime())
+                {
+                    return "SHOOTER";
                 }
 
                 if (elapsedSeconds >= GetTankEnemyStartTime())
@@ -211,6 +219,12 @@ namespace PawVoyage.Systems
                 tankEnemyNoticeShown = true;
                 ShowVariantNotice("TANK ENEMIES JOINED");
             }
+
+            if (!shooterEnemyNoticeShown && elapsedSeconds >= GetShooterEnemyStartTime())
+            {
+                shooterEnemyNoticeShown = true;
+                ShowVariantNotice("SHOOTERS JOINED");
+            }
         }
 
         private void ShowVariantNotice(string message)
@@ -275,6 +289,7 @@ namespace PawVoyage.Systems
             enemy.transform.localScale = Vector3.one * tuning.Scale;
             enemy.SetMoveSpeed(enemyMoveSpeed * tuning.MoveSpeedMultiplier);
             enemy.SetBehavior(tuning.BehaviorType);
+            enemy.SetShooterStats(GetCurrentEnemyContactDamage() + tuning.ContactDamageBonus, Mathf.Lerp(2.8f, 4.2f, GetRunProgress()));
 
             if (!enemy.TryGetComponent<EnemyHitFeedback>(out _))
             {
@@ -355,6 +370,7 @@ namespace PawVoyage.Systems
             enemy.transform.localScale = Vector3.one * monsterData.SizeScale;
             enemy.SetMoveSpeed(GetScaledMoveSpeed(monsterData.MoveSpeed));
             enemy.SetBehavior(monsterData.BehaviorType);
+            enemy.SetShooterStats(GetScaledContactDamage(monsterData.ContactDamage), Mathf.Lerp(2.8f, 4.2f, GetRunProgress()));
 
             if (!enemy.TryGetComponent<EnemyHitFeedback>(out _))
             {
@@ -423,6 +439,7 @@ namespace PawVoyage.Systems
             float elapsedSeconds = GetElapsedSeconds();
             bool canSpawnTank = elapsedSeconds >= GetTankEnemyStartTime();
             bool canSpawnFast = elapsedSeconds >= GetFastEnemyStartTime();
+            bool canSpawnShooter = elapsedSeconds >= GetShooterEnemyStartTime();
 
             if (!canSpawnFast)
             {
@@ -432,9 +449,16 @@ namespace PawVoyage.Systems
             int normalWeight = 100;
             int fastWeight = canSpawnFast ? Mathf.RoundToInt(Mathf.Lerp(20f, 42f, GetRunProgress())) : 0;
             int tankWeight = canSpawnTank ? Mathf.RoundToInt(Mathf.Lerp(12f, 32f, GetRunProgress())) : 0;
-            int totalWeight = normalWeight + fastWeight + tankWeight;
+            int shooterWeight = canSpawnShooter ? Mathf.RoundToInt(Mathf.Lerp(8f, 18f, GetRunProgress())) : 0;
+            int totalWeight = normalWeight + fastWeight + tankWeight + shooterWeight;
             int roll = Random.Range(0, totalWeight);
 
+            if (roll < shooterWeight)
+            {
+                return EnemyVariantType.Shooter;
+            }
+
+            roll -= shooterWeight;
             if (roll < tankWeight)
             {
                 return EnemyVariantType.Tank;
@@ -474,6 +498,17 @@ namespace PawVoyage.Systems
                     scale: 1.05f,
                     color: new Color(0.95f, 0.12f, 0.35f, 1f),
                     behaviorType: MonsterBehaviorType.Charger),
+                EnemyVariantType.Shooter => new EnemyVariantTuning(
+                    "ShooterEnemy",
+                    maxHpMultiplier: 0.86f,
+                    moveSpeedMultiplier: 0.82f,
+                    contactDamageBonus: 1,
+                    experienceAmount: 2,
+                    coinAmount: 2,
+                    healthPickupDropChance: 0.06f,
+                    scale: 0.68f,
+                    color: new Color(0.18f, 0.88f, 1f, 1f),
+                    behaviorType: MonsterBehaviorType.Shooter),
                 _ => new EnemyVariantTuning(
                     "Enemy",
                     maxHpMultiplier: 1f,
@@ -590,6 +625,16 @@ namespace PawVoyage.Systems
         private float GetTankEnemyStartTime()
         {
             return Mathf.Max(0f, GetStageConfig().tankEnemyStartTime);
+        }
+
+        private float GetShooterEnemyStartTime()
+        {
+            if (stageMode == StageRuntimeMode.Mvp)
+            {
+                return Mathf.Max(GetTankEnemyStartTime() + 12f, Mathf.Min(shooterEnemyStartTimeSeconds, GetEliteSpawnTime() - 30f));
+            }
+
+            return Mathf.Max(GetTankEnemyStartTime() + 4f, shooterEnemyStartTimeSeconds * 0.25f);
         }
 
         private float GetEliteSpawnTime()

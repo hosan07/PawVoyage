@@ -13,6 +13,8 @@ namespace PawVoyage.Systems
         private const string LastKillCountKey = "RunResult.LastKillCount";
         private const string LastCoinCountKey = "RunResult.LastCoinCount";
         private const string LastLevelUpCountKey = "RunResult.LastLevelUpCount";
+        private const string LastHitCountKey = "RunResult.LastHitCount";
+        private const string LastDamageTakenKey = "RunResult.LastDamageTaken";
         private const string LastSelectedWeaponsKey = "RunResult.LastSelectedWeapons";
         private const string LastMiniBossSeenKey = "RunResult.LastMiniBossSeen";
         private const string BestElapsedSecondsKey = "RunResult.BestElapsedSeconds";
@@ -26,6 +28,8 @@ namespace PawVoyage.Systems
         public static int LastKillCount => PlayerPrefs.GetInt(LastKillCountKey, 0);
         public static int LastCoinCount => PlayerPrefs.GetInt(LastCoinCountKey, 0);
         public static int LastLevelUpCount => PlayerPrefs.GetInt(LastLevelUpCountKey, 0);
+        public static int LastHitCount => PlayerPrefs.GetInt(LastHitCountKey, 0);
+        public static int LastDamageTaken => PlayerPrefs.GetInt(LastDamageTakenKey, 0);
         public static string LastSelectedWeapons => PlayerPrefs.GetString(LastSelectedWeaponsKey, "None");
         public static bool LastMiniBossSeen => PlayerPrefs.GetInt(LastMiniBossSeenKey, 0) == 1;
         public static float BestElapsedSeconds => PlayerPrefs.GetFloat(BestElapsedSecondsKey, 0f);
@@ -42,6 +46,8 @@ namespace PawVoyage.Systems
             int killCount,
             int coinCount,
             int levelUpCount = 0,
+            int hitCount = 0,
+            int damageTaken = 0,
             string selectedWeapons = "None",
             bool miniBossSeen = false,
             bool recordStage1MvpClear = false)
@@ -50,6 +56,8 @@ namespace PawVoyage.Systems
             int safeKillCount = Mathf.Max(0, killCount);
             int safeCoinCount = Mathf.Max(0, coinCount);
             int safeLevelUpCount = Mathf.Max(0, levelUpCount);
+            int safeHitCount = Mathf.Max(0, hitCount);
+            int safeDamageTaken = Mathf.Max(0, damageTaken);
             string safeSelectedWeapons = string.IsNullOrWhiteSpace(selectedWeapons) ? "None" : selectedWeapons;
 
             PlayerPrefs.SetInt(HasLastResultKey, 1);
@@ -58,6 +66,8 @@ namespace PawVoyage.Systems
             PlayerPrefs.SetInt(LastKillCountKey, safeKillCount);
             PlayerPrefs.SetInt(LastCoinCountKey, safeCoinCount);
             PlayerPrefs.SetInt(LastLevelUpCountKey, safeLevelUpCount);
+            PlayerPrefs.SetInt(LastHitCountKey, safeHitCount);
+            PlayerPrefs.SetInt(LastDamageTakenKey, safeDamageTaken);
             PlayerPrefs.SetString(LastSelectedWeaponsKey, safeSelectedWeapons);
             PlayerPrefs.SetInt(LastMiniBossSeenKey, miniBossSeen ? 1 : 0);
             AddCoins(safeCoinCount);
@@ -91,6 +101,8 @@ namespace PawVoyage.Systems
             PlayerPrefs.DeleteKey(LastKillCountKey);
             PlayerPrefs.DeleteKey(LastCoinCountKey);
             PlayerPrefs.DeleteKey(LastLevelUpCountKey);
+            PlayerPrefs.DeleteKey(LastHitCountKey);
+            PlayerPrefs.DeleteKey(LastDamageTakenKey);
             PlayerPrefs.DeleteKey(LastSelectedWeaponsKey);
             PlayerPrefs.DeleteKey(LastMiniBossSeenKey);
             PlayerPrefs.DeleteKey(BestElapsedSecondsKey);

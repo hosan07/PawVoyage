@@ -17,6 +17,8 @@ namespace PawVoyage.Combat
 
         private readonly Dictionary<IDamageable, float> nextHitTimes = new Dictionary<IDamageable, float>();
 
+        public int Damage => damage;
+
         /// <summary>
         /// 런타임 난이도에 맞춰 접촉 피해량을 설정합니다.
         /// </summary>
