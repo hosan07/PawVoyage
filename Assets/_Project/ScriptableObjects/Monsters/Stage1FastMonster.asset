@@ -18,6 +18,7 @@ MonoBehaviour:
   maxHp: 21
   contactDamage: 1
   moveSpeed: 3.3
+  behaviorType: 1
   sizeScale: 0.58
   expReward: 2
   coinReward: 1

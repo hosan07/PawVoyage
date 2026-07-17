@@ -1,4 +1,5 @@
 using PawVoyage.Combat;
+using PawVoyage.Data;
 using UnityEngine;
 
 namespace PawVoyage.Enemy
@@ -16,8 +17,29 @@ namespace PawVoyage.Enemy
         [SerializeField] private Transform target;
         [SerializeField] private string targetName = "Player";
         [SerializeField] private bool createFallbackVisual = true;
+        [SerializeField] private MonsterBehaviorType behaviorType = MonsterBehaviorType.Chase;
+        [SerializeField] private float zigzagAmplitude = 0.7f;
+        [SerializeField] private float zigzagFrequency = 4.5f;
+        [SerializeField] private float chargeWindupSeconds = 0.42f;
+        [SerializeField] private float chargeSeconds = 0.48f;
+        [SerializeField] private float chargeCooldownSeconds = 2.1f;
+        [SerializeField] private float chargeSpeedMultiplier = 3.2f;
+        [SerializeField] private float eliteEnrageHpRatio = 0.5f;
+        [SerializeField] private float eliteEnrageSpeedMultiplier = 1.55f;
 
         private Rigidbody2D rb;
+        private Health health;
+        private float nextChargeTime;
+        private float chargeStateEndTime;
+        private Vector2 chargeDirection = Vector2.right;
+        private ChargeState chargeState;
+
+        private enum ChargeState
+        {
+            Ready,
+            Windup,
+            Charging
+        }
 
         /// <summary>
         /// 이동 대상입니다. 보통 플레이어를 가리킵니다.
@@ -36,9 +58,18 @@ namespace PawVoyage.Enemy
             moveSpeed = Mathf.Max(0f, value);
         }
 
+        /// <summary>
+        /// 몬스터 데이터에서 지정한 이동/공격 행동 타입을 적용합니다.
+        /// </summary>
+        public void SetBehavior(MonsterBehaviorType value)
+        {
+            behaviorType = value;
+        }
+
         private void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
+            health = GetComponent<Health>();
             rb.gravityScale = 0f;
             rb.freezeRotation = true;
 
@@ -61,9 +92,95 @@ namespace PawVoyage.Enemy
                 return;
             }
 
-            Vector2 direction = ((Vector2)target.position - rb.position).normalized;
-            Vector2 nextPosition = rb.position + direction * moveSpeed * Time.fixedDeltaTime;
+            Vector2 direction = GetMoveDirection();
+            float currentMoveSpeed = GetCurrentMoveSpeed();
+            Vector2 nextPosition = rb.position + direction * currentMoveSpeed * Time.fixedDeltaTime;
             rb.MovePosition(nextPosition);
+        }
+
+        private Vector2 GetMoveDirection()
+        {
+            Vector2 toTarget = ((Vector2)target.position - rb.position).normalized;
+            return behaviorType switch
+            {
+                MonsterBehaviorType.Zigzag => GetZigzagDirection(toTarget),
+                MonsterBehaviorType.Charger => GetChargeDirection(toTarget),
+                MonsterBehaviorType.EliteBrute => GetEliteDirection(toTarget),
+                _ => toTarget
+            };
+        }
+
+        private Vector2 GetZigzagDirection(Vector2 toTarget)
+        {
+            Vector2 side = new Vector2(-toTarget.y, toTarget.x);
+            float wave = Mathf.Sin(Time.time * zigzagFrequency + GetInstanceID() * 0.17f) * zigzagAmplitude;
+            return (toTarget + side * wave).normalized;
+        }
+
+        private Vector2 GetChargeDirection(Vector2 toTarget)
+        {
+            UpdateChargeState(toTarget);
+            return chargeState == ChargeState.Charging ? chargeDirection : toTarget;
+        }
+
+        private Vector2 GetEliteDirection(Vector2 toTarget)
+        {
+            if (IsEliteEnraged())
+            {
+                return GetZigzagDirection(toTarget);
+            }
+
+            return GetChargeDirection(toTarget);
+        }
+
+        private void UpdateChargeState(Vector2 toTarget)
+        {
+            if (chargeState == ChargeState.Windup && Time.time >= chargeStateEndTime)
+            {
+                chargeState = ChargeState.Charging;
+                chargeStateEndTime = Time.time + chargeSeconds;
+                chargeDirection = toTarget.sqrMagnitude > 0.001f ? toTarget : chargeDirection;
+                return;
+            }
+
+            if (chargeState == ChargeState.Charging && Time.time >= chargeStateEndTime)
+            {
+                chargeState = ChargeState.Ready;
+                nextChargeTime = Time.time + chargeCooldownSeconds;
+                return;
+            }
+
+            if (chargeState == ChargeState.Ready && Time.time >= nextChargeTime)
+            {
+                chargeState = ChargeState.Windup;
+                chargeStateEndTime = Time.time + chargeWindupSeconds;
+                chargeDirection = toTarget.sqrMagnitude > 0.001f ? toTarget : chargeDirection;
+            }
+        }
+
+        private float GetCurrentMoveSpeed()
+        {
+            float speed = moveSpeed;
+            if (chargeState == ChargeState.Windup)
+            {
+                speed = 0f;
+            }
+            else if (chargeState == ChargeState.Charging)
+            {
+                speed *= chargeSpeedMultiplier;
+            }
+
+            if (behaviorType == MonsterBehaviorType.EliteBrute && IsEliteEnraged())
+            {
+                speed *= eliteEnrageSpeedMultiplier;
+            }
+
+            return speed;
+        }
+
+        private bool IsEliteEnraged()
+        {
+            return health != null && health.CurrentHp <= Mathf.CeilToInt(health.MaxHp * eliteEnrageHpRatio);
         }
 
         private void FindTarget()

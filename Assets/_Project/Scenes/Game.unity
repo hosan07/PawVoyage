@@ -521,7 +521,7 @@ MonoBehaviour:
     pickupRadiusMult: 1
     damageReduction: 0
   destroyOnDeath: 0
-  invulnerabilityDuration: 0.35
+  invulnerabilityDuration: 0.22
   currentHp: 100
   onDamaged:
     m_PersistentCalls:

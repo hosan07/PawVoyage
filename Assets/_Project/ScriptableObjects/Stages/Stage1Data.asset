@@ -29,10 +29,10 @@ MonoBehaviour:
     durationPreset: 1
     clearTimeSeconds: 180
     fastEnemyStartTime: 32
-    tankEnemyStartTime: 75
+    tankEnemyStartTime: 68
     eliteSpawnTime: 150
     spawnIntervalStart: 1.25
-    spawnIntervalEnd: 0.5
+    spawnIntervalEnd: 0.38
     enemyCapStart: 18
-    enemyCapEnd: 56
+    enemyCapEnd: 68
     clearCondition: 1

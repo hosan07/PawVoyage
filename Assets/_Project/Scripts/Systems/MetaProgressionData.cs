@@ -16,7 +16,7 @@ namespace PawVoyage.Systems
     /// </summary>
     public static class MetaProgressionData
     {
-        private const int MaxUpgradeLevel = 5;
+        private const int MaxUpgradeLevel = 10;
         private const string DamageLevelKey = "MetaUpgrade.DamageLevel";
         private const string MaxHpLevelKey = "MetaUpgrade.MaxHpLevel";
         private const string AttackSpeedLevelKey = "MetaUpgrade.AttackSpeedLevel";
@@ -53,7 +53,14 @@ namespace PawVoyage.Systems
                 _ => 25
             };
 
-            return baseCost + level * 15;
+            if (level < 5)
+            {
+                return baseCost + level * 15;
+            }
+
+            int earlyCost = baseCost + 4 * 15;
+            int lateLevel = level - 4;
+            return earlyCost + lateLevel * lateLevel * 45;
         }
 
         public static string GetDisplayName(MetaUpgradeType upgradeType)

@@ -17,6 +17,16 @@ namespace PawVoyage.Systems
     /// </summary>
     public class WaveSpawner : MonoBehaviour
     {
+        private const float HpScaleStart = 0.75f;
+        private const float HpScaleMid = 1.55f;
+        private const float HpScaleEnd = 2.45f;
+        private const float DamageScaleStart = 1f;
+        private const float DamageScaleMid = 1.65f;
+        private const float DamageScaleEnd = 2.4f;
+        private const float SpeedScaleStart = 0.92f;
+        private const float SpeedScaleMid = 1.18f;
+        private const float SpeedScaleEnd = 1.38f;
+
         [SerializeField] private EnemyController enemyPrefab = null;
         [SerializeField] private Transform player;
         [SerializeField] private string playerName = "Player";
@@ -258,11 +268,13 @@ namespace PawVoyage.Systems
             if (enemy.TryGetComponent(out ContactDamage contactDamage))
             {
                 contactDamage.SetDamage(GetCurrentEnemyContactDamage() + tuning.ContactDamageBonus);
+                contactDamage.SetHitCooldown(GetCurrentContactHitCooldown());
             }
 
             enemy.gameObject.name = tuning.Name;
             enemy.transform.localScale = Vector3.one * tuning.Scale;
             enemy.SetMoveSpeed(enemyMoveSpeed * tuning.MoveSpeedMultiplier);
+            enemy.SetBehavior(tuning.BehaviorType);
 
             if (!enemy.TryGetComponent<EnemyHitFeedback>(out _))
             {
@@ -301,17 +313,21 @@ namespace PawVoyage.Systems
 
             enemy.gameObject.name = "EliteEnemy";
             enemy.transform.localScale = Vector3.one * Mathf.Max(0.1f, monsterData != null ? monsterData.SizeScale : eliteScale);
-            enemy.SetMoveSpeed(monsterData != null ? monsterData.MoveSpeed : eliteMoveSpeed);
+            enemy.SetMoveSpeed(GetScaledMoveSpeed(monsterData != null ? monsterData.MoveSpeed : eliteMoveSpeed) * 1.08f);
+            enemy.SetBehavior(MonsterBehaviorType.EliteBrute);
 
             if (enemy.TryGetComponent(out Health health))
             {
-                health.SetBaseMaxHp(monsterData != null ? monsterData.MaxHp : eliteMaxHp, true);
+                int baseMaxHp = monsterData != null ? monsterData.MaxHp : eliteMaxHp;
+                health.SetBaseMaxHp(Mathf.RoundToInt(baseMaxHp * 1.35f), true);
                 TrackEliteHealth(health);
             }
 
             if (enemy.TryGetComponent(out ContactDamage contactDamage))
             {
-                contactDamage.SetDamage(monsterData != null ? monsterData.ContactDamage : eliteContactDamage);
+                int baseDamage = monsterData != null ? monsterData.ContactDamage : eliteContactDamage;
+                contactDamage.SetDamage(Mathf.Max(baseDamage + 2, Mathf.RoundToInt(baseDamage * 1.4f)));
+                contactDamage.SetHitCooldown(0.28f);
             }
 
             if (enemy.TryGetComponent(out EnemyReward enemyReward))
@@ -332,17 +348,19 @@ namespace PawVoyage.Systems
         {
             if (enemy.TryGetComponent(out Health health))
             {
-                health.SetBaseMaxHp(monsterData.MaxHp, true);
+                health.SetBaseMaxHp(GetScaledMaxHp(monsterData.MaxHp), true);
             }
 
             if (enemy.TryGetComponent(out ContactDamage contactDamage))
             {
-                contactDamage.SetDamage(monsterData.ContactDamage);
+                contactDamage.SetDamage(GetScaledContactDamage(monsterData.ContactDamage));
+                contactDamage.SetHitCooldown(GetCurrentContactHitCooldown());
             }
 
             enemy.gameObject.name = monsterData.DisplayName;
             enemy.transform.localScale = Vector3.one * monsterData.SizeScale;
-            enemy.SetMoveSpeed(monsterData.MoveSpeed);
+            enemy.SetMoveSpeed(GetScaledMoveSpeed(monsterData.MoveSpeed));
+            enemy.SetBehavior(monsterData.BehaviorType);
 
             if (!enemy.TryGetComponent<EnemyHitFeedback>(out _))
             {
@@ -452,7 +470,8 @@ namespace PawVoyage.Systems
                     coinAmount: 1,
                     healthPickupDropChance: 0.04f,
                     scale: 0.58f,
-                    color: new Color(1f, 0.58f, 0.1f, 1f)),
+                    color: new Color(1f, 0.58f, 0.1f, 1f),
+                    behaviorType: MonsterBehaviorType.Zigzag),
                 EnemyVariantType.Tank => new EnemyVariantTuning(
                     "TankEnemy",
                     maxHpMultiplier: 1.85f,
@@ -462,7 +481,8 @@ namespace PawVoyage.Systems
                     coinAmount: 3,
                     healthPickupDropChance: 0.12f,
                     scale: 1.05f,
-                    color: new Color(0.95f, 0.12f, 0.35f, 1f)),
+                    color: new Color(0.95f, 0.12f, 0.35f, 1f),
+                    behaviorType: MonsterBehaviorType.Charger),
                 _ => new EnemyVariantTuning(
                     "Enemy",
                     maxHpMultiplier: 1f,
@@ -472,7 +492,8 @@ namespace PawVoyage.Systems
                     coinAmount: 1,
                     healthPickupDropChance: 0.08f,
                     scale: 0.75f,
-                    color: Color.red)
+                    color: Color.red,
+                    behaviorType: MonsterBehaviorType.Chase)
             };
         }
 
@@ -607,6 +628,38 @@ namespace PawVoyage.Systems
             return Mathf.Max(0, scaledDamage);
         }
 
+        private int GetScaledMaxHp(int baseMaxHp)
+        {
+            float progress = GetRunProgress();
+            float scale = progress < 0.5f
+                ? Mathf.Lerp(HpScaleStart, HpScaleMid, progress / 0.5f)
+                : Mathf.Lerp(HpScaleMid, HpScaleEnd, (progress - 0.5f) / 0.5f);
+            return Mathf.Max(1, Mathf.RoundToInt(baseMaxHp * scale));
+        }
+
+        private int GetScaledContactDamage(int baseContactDamage)
+        {
+            float progress = GetRunProgress();
+            float scale = progress < 0.5f
+                ? Mathf.Lerp(DamageScaleStart, DamageScaleMid, progress / 0.5f)
+                : Mathf.Lerp(DamageScaleMid, DamageScaleEnd, (progress - 0.5f) / 0.5f);
+            return Mathf.Max(1, Mathf.RoundToInt(baseContactDamage * scale));
+        }
+
+        private float GetScaledMoveSpeed(float baseMoveSpeed)
+        {
+            float progress = GetRunProgress();
+            float scale = progress < 0.5f
+                ? Mathf.Lerp(SpeedScaleStart, SpeedScaleMid, progress / 0.5f)
+                : Mathf.Lerp(SpeedScaleMid, SpeedScaleEnd, (progress - 0.5f) / 0.5f);
+            return Mathf.Max(0.1f, baseMoveSpeed * scale);
+        }
+
+        private float GetCurrentContactHitCooldown()
+        {
+            return Mathf.Lerp(0.46f, 0.28f, GetRunProgress());
+        }
+
         private void OnDrawGizmosSelected()
         {
             Transform center = player != null ? player : transform;
@@ -692,7 +745,8 @@ namespace PawVoyage.Systems
                 int coinAmount,
                 float healthPickupDropChance,
                 float scale,
-                Color color)
+                Color color,
+                MonsterBehaviorType behaviorType)
             {
                 Name = name;
                 MaxHpMultiplier = maxHpMultiplier;
@@ -703,6 +757,7 @@ namespace PawVoyage.Systems
                 HealthPickupDropChance = healthPickupDropChance;
                 Scale = Mathf.Max(0.1f, scale);
                 Color = color;
+                BehaviorType = behaviorType;
             }
 
             public string Name { get; }
@@ -714,6 +769,7 @@ namespace PawVoyage.Systems
             public float HealthPickupDropChance { get; }
             public float Scale { get; }
             public Color Color { get; }
+            public MonsterBehaviorType BehaviorType { get; }
         }
     }
 }

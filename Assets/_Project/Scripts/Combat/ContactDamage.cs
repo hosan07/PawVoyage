@@ -25,6 +25,14 @@ namespace PawVoyage.Combat
             damage = Mathf.Max(0, value);
         }
 
+        /// <summary>
+        /// 같은 대상에게 다시 접촉 피해를 줄 수 있는 간격을 설정합니다.
+        /// </summary>
+        public void SetHitCooldown(float value)
+        {
+            hitCooldown = Mathf.Max(0.05f, value);
+        }
+
         private void OnCollisionStay2D(Collision2D collision)
         {
             TryDamage(collision.collider);
