@@ -34,6 +34,10 @@ namespace PawVoyage.Systems
         public int BarnDamageTaken { get; private set; }
         public int BarnCurrentHp { get; private set; }
         public int BarnMaxHp { get; private set; }
+        public int TotalEnemiesSpawned { get; private set; }
+        public int PlayerTargetEnemiesSpawned { get; private set; }
+        public int BarnTargetEnemiesSpawned { get; private set; }
+        public int PeakAliveEnemies { get; private set; }
         public float ClearTimeSeconds => Mathf.Max(1f, clearTimeSeconds);
         public StageClearCondition ClearCondition => clearCondition;
         public bool IsCleared { get; private set; }
@@ -208,6 +212,30 @@ namespace PawVoyage.Systems
         public void RegisterMiniBossSeen()
         {
             MiniBossSeen = true;
+        }
+
+        /// <summary>
+        /// 스폰된 적의 목표 유형을 기록해 Farmer와 Barn 압박을 비교합니다.
+        /// </summary>
+        public void RegisterEnemySpawn(MonsterTargetPolicy targetPolicy)
+        {
+            TotalEnemiesSpawned++;
+            if (targetPolicy == MonsterTargetPolicy.Barn)
+            {
+                BarnTargetEnemiesSpawned++;
+            }
+            else
+            {
+                PlayerTargetEnemiesSpawned++;
+            }
+        }
+
+        /// <summary>
+        /// 런 중 동시 적 수 최고치를 기록해 스폰 밀도를 점검합니다.
+        /// </summary>
+        public void RegisterAliveEnemyCount(int aliveEnemyCount)
+        {
+            PeakAliveEnemies = Mathf.Max(PeakAliveEnemies, Mathf.Max(0, aliveEnemyCount));
         }
 
         /// <summary>

@@ -210,7 +210,10 @@ namespace PawVoyage.UI
                 runStats.BarnDestroyed,
                 runStats.SelectedWeaponsSummary,
                 runStats.MiniBossSeen,
-                false);
+                false,
+                runStats.TotalEnemiesSpawned,
+                runStats.BarnTargetEnemiesSpawned,
+                runStats.PeakAliveEnemies);
         }
 
         public void RestartScene()
@@ -273,7 +276,9 @@ namespace PawVoyage.UI
             return $"생존 {FormatTime(runStats.ElapsedSeconds)}   처치 {runStats.KillCount}\n" +
                    $"코인 {runStats.CoinsCollected}   레벨업 {runStats.LevelUpCount}\n" +
                    $"받은 피해 {runStats.DamageTaken}   피격 {runStats.HitCount}\n" +
-                   $"{barnText}\n획득 무기 {runStats.SelectedWeaponsSummary}";
+                   $"{barnText}\n" +
+                   $"압박 적 {runStats.TotalEnemiesSpawned}  헛간 타깃 {runStats.BarnTargetEnemiesSpawned}  최대 동시 {runStats.PeakAliveEnemies}\n" +
+                   $"획득 무기 {runStats.SelectedWeaponsSummary}";
         }
 
         private static string FormatTime(float seconds)

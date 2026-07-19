@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Red Pup Shadow
   role: 0
   maxHp: 30
-  contactDamage: 1
+  contactDamage: 2
   moveSpeed: 2
   behaviorType: 0
   targetPolicy: 0

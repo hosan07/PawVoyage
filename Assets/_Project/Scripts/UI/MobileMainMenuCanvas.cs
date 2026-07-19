@@ -138,7 +138,7 @@ namespace PawVoyage.UI
             }
 
             string clear = RunResultData.Stage1MvpCleared ? "클리어" : "도전 중";
-            recordText.text = $"Stage 1: {clear}\n최고 생존 {FormatTime(RunResultData.BestElapsedSeconds)}   최고 처치 {RunResultData.BestKillCount}\n최근 코인 {RunResultData.LastCoinCount}   최근 레벨업 {RunResultData.LastLevelUpCount}";
+            recordText.text = $"Stage 1: {clear}\n최고 생존 {FormatTime(RunResultData.BestElapsedSeconds)}   최고 처치 {RunResultData.BestKillCount}\n최근 코인 {RunResultData.LastCoinCount}   레벨업 {RunResultData.LastLevelUpCount}\n적 {RunResultData.LastTotalEnemiesSpawned}  헛간 타깃 {RunResultData.LastBarnTargetEnemiesSpawned}  최대 동시 {RunResultData.LastPeakAliveEnemies}";
         }
 
         private static RectTransform CreatePanel(Transform parent, string name, Vector2 position, Vector2 size, Vector2 anchor, Vector2 pivot)

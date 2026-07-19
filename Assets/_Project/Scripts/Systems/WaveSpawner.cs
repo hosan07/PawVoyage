@@ -154,6 +154,8 @@ namespace PawVoyage.Systems
         {
             FindPlayerIfNeeded();
             EnsureBarnObjective();
+            runStats ??= RunStats.Instance;
+            runStats?.RegisterAliveEnemyCount(CountAliveEnemies());
 
             if (player == null || Time.time < nextSpawnTime || CountAliveEnemies() >= GetCurrentMaxAliveEnemies())
             {
@@ -195,6 +197,8 @@ namespace PawVoyage.Systems
             EnemyVariantType variantType = ChooseEnemyVariant();
             MonsterTargetPolicy targetPolicy = ConfigureEnemyStats(enemy, variantType);
             AssignEnemyTarget(enemy, targetPolicy);
+            runStats ??= RunStats.Instance;
+            runStats?.RegisterEnemySpawn(targetPolicy);
         }
 
         private void TrySpawnElite()
@@ -215,6 +219,7 @@ namespace PawVoyage.Systems
 
             ConfigureEliteStats(elite);
             AssignEnemyTarget(elite, MonsterTargetPolicy.Mixed);
+            runStats?.RegisterEnemySpawn(MonsterTargetPolicy.Mixed);
         }
 
         private void TryShowVariantNotice()

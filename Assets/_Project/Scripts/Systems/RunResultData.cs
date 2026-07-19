@@ -22,6 +22,9 @@ namespace PawVoyage.Systems
         private const string LastBarnDestroyedKey = "RunResult.LastBarnDestroyed";
         private const string LastSelectedWeaponsKey = "RunResult.LastSelectedWeapons";
         private const string LastMiniBossSeenKey = "RunResult.LastMiniBossSeen";
+        private const string LastTotalEnemiesSpawnedKey = "RunResult.LastTotalEnemiesSpawned";
+        private const string LastBarnTargetEnemiesSpawnedKey = "RunResult.LastBarnTargetEnemiesSpawned";
+        private const string LastPeakAliveEnemiesKey = "RunResult.LastPeakAliveEnemies";
         private const string BestElapsedSecondsKey = "RunResult.BestElapsedSeconds";
         private const string BestKillCountKey = "RunResult.BestKillCount";
         private const string TotalCoinsKey = "RunResult.TotalCoins";
@@ -42,6 +45,9 @@ namespace PawVoyage.Systems
         public static bool LastBarnDestroyed => PlayerPrefs.GetInt(LastBarnDestroyedKey, 0) == 1;
         public static string LastSelectedWeapons => PlayerPrefs.GetString(LastSelectedWeaponsKey, "None");
         public static bool LastMiniBossSeen => PlayerPrefs.GetInt(LastMiniBossSeenKey, 0) == 1;
+        public static int LastTotalEnemiesSpawned => PlayerPrefs.GetInt(LastTotalEnemiesSpawnedKey, 0);
+        public static int LastBarnTargetEnemiesSpawned => PlayerPrefs.GetInt(LastBarnTargetEnemiesSpawnedKey, 0);
+        public static int LastPeakAliveEnemies => PlayerPrefs.GetInt(LastPeakAliveEnemiesKey, 0);
         public static float BestElapsedSeconds => PlayerPrefs.GetFloat(BestElapsedSecondsKey, 0f);
         public static int BestKillCount => PlayerPrefs.GetInt(BestKillCountKey, 0);
         public static int TotalCoins => PlayerPrefs.GetInt(TotalCoinsKey, 0);
@@ -65,7 +71,10 @@ namespace PawVoyage.Systems
             bool barnDestroyed = false,
             string selectedWeapons = "None",
             bool miniBossSeen = false,
-            bool recordStage1MvpClear = false)
+            bool recordStage1MvpClear = false,
+            int totalEnemiesSpawned = 0,
+            int barnTargetEnemiesSpawned = 0,
+            int peakAliveEnemies = 0)
         {
             float safeElapsedSeconds = Mathf.Max(0f, elapsedSeconds);
             int safeKillCount = Mathf.Max(0, killCount);
@@ -78,6 +87,9 @@ namespace PawVoyage.Systems
             int safeBarnCurrentHp = Mathf.Clamp(barnCurrentHp, 0, Mathf.Max(1, safeBarnMaxHp));
             string safeFailureReason = string.IsNullOrWhiteSpace(failureReason) ? "None" : failureReason;
             string safeSelectedWeapons = string.IsNullOrWhiteSpace(selectedWeapons) ? "None" : selectedWeapons;
+            int safeTotalEnemiesSpawned = Mathf.Max(0, totalEnemiesSpawned);
+            int safeBarnTargetEnemiesSpawned = Mathf.Clamp(barnTargetEnemiesSpawned, 0, safeTotalEnemiesSpawned);
+            int safePeakAliveEnemies = Mathf.Max(0, peakAliveEnemies);
 
             PlayerPrefs.SetInt(HasLastResultKey, 1);
             PlayerPrefs.SetInt(LastClearedKey, cleared ? 1 : 0);
@@ -94,6 +106,9 @@ namespace PawVoyage.Systems
             PlayerPrefs.SetInt(LastBarnDestroyedKey, barnDestroyed ? 1 : 0);
             PlayerPrefs.SetString(LastSelectedWeaponsKey, safeSelectedWeapons);
             PlayerPrefs.SetInt(LastMiniBossSeenKey, miniBossSeen ? 1 : 0);
+            PlayerPrefs.SetInt(LastTotalEnemiesSpawnedKey, safeTotalEnemiesSpawned);
+            PlayerPrefs.SetInt(LastBarnTargetEnemiesSpawnedKey, safeBarnTargetEnemiesSpawned);
+            PlayerPrefs.SetInt(LastPeakAliveEnemiesKey, safePeakAliveEnemies);
             AddCoins(safeCoinCount);
 
             if (cleared && recordStage1MvpClear)
@@ -134,6 +149,9 @@ namespace PawVoyage.Systems
             PlayerPrefs.DeleteKey(LastBarnDestroyedKey);
             PlayerPrefs.DeleteKey(LastSelectedWeaponsKey);
             PlayerPrefs.DeleteKey(LastMiniBossSeenKey);
+            PlayerPrefs.DeleteKey(LastTotalEnemiesSpawnedKey);
+            PlayerPrefs.DeleteKey(LastBarnTargetEnemiesSpawnedKey);
+            PlayerPrefs.DeleteKey(LastPeakAliveEnemiesKey);
             PlayerPrefs.DeleteKey(BestElapsedSecondsKey);
             PlayerPrefs.DeleteKey(BestKillCountKey);
             PlayerPrefs.Save();
