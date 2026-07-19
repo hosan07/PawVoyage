@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -13,6 +14,7 @@ namespace PawVoyage.UI
         [SerializeField] private string titleText = "PAUSED";
         [SerializeField] private string resumeText = "RESUME";
         [SerializeField] private string retryText = "RETRY";
+        [SerializeField] private bool useCanvasUi = true;
 
         private GUIStyle titleStyle;
         private GUIStyle bodyStyle;
@@ -21,11 +23,16 @@ namespace PawVoyage.UI
         private bool isPaused;
         private float previousTimeScale = 1f;
 
+        public event Action<bool> PauseStateChanged;
+        public bool IsPaused => isPaused;
+
         private void OnDisable()
         {
             if (isPaused)
             {
                 Time.timeScale = previousTimeScale <= 0f ? 1f : previousTimeScale;
+                isPaused = false;
+                PauseStateChanged?.Invoke(false);
             }
         }
 
@@ -52,6 +59,11 @@ namespace PawVoyage.UI
 
         private void OnGUI()
         {
+            if (useCanvasUi)
+            {
+                return;
+            }
+
             EnsureStyles();
 
             if (!isPaused && DrawPauseButton())
@@ -83,6 +95,11 @@ namespace PawVoyage.UI
 
         private void HandlePointerInput()
         {
+            if (useCanvasUi)
+            {
+                return;
+            }
+
             if (!TryGetPressedScreenPosition(out Vector2 screenPosition))
             {
                 return;
@@ -155,7 +172,7 @@ namespace PawVoyage.UI
             return new Rect(panelRect.x + 58f, panelRect.y + 194f, panelRect.width - 116f, 46f);
         }
 
-        private void TogglePause()
+        public void TogglePause()
         {
             if (isPaused)
             {
@@ -167,7 +184,7 @@ namespace PawVoyage.UI
             }
         }
 
-        private void Pause()
+        public void Pause()
         {
             if (isPaused || Time.timeScale <= 0f)
             {
@@ -177,9 +194,10 @@ namespace PawVoyage.UI
             isPaused = true;
             previousTimeScale = Time.timeScale;
             Time.timeScale = 0f;
+            PauseStateChanged?.Invoke(true);
         }
 
-        private void Resume()
+        public void Resume()
         {
             if (!isPaused)
             {
@@ -188,9 +206,10 @@ namespace PawVoyage.UI
 
             isPaused = false;
             Time.timeScale = previousTimeScale <= 0f ? 1f : previousTimeScale;
+            PauseStateChanged?.Invoke(false);
         }
 
-        private void RestartScene()
+        public void RestartScene()
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);

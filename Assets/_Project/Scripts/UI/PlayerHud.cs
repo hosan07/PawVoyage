@@ -14,6 +14,7 @@ namespace PawVoyage.UI
         [SerializeField] private Vector2 position = new Vector2(24f, 36f);
         [SerializeField] private Vector2 barSize = new Vector2(300f, 22f);
         [SerializeField] private float rowSpacing = 40f;
+        [SerializeField] private bool useCanvasUi = true;
 
         private static Texture2D whiteTexture;
 
@@ -30,10 +31,20 @@ namespace PawVoyage.UI
             playerExperience = GetComponent<PlayerExperience>();
             runStats = GetComponent<RunStats>();
             EnsureTexture();
+
+            if (useCanvasUi)
+            {
+                MobileHudCanvas.CreateOrGet(this);
+            }
         }
 
         private void OnGUI()
         {
+            if (useCanvasUi)
+            {
+                return;
+            }
+
             EnsureStyle();
 
             float width = Mathf.Min(barSize.x, Screen.width - position.x * 2f);
