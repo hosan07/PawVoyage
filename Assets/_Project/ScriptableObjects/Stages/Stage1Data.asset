@@ -33,16 +33,16 @@ MonoBehaviour:
   mvpConfig:
     durationPreset: 1
     clearTimeSeconds: 180
-    fastEnemyStartTime: 32
-    tankEnemyStartTime: 68
+    fastEnemyStartTime: 28
+    tankEnemyStartTime: 60
     eliteSpawnTime: 150
-    spawnIntervalStart: 1.25
-    spawnIntervalEnd: 0.38
-    enemyCapStart: 18
-    enemyCapEnd: 68
-    barnMaxHp: 520
-    barnDefense: 0.08
-    raiderStartTime: 82
-    raiderWeightStart: 8
-    raiderWeightEnd: 22
+    spawnIntervalStart: 1.2
+    spawnIntervalEnd: 0.34
+    enemyCapStart: 20
+    enemyCapEnd: 74
+    barnMaxHp: 480
+    barnDefense: 0.05
+    raiderStartTime: 72
+    raiderWeightStart: 12
+    raiderWeightEnd: 32
     clearCondition: 1

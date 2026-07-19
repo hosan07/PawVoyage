@@ -16,8 +16,8 @@ MonoBehaviour:
   displayName: Cat Fan Claws
   slotType: 0
   attackType: 0
-  baseDamage: 4
-  baseCooldown: 0.58
+  baseDamage: 3
+  baseCooldown: 0.55
   baseRange: 6.2
   projectileSpeed: 11
   baseProjectileCount: 3

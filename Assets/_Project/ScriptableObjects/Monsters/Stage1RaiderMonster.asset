@@ -15,9 +15,9 @@ MonoBehaviour:
   monsterId: stage1_raider
   displayName: Barn Raider
   role: 4
-  maxHp: 36
-  contactDamage: 2
-  moveSpeed: 1.85
+  maxHp: 42
+  contactDamage: 3
+  moveSpeed: 2.05
   behaviorType: 0
   targetPolicy: 1
   sizeScale: 0.82

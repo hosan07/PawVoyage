@@ -16,8 +16,8 @@ MonoBehaviour:
   displayName: Farmer Tool
   slotType: 0
   attackType: 0
-  baseDamage: 5
-  baseCooldown: 0.62
+  baseDamage: 6
+  baseCooldown: 0.65
   baseRange: 5.8
   projectileSpeed: 10
   baseProjectileCount: 1

@@ -20,14 +20,14 @@ namespace PawVoyage.Systems
     public class WaveSpawner : MonoBehaviour
     {
         private const float HpScaleStart = 0.75f;
-        private const float HpScaleMid = 1.55f;
-        private const float HpScaleEnd = 2.45f;
+        private const float HpScaleMid = 1.7f;
+        private const float HpScaleEnd = 2.75f;
         private const float DamageScaleStart = 1.15f;
-        private const float DamageScaleMid = 1.95f;
-        private const float DamageScaleEnd = 2.85f;
+        private const float DamageScaleMid = 2.1f;
+        private const float DamageScaleEnd = 3.1f;
         private const float SpeedScaleStart = 0.92f;
-        private const float SpeedScaleMid = 1.18f;
-        private const float SpeedScaleEnd = 1.38f;
+        private const float SpeedScaleMid = 1.25f;
+        private const float SpeedScaleEnd = 1.52f;
 
         [SerializeField] private EnemyController enemyPrefab = null;
         [SerializeField] private Transform player;
@@ -805,7 +805,7 @@ namespace PawVoyage.Systems
 
         private float GetCurrentContactHitCooldown()
         {
-            return Mathf.Lerp(0.46f, 0.28f, GetRunProgress());
+            return Mathf.Lerp(0.46f, 0.25f, GetRunProgress());
         }
 
         private void OnDrawGizmosSelected()

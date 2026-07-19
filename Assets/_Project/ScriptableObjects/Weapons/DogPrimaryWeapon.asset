@@ -16,10 +16,10 @@ MonoBehaviour:
   displayName: Dog Primary
   slotType: 0
   attackType: 0
-  baseDamage: 8
-  baseCooldown: 0.45
-  baseRange: 7
-  projectileSpeed: 12
+  baseDamage: 12
+  baseCooldown: 0.65
+  baseRange: 6.4
+  projectileSpeed: 13
   baseProjectileCount: 1
   basePierce: 0
   projectileColor: {r: 0.95, g: 0.38, b: 0.12, a: 1}

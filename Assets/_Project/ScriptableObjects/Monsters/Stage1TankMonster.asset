@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Pink Blocker
   role: 2
   maxHp: 56
-  contactDamage: 3
+  contactDamage: 4
   moveSpeed: 1.45
   behaviorType: 2
   targetPolicy: 0
