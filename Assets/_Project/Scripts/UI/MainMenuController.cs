@@ -19,6 +19,7 @@ namespace PawVoyage.UI
         [SerializeField] private string catText = "CAT";
         [SerializeField] private int devCoinGrantAmount = 500;
         [SerializeField] private bool showDeveloperPanel = false;
+        [SerializeField] private bool useCanvasUi = true;
 
         private readonly MetaUpgradeType[] shopUpgrades =
         {
@@ -43,11 +44,18 @@ namespace PawVoyage.UI
         private void Awake()
         {
             Time.timeScale = 1f;
+            if (useCanvasUi)
+            {
+                MobileMainMenuCanvas.CreateOrGet(this);
+            }
         }
 
         private void Update()
         {
-            HandlePointerInput();
+            if (!useCanvasUi)
+            {
+                HandlePointerInput();
+            }
 
             Keyboard keyboard = Keyboard.current;
             if (keyboard == null)
@@ -68,6 +76,11 @@ namespace PawVoyage.UI
 
         private void OnGUI()
         {
+            if (useCanvasUi)
+            {
+                return;
+            }
+
             EnsureStyles();
 
             GUI.Label(new Rect(0f, Screen.height * 0.16f, Screen.width, 54f), titleText, titleStyle);
@@ -140,7 +153,7 @@ namespace PawVoyage.UI
             }
         }
 
-        private void StartGame()
+        public void StartGame()
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(gameSceneName);
@@ -259,11 +272,11 @@ namespace PawVoyage.UI
             ShowShopFeedback("Upgrade levels reset.");
         }
 
-        private void TryBuyUpgrade(MetaUpgradeType upgradeType)
+        public bool TryBuyUpgrade(MetaUpgradeType upgradeType)
         {
             if (lastShopActionFrame == Time.frameCount)
             {
-                return;
+                return false;
             }
 
             lastShopActionFrame = Time.frameCount;
@@ -271,20 +284,31 @@ namespace PawVoyage.UI
             if (MetaProgressionData.IsMaxLevel(upgradeType))
             {
                 ShowShopFeedback($"{MetaProgressionData.GetDisplayName(upgradeType)} is already maxed.");
-                return;
+                return false;
             }
 
             int cost = MetaProgressionData.GetCost(upgradeType);
             if (RunResultData.TotalCoins < cost)
             {
                 ShowShopFeedback($"Need {cost - RunResultData.TotalCoins} more coins.");
-                return;
+                return false;
             }
 
             if (MetaProgressionData.TryPurchase(upgradeType))
             {
                 ShowShopFeedback($"{MetaProgressionData.GetDisplayName(upgradeType)} upgraded!");
+                return true;
             }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Canvas 메뉴에서 선택한 동행 펫을 저장합니다.
+        /// </summary>
+        public void SelectCompanion(SelectedAnimalType animalType)
+        {
+            AnimalSelectionData.SelectAnimal(animalType);
         }
 
         private void DrawShopFeedback()

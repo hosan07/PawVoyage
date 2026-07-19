@@ -72,12 +72,12 @@ namespace PawVoyage.Systems
         {
             return upgradeType switch
             {
-                MetaUpgradeType.Damage => "Training Bite",
-                MetaUpgradeType.MaxHp => "Sturdy Paws",
-                MetaUpgradeType.AttackSpeed => "Quick Reflex",
-                MetaUpgradeType.MoveSpeed => "Trail Runner",
-                MetaUpgradeType.PickupRadius => "Keen Nose",
-                _ => "Unknown"
+                MetaUpgradeType.Damage => "농기구 숙련",
+                MetaUpgradeType.MaxHp => "튼튼한 장화",
+                MetaUpgradeType.AttackSpeed => "빠른 손놀림",
+                MetaUpgradeType.MoveSpeed => "들길 질주",
+                MetaUpgradeType.PickupRadius => "예리한 감각",
+                _ => "알 수 없음"
             };
         }
 
@@ -85,11 +85,11 @@ namespace PawVoyage.Systems
         {
             return upgradeType switch
             {
-                MetaUpgradeType.Damage => "+1 Damage / Lv",
-                MetaUpgradeType.MaxHp => "+10 Max HP / Lv",
-                MetaUpgradeType.AttackSpeed => "+5% Attack Speed / Lv",
-                MetaUpgradeType.MoveSpeed => "+5% Move Speed / Lv",
-                MetaUpgradeType.PickupRadius => "+6% Pickup Radius / Lv",
+                MetaUpgradeType.Damage => "레벨당 피해 +1",
+                MetaUpgradeType.MaxHp => "레벨당 최대 체력 +10",
+                MetaUpgradeType.AttackSpeed => "레벨당 공격 속도 +5%",
+                MetaUpgradeType.MoveSpeed => "레벨당 이동 속도 +5%",
+                MetaUpgradeType.PickupRadius => "레벨당 획득 범위 +6%",
                 _ => string.Empty
             };
         }
