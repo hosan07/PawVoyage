@@ -1,3 +1,4 @@
+using System;
 using PawVoyage.Combat;
 using PawVoyage.Systems;
 using UnityEngine;
@@ -16,6 +17,7 @@ namespace PawVoyage.UI
         [SerializeField] private string retryText = "RETRY";
         [SerializeField] private string menuText = "MENU";
         [SerializeField] private string mainMenuSceneName = "MainMenu";
+        [SerializeField] private bool useCanvasUi = true;
 
         private Health health;
         private GUIStyle titleStyle;
@@ -24,6 +26,10 @@ namespace PawVoyage.UI
         private bool isGameOver;
         private RunFailureReason failureReason = RunFailureReason.None;
         private float previousTimeScale = 1f;
+
+        public event Action<GameOverPanel> PanelOpened;
+        public string CanvasTitle => GetCanvasTitle();
+        public string CanvasSummary => GetCanvasSummary();
 
         private void Awake()
         {
@@ -60,7 +66,10 @@ namespace PawVoyage.UI
                 return;
             }
 
-            HandlePointerInput();
+            if (!useCanvasUi)
+            {
+                HandlePointerInput();
+            }
 
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && keyboard.rKey.wasPressedThisFrame)
@@ -75,7 +84,7 @@ namespace PawVoyage.UI
 
         private void OnGUI()
         {
-            if (!isGameOver)
+            if (!isGameOver || useCanvasUi)
             {
                 return;
             }
@@ -175,6 +184,7 @@ namespace PawVoyage.UI
             RecordResult(false, reason);
             previousTimeScale = Time.timeScale;
             Time.timeScale = 0f;
+            PanelOpened?.Invoke(this);
         }
 
         private static void RecordResult(bool cleared, RunFailureReason reason)
@@ -203,13 +213,13 @@ namespace PawVoyage.UI
                 false);
         }
 
-        private void RestartScene()
+        public void RestartScene()
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
-        private void LoadMainMenu()
+        public void LoadMainMenu()
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(mainMenuSceneName);
@@ -237,6 +247,33 @@ namespace PawVoyage.UI
                 RunFailureReason.FarmerDeath => "FARMER DOWN",
                 _ => titleText
             };
+        }
+
+        private string GetCanvasTitle()
+        {
+            return failureReason switch
+            {
+                RunFailureReason.BarnDestroyed => "헛간 파괴",
+                RunFailureReason.FarmerDeath => "농부가 쓰러졌습니다",
+                _ => "전투 실패"
+            };
+        }
+
+        private static string GetCanvasSummary()
+        {
+            RunStats runStats = RunStats.Instance;
+            if (runStats == null)
+            {
+                return "이번 전투 기록을 불러올 수 없습니다.";
+            }
+
+            string barnText = runStats.BarnMaxHp > 0
+                ? $"헛간 {runStats.BarnCurrentHp}/{runStats.BarnMaxHp}  피해 {runStats.BarnDamageTaken}"
+                : "헛간 기록 없음";
+            return $"생존 {FormatTime(runStats.ElapsedSeconds)}   처치 {runStats.KillCount}\n" +
+                   $"코인 {runStats.CoinsCollected}   레벨업 {runStats.LevelUpCount}\n" +
+                   $"받은 피해 {runStats.DamageTaken}   피격 {runStats.HitCount}\n" +
+                   $"{barnText}\n획득 무기 {runStats.SelectedWeaponsSummary}";
         }
 
         private static string FormatTime(float seconds)

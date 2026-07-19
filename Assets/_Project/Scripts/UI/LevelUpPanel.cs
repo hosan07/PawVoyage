@@ -1,3 +1,4 @@
+using System;
 using PawVoyage.Combat;
 using PawVoyage.Player;
 using PawVoyage.Systems;
@@ -45,6 +46,7 @@ namespace PawVoyage.UI
         [SerializeField] private WeaponData auraWeapon = null;
         [SerializeField] private WeaponData boomerangWeapon = null;
         [SerializeField, Range(1, 5)] private int visibleRewardCount = 3;
+        [SerializeField] private bool useCanvasUi = true;
 
         private PlayerExperience playerExperience;
         private PlayerController playerController;
@@ -91,6 +93,11 @@ namespace PawVoyage.UI
         private readonly LevelUpRewardType[] visibleRewards = new LevelUpRewardType[10];
         private readonly Rect[] rewardButtonRects = new Rect[5];
 
+        public event Action<LevelUpPanel> PanelOpened;
+        public event Action PanelClosed;
+        public bool IsShowing => IsOpen;
+        public int VisibleRewardCount => GetVisibleRewardCount();
+
         private bool IsOpen => pendingLevelUps > 0;
 
         private void Awake()
@@ -121,13 +128,17 @@ namespace PawVoyage.UI
             }
 
             UpdateButtonRects();
-            HandlePointerSelection();
+            if (!useCanvasUi)
+            {
+                HandlePointerSelection();
+            }
+
             HandleKeyboardSelection();
         }
 
         private void OnGUI()
         {
-            if (!IsOpen)
+            if (!IsOpen || useCanvasUi)
             {
                 return;
             }
@@ -162,6 +173,8 @@ namespace PawVoyage.UI
                 previousTimeScale = Time.timeScale;
                 Time.timeScale = 0f;
             }
+
+            PanelOpened?.Invoke(this);
         }
 
         private void ApplyReward(LevelUpRewardType rewardType)
@@ -307,7 +320,16 @@ namespace PawVoyage.UI
         {
             GameSfx.PlayCardSelect();
             pendingLevelUps = Mathf.Max(0, pendingLevelUps - 1);
+
+            if (pendingLevelUps > 0)
+            {
+                RollVisibleRewards();
+                PanelOpened?.Invoke(this);
+                return;
+            }
+
             ResumeGameIfNeeded();
+            PanelClosed?.Invoke();
         }
 
         private void ResumeGameIfNeeded()
@@ -418,6 +440,34 @@ namespace PawVoyage.UI
             ApplyReward(visibleRewards[index]);
         }
 
+        /// <summary>
+        /// Canvas 카드가 선택한 보상을 기존 레벨업 처리로 전달합니다.
+        /// </summary>
+        public void SelectReward(int index)
+        {
+            ApplyRewardByIndex(index);
+        }
+
+        /// <summary>
+        /// Canvas 카드 표시를 위한 보상 문구를 제공합니다.
+        /// </summary>
+        public string GetRewardLabelForIndex(int index)
+        {
+            return index >= 0 && index < GetVisibleRewardCount()
+                ? GetRewardLabel(visibleRewards[index])
+                : string.Empty;
+        }
+
+        /// <summary>
+        /// Canvas 카드 표시를 위한 보상 아이콘 경로를 제공합니다.
+        /// </summary>
+        public string GetRewardIconPathForIndex(int index)
+        {
+            return index >= 0 && index < GetVisibleRewardCount()
+                ? GetRewardIconPath(visibleRewards[index])
+                : UiIconDrawer.FarmerTool;
+        }
+
         private void RollVisibleRewards()
         {
             int count = GetVisibleRewardCount();
@@ -458,18 +508,18 @@ namespace PawVoyage.UI
 
         private LevelUpRewardType PickWeightedReward()
         {
-            int roll = Random.Range(0, WeaponRewardWeight + PassiveRewardWeight + UtilityRewardWeight);
+            int roll = UnityEngine.Random.Range(0, WeaponRewardWeight + PassiveRewardWeight + UtilityRewardWeight);
             if (roll < WeaponRewardWeight)
             {
-                return weaponRewardPool[Random.Range(0, weaponRewardPool.Length)];
+                return weaponRewardPool[UnityEngine.Random.Range(0, weaponRewardPool.Length)];
             }
 
             if (roll < WeaponRewardWeight + PassiveRewardWeight)
             {
-                return passiveRewardPool[Random.Range(0, passiveRewardPool.Length)];
+                return passiveRewardPool[UnityEngine.Random.Range(0, passiveRewardPool.Length)];
             }
 
-            return utilityRewardPool[Random.Range(0, utilityRewardPool.Length)];
+            return utilityRewardPool[UnityEngine.Random.Range(0, utilityRewardPool.Length)];
         }
 
         private bool ContainsVisibleReward(LevelUpRewardType rewardType, int filledCount)

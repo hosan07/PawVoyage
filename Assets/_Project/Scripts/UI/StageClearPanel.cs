@@ -1,3 +1,4 @@
+using System;
 using PawVoyage.Systems;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -16,6 +17,7 @@ namespace PawVoyage.UI
         [SerializeField] private string menuText = "MENU";
         [SerializeField] private string mainMenuSceneName = "MainMenu";
         [SerializeField] private int stage1MvpClearBonusCoins = 60;
+        [SerializeField] private bool useCanvasUi = true;
 
         private RunStats runStats;
         private GUIStyle titleStyle;
@@ -24,6 +26,10 @@ namespace PawVoyage.UI
         private bool isOpen;
         private bool grantedClearBonus;
         private float previousTimeScale = 1f;
+
+        public event Action<StageClearPanel> PanelOpened;
+        public string CanvasTitle => "스테이지 클리어";
+        public string CanvasSummary => GetCanvasSummary();
 
         private void Awake()
         {
@@ -52,7 +58,10 @@ namespace PawVoyage.UI
                 return;
             }
 
-            HandlePointerInput();
+            if (!useCanvasUi)
+            {
+                HandlePointerInput();
+            }
 
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && keyboard.rKey.wasPressedThisFrame)
@@ -67,7 +76,7 @@ namespace PawVoyage.UI
 
         private void OnGUI()
         {
-            if (!isOpen)
+            if (!isOpen || useCanvasUi)
             {
                 return;
             }
@@ -180,6 +189,7 @@ namespace PawVoyage.UI
                 runStats.IsStage1MvpRun);
             previousTimeScale = Time.timeScale;
             Time.timeScale = 0f;
+            PanelOpened?.Invoke(this);
         }
 
         private void GrantClearBonusIfNeeded()
@@ -199,13 +209,13 @@ namespace PawVoyage.UI
             runStats.AddBonusCoins(safeBonus);
         }
 
-        private void RestartScene()
+        public void RestartScene()
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
-        private void LoadMainMenu()
+        public void LoadMainMenu()
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(mainMenuSceneName);
@@ -218,6 +228,18 @@ namespace PawVoyage.UI
             string clearText = runStats.IsStage1MvpRun ? "Stage 1 MVP Clear Saved" : "Dev Test Clear";
             string barnText = runStats.BarnMaxHp > 0 ? $"Barn {runStats.BarnCurrentHp}/{runStats.BarnMaxHp}   Barn Damage {runStats.BarnDamageTaken}" : "Barn Not Found";
             return $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}   Coins {runStats.CoinsCollected}{bonusText}\nLevel Ups {runStats.LevelUpCount}   Mini Boss {bossText}\nDamage Taken {runStats.DamageTaken}   Hits {runStats.HitCount}\n{barnText}\nWeapons {runStats.SelectedWeaponsSummary}\n{clearText}";
+        }
+
+        private string GetCanvasSummary()
+        {
+            string barnText = runStats.BarnMaxHp > 0
+                ? $"헛간 {runStats.BarnCurrentHp}/{runStats.BarnMaxHp}  피해 {runStats.BarnDamageTaken}"
+                : "헛간 기록 없음";
+            string bonusText = runStats.BonusCoinsCollected > 0 ? $" (+{runStats.BonusCoinsCollected})" : string.Empty;
+            return $"생존 {FormatTime(runStats.ElapsedSeconds)}   처치 {runStats.KillCount}\n" +
+                   $"코인 {runStats.CoinsCollected}{bonusText}   레벨업 {runStats.LevelUpCount}\n" +
+                   $"받은 피해 {runStats.DamageTaken}   피격 {runStats.HitCount}\n" +
+                   $"{barnText}\n획득 무기 {runStats.SelectedWeaponsSummary}";
         }
 
         private void EnsureStyles()

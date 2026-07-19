@@ -27,6 +27,9 @@ namespace PawVoyage.UI
         private PlayerExperience playerExperience;
         private RunStats runStats;
         private PausePanel pausePanel;
+        private LevelUpPanel levelUpPanel;
+        private GameOverPanel gameOverPanel;
+        private StageClearPanel stageClearPanel;
         private BarnObjective barnObjective;
         private WaveSpawner waveSpawner;
 
@@ -41,6 +44,8 @@ namespace PawVoyage.UI
         private Text combatLabel;
         private Text coinLabel;
         private GameObject pauseOverlay;
+        private GameObject levelUpOverlay;
+        private GameObject resultOverlay;
 
         public static MobileHudCanvas CreateOrGet(PlayerHud sourceHud)
         {
@@ -90,6 +95,9 @@ namespace PawVoyage.UI
             playerExperience = playerHud.GetComponent<PlayerExperience>();
             runStats = playerHud.GetComponent<RunStats>();
             pausePanel = playerHud.GetComponent<PausePanel>();
+            levelUpPanel = playerHud.GetComponent<LevelUpPanel>();
+            gameOverPanel = playerHud.GetComponent<GameOverPanel>();
+            stageClearPanel = playerHud.GetComponent<StageClearPanel>();
 
             if (farmerFill == null)
             {
@@ -102,6 +110,26 @@ namespace PawVoyage.UI
                 pausePanel.PauseStateChanged += SetPauseOverlayVisible;
                 SetPauseOverlayVisible(pausePanel.IsPaused);
             }
+
+            if (levelUpPanel != null)
+            {
+                levelUpPanel.PanelOpened -= ShowLevelUp;
+                levelUpPanel.PanelOpened += ShowLevelUp;
+                levelUpPanel.PanelClosed -= HideLevelUp;
+                levelUpPanel.PanelClosed += HideLevelUp;
+            }
+
+            if (gameOverPanel != null)
+            {
+                gameOverPanel.PanelOpened -= ShowGameOver;
+                gameOverPanel.PanelOpened += ShowGameOver;
+            }
+
+            if (stageClearPanel != null)
+            {
+                stageClearPanel.PanelOpened -= ShowStageClear;
+                stageClearPanel.PanelOpened += ShowStageClear;
+            }
         }
 
         private void OnDestroy()
@@ -109,6 +137,22 @@ namespace PawVoyage.UI
             if (pausePanel != null)
             {
                 pausePanel.PauseStateChanged -= SetPauseOverlayVisible;
+            }
+
+            if (levelUpPanel != null)
+            {
+                levelUpPanel.PanelOpened -= ShowLevelUp;
+                levelUpPanel.PanelClosed -= HideLevelUp;
+            }
+
+            if (gameOverPanel != null)
+            {
+                gameOverPanel.PanelOpened -= ShowGameOver;
+            }
+
+            if (stageClearPanel != null)
+            {
+                stageClearPanel.PanelOpened -= ShowStageClear;
             }
         }
 
@@ -214,6 +258,96 @@ namespace PawVoyage.UI
             {
                 pauseOverlay.SetActive(isVisible);
             }
+        }
+
+        private void ShowLevelUp(LevelUpPanel panel)
+        {
+            RemoveOverlay(ref levelUpOverlay);
+            levelUpOverlay = CreateOverlay("LevelUpOverlay", new Color(0f, 0f, 0f, 0.62f));
+
+            RectTransform panelRect = CreatePanel(levelUpOverlay.transform, "LevelUpPanel", Vector2.zero, new Vector2(760f, 760f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+            Text title = CreateText(panelRect, "Title", 44, TextAnchor.MiddleCenter, Color.white);
+            title.fontStyle = FontStyle.Bold;
+            title.text = "레벨 업";
+            SetAnchored(title.rectTransform, new Vector2(0f, -66f), new Vector2(640f, 56f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
+
+            Text subtitle = CreateText(panelRect, "Subtitle", 22, TextAnchor.MiddleCenter, new Color(0.8f, 0.87f, 0.95f, 1f));
+            subtitle.text = "원하는 성장 카드를 선택하세요";
+            SetAnchored(subtitle.rectTransform, new Vector2(0f, -122f), new Vector2(640f, 38f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
+
+            int count = panel.VisibleRewardCount;
+            for (int i = 0; i < count; i++)
+            {
+                int rewardIndex = i;
+                float y = -210f - 148f * i;
+                Button card = CreateButton(panelRect, "RewardCard", new Vector2(0f, y), new Vector2(650f, 120f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Color(0.15f, 0.22f, 0.32f, 1f));
+                CreateIcon(card.transform, "Icon", panel.GetRewardIconPathForIndex(rewardIndex), new Vector2(38f, 0f), new Vector2(62f, 62f), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f));
+                Text label = CreateText(card.transform, "Label", 27, TextAnchor.MiddleLeft, Color.white);
+                label.fontStyle = FontStyle.Bold;
+                label.text = panel.GetRewardLabelForIndex(rewardIndex);
+                SetAnchored(label.rectTransform, new Vector2(124f, 0f), new Vector2(480f, 72f), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f));
+                card.onClick.AddListener(() => panel.SelectReward(rewardIndex));
+            }
+        }
+
+        private void HideLevelUp()
+        {
+            RemoveOverlay(ref levelUpOverlay);
+        }
+
+        private void ShowGameOver(GameOverPanel panel)
+        {
+            ShowResult(panel.CanvasTitle, panel.CanvasSummary, UiIconDrawer.FarmerHealth, new Color(0.56f, 0.16f, 0.16f, 1f), panel.RestartScene, panel.LoadMainMenu);
+        }
+
+        private void ShowStageClear(StageClearPanel panel)
+        {
+            ShowResult(panel.CanvasTitle, panel.CanvasSummary, UiIconDrawer.FarmBarn, new Color(0.18f, 0.48f, 0.28f, 1f), panel.RestartScene, panel.LoadMainMenu);
+        }
+
+        private void ShowResult(string titleValue, string summaryValue, string iconPath, Color titleColor, UnityEngine.Events.UnityAction retryAction, UnityEngine.Events.UnityAction menuAction)
+        {
+            RemoveOverlay(ref resultOverlay);
+            resultOverlay = CreateOverlay("ResultOverlay", new Color(0f, 0f, 0f, 0.7f));
+            RectTransform panel = CreatePanel(resultOverlay.transform, "ResultPanel", Vector2.zero, new Vector2(760f, 820f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+            CreateIcon(panel, "ResultIcon", iconPath, new Vector2(0f, -76f), new Vector2(76f, 76f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
+
+            Text title = CreateText(panel, "Title", 42, TextAnchor.MiddleCenter, titleColor);
+            title.fontStyle = FontStyle.Bold;
+            title.text = titleValue;
+            SetAnchored(title.rectTransform, new Vector2(0f, -160f), new Vector2(660f, 62f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
+
+            Text summary = CreateText(panel, "Summary", 23, TextAnchor.MiddleCenter, new Color(0.88f, 0.92f, 0.97f, 1f));
+            summary.text = summaryValue;
+            summary.lineSpacing = 1.25f;
+            SetAnchored(summary.rectTransform, new Vector2(0f, -276f), new Vector2(660f, 220f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
+
+            Button retryButton = CreateButton(panel, "RetryButton", new Vector2(0f, -572f), new Vector2(560f, 72f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Color(0.2f, 0.48f, 0.32f, 1f));
+            SetButtonText(retryButton, "다시 시작");
+            retryButton.onClick.AddListener(retryAction);
+
+            Button menuButton = CreateButton(panel, "MenuButton", new Vector2(0f, -668f), new Vector2(560f, 72f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Color(0.2f, 0.26f, 0.36f, 1f));
+            SetButtonText(menuButton, "메인 메뉴");
+            menuButton.onClick.AddListener(menuAction);
+        }
+
+        private GameObject CreateOverlay(string name, Color color)
+        {
+            GameObject overlay = CreateImage(transform, name, color).gameObject;
+            SetStretch(overlay.GetComponent<RectTransform>(), 0f, 0f, 0f, 0f);
+            return overlay;
+        }
+
+        private static void RemoveOverlay(ref GameObject overlay)
+        {
+            if (overlay == null)
+            {
+                return;
+            }
+
+            overlay.SetActive(false);
+            Object.Destroy(overlay);
+            overlay = null;
         }
 
         private static void CreateStatusRow(RectTransform parent, float y, string iconPath, string initialLabel, Color fillColor, out Image fill, out Text label)

@@ -21,6 +21,7 @@ namespace PawVoyage.UI
         public const string CompanionDog = "Companions/icon_companion_dog.svg";
         public const string CompanionCat = "Companions/icon_companion_cat.svg";
         public const string FarmFence = "Farm/icon_farm_fence.svg";
+        public const string FarmBarn = "Farm/icon_farm_barn.svg";
 
         private const string IconAssetRoot = "Assets/_Project/Sprites/UI/Icons/";
         private static readonly Dictionary<string, Sprite> spriteCache = new Dictionary<string, Sprite>();
