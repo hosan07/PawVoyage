@@ -17,6 +17,7 @@ namespace PawVoyage.UI
         public const string FarmCoin = "Currency/icon_currency_coin.svg";
         public const string Pause = "Actions/icon_action_pause.svg";
         public const string FarmerTool = "Farmer/icon_farmer_tool.svg";
+        public const string FarmerAvatar = "Farmer/icon_farmer_avatar.svg";
         public const string CompanionDog = "Companions/icon_companion_dog.svg";
         public const string CompanionCat = "Companions/icon_companion_cat.svg";
         public const string FarmFence = "Farm/icon_farm_fence.svg";

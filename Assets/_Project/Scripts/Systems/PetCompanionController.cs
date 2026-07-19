@@ -22,15 +22,35 @@ namespace PawVoyage.Systems
         [SerializeField] private Color catColor = new Color(0.55f, 0.6f, 0.68f, 1f);
 
         private SpriteRenderer spriteRenderer;
+        private AutoAttack autoAttack;
         private SelectedAnimalType animalType = SelectedAnimalType.Dog;
         private Vector2 smoothedPosition;
+        private Vector3 baseScale;
+        private float attackPulse;
 
         public SelectedAnimalType AnimalType => animalType;
 
         private void Awake()
         {
             spriteRenderer = GetComponent<SpriteRenderer>();
+            autoAttack = GetComponent<AutoAttack>();
             smoothedPosition = transform.position;
+        }
+
+        private void OnEnable()
+        {
+            if (autoAttack != null)
+            {
+                autoAttack.AttackPerformed += PlayAttackFeedback;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (autoAttack != null)
+            {
+                autoAttack.AttackPerformed -= PlayAttackFeedback;
+            }
         }
 
         private void LateUpdate()
@@ -45,6 +65,10 @@ namespace PawVoyage.Systems
             targetPosition.y += bob;
             smoothedPosition = Vector2.Lerp(smoothedPosition, targetPosition, 1f - Mathf.Exp(-followSmooth * Time.deltaTime));
             transform.position = smoothedPosition;
+
+            attackPulse = Mathf.MoveTowards(attackPulse, 0f, Time.deltaTime * 7f);
+            float pulseScale = 1f + attackPulse * 0.16f;
+            transform.localScale = baseScale * pulseScale;
         }
 
         public void Initialize(Transform target, AnimalData animalData, WeaponData weaponData, SelectedAnimalType selectedAnimal)
@@ -67,10 +91,12 @@ namespace PawVoyage.Systems
             string iconPath = selectedAnimal == SelectedAnimalType.Cat
                 ? UiIconDrawer.CompanionCat
                 : UiIconDrawer.CompanionDog;
-            spriteRenderer.sprite = UiIconDrawer.GetSprite(iconPath) ?? CreateFallbackSprite();
-            spriteRenderer.color = selectedAnimal == SelectedAnimalType.Cat ? catColor : dogColor;
+            Sprite iconSprite = UiIconDrawer.GetSprite(iconPath);
+            spriteRenderer.sprite = iconSprite ?? CreateFallbackSprite();
+            spriteRenderer.color = iconSprite != null ? Color.white : selectedAnimal == SelectedAnimalType.Cat ? catColor : dogColor;
             spriteRenderer.sortingOrder = 4;
-            transform.localScale = Vector3.one * GetVisualScale(animalData);
+            baseScale = Vector3.one * GetVisualScale(animalData);
+            transform.localScale = baseScale;
         }
 
         private static float GetVisualScale(AnimalData animalData)
@@ -80,7 +106,12 @@ namespace PawVoyage.Systems
                 return 0.38f;
             }
 
-            return animalData.AttackPattern == AnimalAttackPattern.Ranged ? 0.42f : 0.46f;
+            return animalData.AttackPattern == AnimalAttackPattern.Ranged ? 0.52f : 0.56f;
+        }
+
+        private void PlayAttackFeedback()
+        {
+            attackPulse = 1f;
         }
 
         private static Sprite CreateFallbackSprite()

@@ -22,3 +22,6 @@ MonoBehaviour:
   projectileSpeed: 11
   baseProjectileCount: 3
   basePierce: 0
+  projectileColor: {r: 0.3, g: 0.84, b: 1, a: 1}
+  projectileVisualScale: {x: 0.5, y: 0.18}
+  playAttackSound: 0

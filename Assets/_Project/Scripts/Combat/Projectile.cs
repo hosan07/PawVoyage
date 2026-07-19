@@ -82,7 +82,15 @@ namespace PawVoyage.Combat
         /// <summary>
         /// 투사체 이동과 피해 데이터를 초기화합니다.
         /// </summary>
-        public void Initialize(Vector2 fireDirection, float fireSpeed, int attackDamage, LayerMask layers, string requiredTag, int pierceCount = 0)
+        public void Initialize(
+            Vector2 fireDirection,
+            float fireSpeed,
+            int attackDamage,
+            LayerMask layers,
+            string requiredTag,
+            int pierceCount = 0,
+            Color projectileColor = default,
+            Vector2 projectileScale = default)
         {
             direction = fireDirection.sqrMagnitude > 0.001f ? fireDirection.normalized : Vector2.right;
             speed = Mathf.Max(0f, fireSpeed);
@@ -92,6 +100,28 @@ namespace PawVoyage.Combat
             targetTag = requiredTag;
             despawnTime = Time.time + lifetime;
             transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);
+            ApplyWeaponVisual(projectileColor, projectileScale);
+        }
+
+        private void ApplyWeaponVisual(Color projectileColor, Vector2 projectileScale)
+        {
+            if (spriteRenderer == null)
+            {
+                spriteRenderer = GetComponent<SpriteRenderer>();
+            }
+
+            if (spriteRenderer != null && projectileColor != default)
+            {
+                spriteRenderer.color = projectileColor;
+            }
+
+            if (projectileScale != Vector2.zero)
+            {
+                transform.localScale = new Vector3(
+                    Mathf.Max(0.05f, projectileScale.x),
+                    Mathf.Max(0.05f, projectileScale.y),
+                    1f);
+            }
         }
 
         private bool IsValidTarget(Collider2D other)

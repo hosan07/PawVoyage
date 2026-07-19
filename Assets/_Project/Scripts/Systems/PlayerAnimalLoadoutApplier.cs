@@ -1,6 +1,7 @@
 using PawVoyage.Combat;
 using PawVoyage.Data;
 using PawVoyage.Player;
+using PawVoyage.UI;
 using UnityEngine;
 
 namespace PawVoyage.Systems
@@ -17,6 +18,7 @@ namespace PawVoyage.Systems
         [SerializeField] private int farmerBaseHp = 120;
         [SerializeField] private float farmerMoveSpeed = 5f;
         [SerializeField] private WeaponData farmerPrimaryWeapon = null;
+        [SerializeField] private float farmerVisualScale = 2.15f;
 
         [Header("Pet")]
         [SerializeField] private AnimalData dogAnimalData = null;
@@ -47,6 +49,14 @@ namespace PawVoyage.Systems
             GetComponent<Health>().SetBaseMaxHp(farmerBaseHp, true);
             GetComponent<PlayerController>().MoveSpeed = farmerMoveSpeed;
             GetComponent<WeaponController>().EquipPrimary(farmerPrimaryWeapon);
+
+            FarmerVisualController visualController = GetComponent<FarmerVisualController>();
+            if (visualController == null)
+            {
+                visualController = gameObject.AddComponent<FarmerVisualController>();
+            }
+
+            visualController.Configure(UiIconDrawer.GetSprite(UiIconDrawer.FarmerAvatar), farmerVisualScale);
         }
 
         private void SpawnSelectedPet()

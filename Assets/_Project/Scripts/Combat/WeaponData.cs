@@ -32,6 +32,10 @@ namespace PawVoyage.Combat
         [SerializeField] private float projectileSpeed = 12f;
         [SerializeField] private int baseProjectileCount = 1;
         [SerializeField] private int basePierce = 0;
+        [Header("Visual")]
+        [SerializeField] private Color projectileColor = new Color(1f, 0.92f, 0.1f, 1f);
+        [SerializeField] private Vector2 projectileVisualScale = new Vector2(0.7f, 0.22f);
+        [SerializeField] private bool playAttackSound = true;
 
         public string WeaponId => weaponId;
         public string DisplayName => displayName;
@@ -43,5 +47,10 @@ namespace PawVoyage.Combat
         public float ProjectileSpeed => Mathf.Max(0f, projectileSpeed);
         public int BaseProjectileCount => Mathf.Max(1, baseProjectileCount);
         public int BasePierce => Mathf.Max(0, basePierce);
+        public Color ProjectileColor => projectileColor;
+        public Vector2 ProjectileVisualScale => new Vector2(
+            Mathf.Max(0.05f, projectileVisualScale.x),
+            Mathf.Max(0.05f, projectileVisualScale.y));
+        public bool PlayAttackSound => playAttackSound;
     }
 }

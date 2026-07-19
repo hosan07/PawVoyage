@@ -1,3 +1,4 @@
+using System;
 using PawVoyage.Enemy;
 using PawVoyage.Systems;
 using UnityEngine;
@@ -37,6 +38,11 @@ namespace PawVoyage.Combat
         /// 현재 공격 수치를 결정하는 무기 데이터입니다. 없으면 직렬화된 기본값을 사용합니다.
         /// </summary>
         public WeaponData WeaponData => weaponData;
+
+        /// <summary>
+        /// 실제 공격이 실행된 직후 전투 시각 효과를 연결하기 위한 이벤트입니다.
+        /// </summary>
+        public event Action AttackPerformed;
 
         /// <summary>
         /// 레벨업 보상으로 추가 피해를 누적합니다.
@@ -141,7 +147,12 @@ namespace PawVoyage.Combat
 
         private void Attack(Transform target)
         {
-            GameSfx.PlayAttack();
+            if (weaponData == null || weaponData.PlayAttackSound)
+            {
+                GameSfx.PlayAttack();
+            }
+
+            AttackPerformed?.Invoke();
 
             Vector2 origin = projectileSpawnPoint != null ? projectileSpawnPoint.position : transform.position;
             Vector2 direction = ((Vector2)target.position - origin).normalized;
@@ -178,7 +189,15 @@ namespace PawVoyage.Combat
                 Projectile projectile = projectilePrefab != null
                     ? Instantiate(projectilePrefab, origin, Quaternion.identity)
                     : CreateFallbackProjectile(origin);
-                projectile.Initialize(fireDirection, GetProjectileSpeed(), CalculateDamage(), targetLayers, targetTag, GetPierceCount());
+                projectile.Initialize(
+                    fireDirection,
+                    GetProjectileSpeed(),
+                    CalculateDamage(),
+                    targetLayers,
+                    targetTag,
+                    GetPierceCount(),
+                    GetProjectileColor(),
+                    GetProjectileVisualScale());
             }
         }
 
@@ -241,6 +260,16 @@ namespace PawVoyage.Combat
         private WeaponAttackType GetAttackType()
         {
             return weaponData != null ? weaponData.AttackType : WeaponAttackType.Projectile;
+        }
+
+        private Color GetProjectileColor()
+        {
+            return weaponData != null ? weaponData.ProjectileColor : new Color(1f, 0.92f, 0.1f, 1f);
+        }
+
+        private Vector2 GetProjectileVisualScale()
+        {
+            return weaponData != null ? weaponData.ProjectileVisualScale : new Vector2(0.7f, 0.22f);
         }
 
         private void OnDrawGizmosSelected()
