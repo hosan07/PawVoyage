@@ -9,7 +9,7 @@ namespace PawVoyage.Systems
     }
 
     /// <summary>
-    /// 메인 메뉴에서 고른 플레이어 동물 선택값을 저장합니다.
+    /// 메인 메뉴에서 고른 동행 펫 선택값을 저장합니다.
     /// </summary>
     public static class AnimalSelectionData
     {
@@ -27,9 +27,10 @@ namespace PawVoyage.Systems
         }
 
         public static string SelectedAnimalName => SelectedAnimal == SelectedAnimalType.Cat ? "CAT" : "DOG";
+        public static string SelectedCompanionName => SelectedAnimal == SelectedAnimalType.Cat ? "CAT" : "DOG";
 
         /// <summary>
-        /// 선택한 동물을 저장합니다.
+        /// 선택한 동행 펫을 저장합니다.
         /// </summary>
         public static void SelectAnimal(SelectedAnimalType animalType)
         {

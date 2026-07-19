@@ -44,6 +44,11 @@ namespace PawVoyage.UI
             return LoadSprite(relativePath) != null;
         }
 
+        public static Sprite GetSprite(string relativePath)
+        {
+            return LoadSprite(relativePath);
+        }
+
         private static Sprite LoadSprite(string relativePath)
         {
             if (string.IsNullOrEmpty(relativePath))

@@ -150,12 +150,12 @@ namespace PawVoyage.UI
         {
             if (!RunResultData.HasLastResult)
             {
-                return $"Selected {AnimalSelectionData.SelectedAnimalName}   Stage 1 {(RunResultData.Stage1MvpCleared ? "Cleared" : "Uncleared")}\n\nLast Run\nNo run yet.\n\nBest\nSurvival 00:00   Kills 0\n\nCoins\nAvailable {RunResultData.TotalCoins}";
+                return $"Companion {AnimalSelectionData.SelectedCompanionName}   Stage 1 {(RunResultData.Stage1MvpCleared ? "Cleared" : "Uncleared")}\n\nLast Run\nNo run yet.\n\nBest\nSurvival 00:00   Kills 0\n\nCoins\nAvailable {RunResultData.TotalCoins}";
             }
 
             string result = RunResultData.LastCleared ? "Cleared" : "Failed";
             return
-                $"Selected {AnimalSelectionData.SelectedAnimalName}   Stage 1 {(RunResultData.Stage1MvpCleared ? "Cleared" : "Uncleared")}\n\n" +
+                $"Companion {AnimalSelectionData.SelectedCompanionName}   Stage 1 {(RunResultData.Stage1MvpCleared ? "Cleared" : "Uncleared")}\n\n" +
                 $"Last Run\n{result}   Survival {FormatTime(RunResultData.LastElapsedSeconds)}   Kills {RunResultData.LastKillCount}   Coins {RunResultData.LastCoinCount}\n" +
                 $"Level Ups {RunResultData.LastLevelUpCount}   Mini Boss {(RunResultData.LastMiniBossSeen ? "Seen" : "Not Seen")}\n" +
                 $"Damage Taken {RunResultData.LastDamageTaken}   Hits {RunResultData.LastHitCount}\n" +
@@ -169,21 +169,31 @@ namespace PawVoyage.UI
         {
             Rect selectorRect = GetAnimalSelectorRect();
             GUI.Box(selectorRect, GUIContent.none);
-            GUI.Label(new Rect(selectorRect.x + 16f, selectorRect.y + 10f, selectorRect.width - 32f, 22f), "CHARACTER", shopTitleStyle);
+            GUI.Label(new Rect(selectorRect.x + 16f, selectorRect.y + 10f, selectorRect.width - 32f, 22f), "COMPANION", shopTitleStyle);
 
             SelectedAnimalType selectedAnimal = AnimalSelectionData.SelectedAnimal;
             string dogLabel = selectedAnimal == SelectedAnimalType.Dog ? $"{dogText} SELECTED" : dogText;
             string catLabel = selectedAnimal == SelectedAnimalType.Cat ? $"{catText} SELECTED" : catText;
 
-            if (GUI.Button(GetDogButtonRect(), dogLabel, secondaryButtonStyle))
+            if (DrawCompanionButton(GetDogButtonRect(), dogLabel, UiIconDrawer.CompanionDog))
             {
                 AnimalSelectionData.SelectAnimal(SelectedAnimalType.Dog);
             }
 
-            if (GUI.Button(GetCatButtonRect(), catLabel, secondaryButtonStyle))
+            if (DrawCompanionButton(GetCatButtonRect(), catLabel, UiIconDrawer.CompanionCat))
             {
                 AnimalSelectionData.SelectAnimal(SelectedAnimalType.Cat);
             }
+        }
+
+        private bool DrawCompanionButton(Rect buttonRect, string label, string iconPath)
+        {
+            bool pressed = GUI.Button(buttonRect, GUIContent.none, secondaryButtonStyle);
+            Rect iconRect = new Rect(buttonRect.x + 12f, buttonRect.y + 11f, 28f, 28f);
+            Rect labelRect = new Rect(buttonRect.x + 48f, buttonRect.y, buttonRect.width - 56f, buttonRect.height);
+            UiIconDrawer.Draw(iconPath, iconRect, Color.white);
+            GUI.Label(labelRect, label, secondaryButtonStyle);
+            return pressed;
         }
 
         private void DrawShop()
