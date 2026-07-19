@@ -15,6 +15,11 @@ namespace PawVoyage.Systems
         private const string LastLevelUpCountKey = "RunResult.LastLevelUpCount";
         private const string LastHitCountKey = "RunResult.LastHitCount";
         private const string LastDamageTakenKey = "RunResult.LastDamageTaken";
+        private const string LastFailureReasonKey = "RunResult.LastFailureReason";
+        private const string LastBarnDamageTakenKey = "RunResult.LastBarnDamageTaken";
+        private const string LastBarnCurrentHpKey = "RunResult.LastBarnCurrentHp";
+        private const string LastBarnMaxHpKey = "RunResult.LastBarnMaxHp";
+        private const string LastBarnDestroyedKey = "RunResult.LastBarnDestroyed";
         private const string LastSelectedWeaponsKey = "RunResult.LastSelectedWeapons";
         private const string LastMiniBossSeenKey = "RunResult.LastMiniBossSeen";
         private const string BestElapsedSecondsKey = "RunResult.BestElapsedSeconds";
@@ -30,6 +35,11 @@ namespace PawVoyage.Systems
         public static int LastLevelUpCount => PlayerPrefs.GetInt(LastLevelUpCountKey, 0);
         public static int LastHitCount => PlayerPrefs.GetInt(LastHitCountKey, 0);
         public static int LastDamageTaken => PlayerPrefs.GetInt(LastDamageTakenKey, 0);
+        public static string LastFailureReason => PlayerPrefs.GetString(LastFailureReasonKey, "None");
+        public static int LastBarnDamageTaken => PlayerPrefs.GetInt(LastBarnDamageTakenKey, 0);
+        public static int LastBarnCurrentHp => PlayerPrefs.GetInt(LastBarnCurrentHpKey, 0);
+        public static int LastBarnMaxHp => PlayerPrefs.GetInt(LastBarnMaxHpKey, 0);
+        public static bool LastBarnDestroyed => PlayerPrefs.GetInt(LastBarnDestroyedKey, 0) == 1;
         public static string LastSelectedWeapons => PlayerPrefs.GetString(LastSelectedWeaponsKey, "None");
         public static bool LastMiniBossSeen => PlayerPrefs.GetInt(LastMiniBossSeenKey, 0) == 1;
         public static float BestElapsedSeconds => PlayerPrefs.GetFloat(BestElapsedSecondsKey, 0f);
@@ -48,6 +58,11 @@ namespace PawVoyage.Systems
             int levelUpCount = 0,
             int hitCount = 0,
             int damageTaken = 0,
+            string failureReason = "None",
+            int barnDamageTaken = 0,
+            int barnCurrentHp = 0,
+            int barnMaxHp = 0,
+            bool barnDestroyed = false,
             string selectedWeapons = "None",
             bool miniBossSeen = false,
             bool recordStage1MvpClear = false)
@@ -58,6 +73,10 @@ namespace PawVoyage.Systems
             int safeLevelUpCount = Mathf.Max(0, levelUpCount);
             int safeHitCount = Mathf.Max(0, hitCount);
             int safeDamageTaken = Mathf.Max(0, damageTaken);
+            int safeBarnDamageTaken = Mathf.Max(0, barnDamageTaken);
+            int safeBarnMaxHp = Mathf.Max(0, barnMaxHp);
+            int safeBarnCurrentHp = Mathf.Clamp(barnCurrentHp, 0, Mathf.Max(1, safeBarnMaxHp));
+            string safeFailureReason = string.IsNullOrWhiteSpace(failureReason) ? "None" : failureReason;
             string safeSelectedWeapons = string.IsNullOrWhiteSpace(selectedWeapons) ? "None" : selectedWeapons;
 
             PlayerPrefs.SetInt(HasLastResultKey, 1);
@@ -68,6 +87,11 @@ namespace PawVoyage.Systems
             PlayerPrefs.SetInt(LastLevelUpCountKey, safeLevelUpCount);
             PlayerPrefs.SetInt(LastHitCountKey, safeHitCount);
             PlayerPrefs.SetInt(LastDamageTakenKey, safeDamageTaken);
+            PlayerPrefs.SetString(LastFailureReasonKey, safeFailureReason);
+            PlayerPrefs.SetInt(LastBarnDamageTakenKey, safeBarnDamageTaken);
+            PlayerPrefs.SetInt(LastBarnCurrentHpKey, safeBarnCurrentHp);
+            PlayerPrefs.SetInt(LastBarnMaxHpKey, safeBarnMaxHp);
+            PlayerPrefs.SetInt(LastBarnDestroyedKey, barnDestroyed ? 1 : 0);
             PlayerPrefs.SetString(LastSelectedWeaponsKey, safeSelectedWeapons);
             PlayerPrefs.SetInt(LastMiniBossSeenKey, miniBossSeen ? 1 : 0);
             AddCoins(safeCoinCount);
@@ -103,6 +127,11 @@ namespace PawVoyage.Systems
             PlayerPrefs.DeleteKey(LastLevelUpCountKey);
             PlayerPrefs.DeleteKey(LastHitCountKey);
             PlayerPrefs.DeleteKey(LastDamageTakenKey);
+            PlayerPrefs.DeleteKey(LastFailureReasonKey);
+            PlayerPrefs.DeleteKey(LastBarnDamageTakenKey);
+            PlayerPrefs.DeleteKey(LastBarnCurrentHpKey);
+            PlayerPrefs.DeleteKey(LastBarnMaxHpKey);
+            PlayerPrefs.DeleteKey(LastBarnDestroyedKey);
             PlayerPrefs.DeleteKey(LastSelectedWeaponsKey);
             PlayerPrefs.DeleteKey(LastMiniBossSeenKey);
             PlayerPrefs.DeleteKey(BestElapsedSecondsKey);

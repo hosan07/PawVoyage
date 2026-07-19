@@ -127,6 +127,14 @@ namespace PawVoyage.Combat
         }
 
         /// <summary>
+        /// 런타임 대상별 피해 감소율을 설정합니다.
+        /// </summary>
+        public void SetDamageReduction(float value)
+        {
+            combatStats.SetDamageReduction(value);
+        }
+
+        /// <summary>
         /// 이 오브젝트의 체력을 가득 채우고 사망 상태를 해제합니다.
         /// </summary>
         public void ResetHealth()

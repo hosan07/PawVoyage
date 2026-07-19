@@ -54,7 +54,7 @@ namespace PawVoyage.UI
         {
             EnsureStyles();
 
-            if (!isPaused && GUI.Button(GetPauseButtonRect(), pauseButtonText, smallButtonStyle))
+            if (!isPaused && DrawPauseButton())
             {
                 Pause();
             }
@@ -131,7 +131,7 @@ namespace PawVoyage.UI
 
         private static Rect GetPauseButtonRect()
         {
-            return new Rect(Screen.width - 78f, 24f, 54f, 46f);
+            return new Rect(Screen.width - 82f, 24f, 58f, 50f);
         }
 
         private static Rect GetPanelRect()
@@ -194,6 +194,19 @@ namespace PawVoyage.UI
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        private bool DrawPauseButton()
+        {
+            Rect buttonRect = GetPauseButtonRect();
+            bool pressed = GUI.Button(buttonRect, GUIContent.none, smallButtonStyle);
+            Rect iconRect = new Rect(buttonRect.x + 15f, buttonRect.y + 11f, 28f, 28f);
+            if (!UiIconDrawer.Draw(UiIconDrawer.Pause, iconRect, Color.white))
+            {
+                GUI.Label(buttonRect, pauseButtonText, smallButtonStyle);
+            }
+
+            return pressed;
         }
 
         private void EnsureStyles()

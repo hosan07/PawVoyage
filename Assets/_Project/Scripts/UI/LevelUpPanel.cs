@@ -54,6 +54,7 @@ namespace PawVoyage.UI
         private GUIStyle titleStyle;
         private GUIStyle bodyStyle;
         private GUIStyle buttonStyle;
+        private GUIStyle rewardLabelStyle;
         private int pendingLevelUps;
         private float previousTimeScale = 1f;
         private readonly LevelUpRewardType[] weaponRewardPool =
@@ -142,7 +143,7 @@ namespace PawVoyage.UI
             int count = GetVisibleRewardCount();
             for (int i = 0; i < count; i++)
             {
-                if (GUI.Button(rewardButtonRects[i], GetRewardLabel(visibleRewards[i]), buttonStyle))
+                if (DrawRewardButton(i))
                 {
                     ApplyReward(visibleRewards[i]);
                 }
@@ -517,6 +518,40 @@ namespace PawVoyage.UI
             };
         }
 
+        private bool DrawRewardButton(int index)
+        {
+            Rect buttonRect = rewardButtonRects[index];
+            bool pressed = GUI.Button(buttonRect, GUIContent.none, buttonStyle);
+            Rect iconRect = new Rect(buttonRect.x + 14f, buttonRect.y + 8f, 30f, 30f);
+            Rect labelRect = new Rect(buttonRect.x + 54f, buttonRect.y, buttonRect.width - 64f, buttonRect.height);
+
+            UiIconDrawer.Draw(GetRewardIconPath(visibleRewards[index]), iconRect, Color.white);
+            GUI.Label(labelRect, GetRewardLabel(visibleRewards[index]), rewardLabelStyle);
+            return pressed;
+        }
+
+        private static string GetRewardIconPath(LevelUpRewardType rewardType)
+        {
+            return rewardType switch
+            {
+                LevelUpRewardType.Damage => UiIconDrawer.FarmerTool,
+                LevelUpRewardType.AttackSpeed => UiIconDrawer.FarmerTool,
+                LevelUpRewardType.ProjectileCount => UiIconDrawer.FarmerTool,
+                LevelUpRewardType.AuraWeapon => GetCompanionIconPath(),
+                LevelUpRewardType.BoomerangWeapon => GetCompanionIconPath(),
+                LevelUpRewardType.Pierce => UiIconDrawer.FarmFence,
+                LevelUpRewardType.Range => UiIconDrawer.FarmFence,
+                _ => UiIconDrawer.FarmerTool
+            };
+        }
+
+        private static string GetCompanionIconPath()
+        {
+            return AnimalSelectionData.SelectedAnimal == SelectedAnimalType.Cat
+                ? UiIconDrawer.CompanionCat
+                : UiIconDrawer.CompanionDog;
+        }
+
         private string GetWeaponRewardLabel(WeaponData weaponData)
         {
             if (weaponData == null)
@@ -555,6 +590,14 @@ namespace PawVoyage.UI
             {
                 fontSize = 16,
                 fontStyle = FontStyle.Bold
+            };
+
+            rewardLabelStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleLeft,
+                fontSize = 15,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = Color.white }
             };
         }
     }

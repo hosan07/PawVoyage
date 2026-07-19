@@ -170,6 +170,11 @@ namespace PawVoyage.UI
                 runStats.LevelUpCount,
                 runStats.HitCount,
                 runStats.DamageTaken,
+                RunFailureReason.None.ToString(),
+                runStats.BarnDamageTaken,
+                runStats.BarnCurrentHp,
+                runStats.BarnMaxHp,
+                runStats.BarnDestroyed,
                 runStats.SelectedWeaponsSummary,
                 runStats.MiniBossSeen,
                 runStats.IsStage1MvpRun);
@@ -211,7 +216,8 @@ namespace PawVoyage.UI
             string bonusText = runStats.BonusCoinsCollected > 0 ? $" (+{runStats.BonusCoinsCollected} Bonus)" : string.Empty;
             string bossText = runStats.MiniBossSeen ? "Seen" : "Not Seen";
             string clearText = runStats.IsStage1MvpRun ? "Stage 1 MVP Clear Saved" : "Dev Test Clear";
-            return $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}   Coins {runStats.CoinsCollected}{bonusText}\nLevel Ups {runStats.LevelUpCount}   Mini Boss {bossText}\nDamage Taken {runStats.DamageTaken}   Hits {runStats.HitCount}\nWeapons {runStats.SelectedWeaponsSummary}\n{clearText}";
+            string barnText = runStats.BarnMaxHp > 0 ? $"Barn {runStats.BarnCurrentHp}/{runStats.BarnMaxHp}   Barn Damage {runStats.BarnDamageTaken}" : "Barn Not Found";
+            return $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}   Coins {runStats.CoinsCollected}{bonusText}\nLevel Ups {runStats.LevelUpCount}   Mini Boss {bossText}\nDamage Taken {runStats.DamageTaken}   Hits {runStats.HitCount}\n{barnText}\nWeapons {runStats.SelectedWeaponsSummary}\n{clearText}";
         }
 
         private void EnsureStyles()

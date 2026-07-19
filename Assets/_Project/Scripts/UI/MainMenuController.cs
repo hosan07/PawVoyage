@@ -159,6 +159,7 @@ namespace PawVoyage.UI
                 $"Last Run\n{result}   Survival {FormatTime(RunResultData.LastElapsedSeconds)}   Kills {RunResultData.LastKillCount}   Coins {RunResultData.LastCoinCount}\n" +
                 $"Level Ups {RunResultData.LastLevelUpCount}   Mini Boss {(RunResultData.LastMiniBossSeen ? "Seen" : "Not Seen")}\n" +
                 $"Damage Taken {RunResultData.LastDamageTaken}   Hits {RunResultData.LastHitCount}\n" +
+                $"Barn {RunResultData.LastBarnCurrentHp}/{RunResultData.LastBarnMaxHp}   Barn Damage {RunResultData.LastBarnDamageTaken}   Fail {RunResultData.LastFailureReason}\n" +
                 $"Weapons {RunResultData.LastSelectedWeapons}\n\n" +
                 $"Best\nSurvival {FormatTime(RunResultData.BestElapsedSeconds)}   Kills {RunResultData.BestKillCount}\n\n" +
                 $"Coins\nAvailable {RunResultData.TotalCoins}";

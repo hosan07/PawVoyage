@@ -4,6 +4,13 @@ using PawVoyage.Data;
 
 namespace PawVoyage.Systems
 {
+    public enum RunFailureReason
+    {
+        None,
+        FarmerDeath,
+        BarnDestroyed
+    }
+
     /// <summary>
     /// 한 번의 플레이 세션에서 누적되는 진행 정보를 관리합니다.
     /// </summary>
@@ -15,6 +22,7 @@ namespace PawVoyage.Systems
         public static RunStats Instance { get; private set; }
 
         public event Action RunCleared;
+        public event Action<RunFailureReason> RunFailed;
 
         public float ElapsedSeconds { get; private set; }
         public int KillCount { get; private set; }
@@ -23,9 +31,15 @@ namespace PawVoyage.Systems
         public int LevelUpCount { get; private set; }
         public int HitCount { get; private set; }
         public int DamageTaken { get; private set; }
+        public int BarnDamageTaken { get; private set; }
+        public int BarnCurrentHp { get; private set; }
+        public int BarnMaxHp { get; private set; }
         public float ClearTimeSeconds => Mathf.Max(1f, clearTimeSeconds);
         public StageClearCondition ClearCondition => clearCondition;
         public bool IsCleared { get; private set; }
+        public bool IsFailed { get; private set; }
+        public RunFailureReason FailureReason { get; private set; }
+        public bool BarnDestroyed => FailureReason == RunFailureReason.BarnDestroyed;
         public bool MiniBossSeen { get; private set; }
         public string StageId { get; private set; } = string.Empty;
         public StageRuntimeMode StageMode { get; private set; } = StageRuntimeMode.Test;
@@ -50,7 +64,7 @@ namespace PawVoyage.Systems
 
         private void Update()
         {
-            if (IsCleared)
+            if (IsCleared || IsFailed)
             {
                 return;
             }
@@ -87,13 +101,30 @@ namespace PawVoyage.Systems
         /// </summary>
         public void CompleteRun()
         {
-            if (IsCleared)
+            if (IsCleared || IsFailed)
             {
                 return;
             }
 
             IsCleared = true;
+            CaptureBarnState();
             RunCleared?.Invoke();
+        }
+
+        /// <summary>
+        /// 현재 런을 지정한 원인의 실패 상태로 전환합니다.
+        /// </summary>
+        public void FailRun(RunFailureReason reason)
+        {
+            if (IsCleared || IsFailed)
+            {
+                return;
+            }
+
+            FailureReason = reason == RunFailureReason.None ? RunFailureReason.FarmerDeath : reason;
+            IsFailed = true;
+            CaptureBarnState();
+            RunFailed?.Invoke(FailureReason);
         }
 
         /// <summary>
@@ -125,6 +156,37 @@ namespace PawVoyage.Systems
 
             HitCount++;
             DamageTaken += safeAmount;
+        }
+
+        /// <summary>
+        /// Barn이 받은 피해량과 잔여 체력 상태를 기록합니다.
+        /// </summary>
+        public void AddBarnDamageTaken(int amount, int currentHp, int maxHp)
+        {
+            int safeAmount = Mathf.Max(0, amount);
+            if (safeAmount > 0)
+            {
+                BarnDamageTaken += safeAmount;
+            }
+
+            BarnCurrentHp = Mathf.Max(0, currentHp);
+            BarnMaxHp = Mathf.Max(1, maxHp);
+        }
+
+        /// <summary>
+        /// 결과 저장 직전 Barn의 현재 상태를 반영합니다.
+        /// </summary>
+        public void CaptureBarnState()
+        {
+            BarnObjective barn = BarnObjective.Instance;
+            if (barn == null)
+            {
+                return;
+            }
+
+            BarnCurrentHp = barn.CurrentHp;
+            BarnMaxHp = barn.MaxHp;
+            BarnDamageTaken = Mathf.Max(BarnDamageTaken, barn.DamageTaken);
         }
 
         /// <summary>

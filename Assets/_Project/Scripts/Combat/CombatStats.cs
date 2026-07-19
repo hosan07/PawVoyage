@@ -83,5 +83,13 @@ namespace PawVoyage.Combat
         {
             rangeMult = Mathf.Max(0.01f, rangeMult + Mathf.Max(0f, amount));
         }
+
+        /// <summary>
+        /// 시설/캐릭터별 런타임 피해 감소율을 설정합니다.
+        /// </summary>
+        public void SetDamageReduction(float value)
+        {
+            damageReduction = Mathf.Clamp(value, 0f, 0.6f);
+        }
     }
 }

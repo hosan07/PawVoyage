@@ -19,6 +19,7 @@ MonoBehaviour:
   contactDamage: 7
   moveSpeed: 1.45
   behaviorType: 3
+  targetPolicy: 2
   sizeScale: 1.45
   expReward: 12
   coinReward: 12

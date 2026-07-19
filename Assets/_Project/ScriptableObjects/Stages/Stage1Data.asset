@@ -24,6 +24,11 @@ MonoBehaviour:
     spawnIntervalEnd: 0.65
     enemyCapStart: 20
     enemyCapEnd: 36
+    barnMaxHp: 160
+    barnDefense: 0
+    raiderStartTime: 14
+    raiderWeightStart: 8
+    raiderWeightEnd: 16
     clearCondition: 1
   mvpConfig:
     durationPreset: 1
@@ -35,4 +40,9 @@ MonoBehaviour:
     spawnIntervalEnd: 0.38
     enemyCapStart: 18
     enemyCapEnd: 68
+    barnMaxHp: 520
+    barnDefense: 0.08
+    raiderStartTime: 82
+    raiderWeightStart: 8
+    raiderWeightEnd: 22
     clearCondition: 1

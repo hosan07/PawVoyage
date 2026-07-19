@@ -832,6 +832,7 @@ MonoBehaviour:
   normalMonsterData: {fileID: 11400000, guid: a12838df9ab04a69b70d75e9a0a30001, type: 2}
   fastMonsterData: {fileID: 11400000, guid: 11c5429775e84835b8d2e3584b418801, type: 2}
   tankMonsterData: {fileID: 11400000, guid: 8ddfa2f0cc3144f1a905f8fc39992452, type: 2}
+  raiderMonsterData: {fileID: 11400000, guid: 19f9acc045184930bc6a06991cd0554d, type: 2}
   eliteMonsterData: {fileID: 11400000, guid: e57bbcf003674f11a27dce2608386112, type: 2}
   spawnInterval: 1.5
   spawnRadius: 4.5

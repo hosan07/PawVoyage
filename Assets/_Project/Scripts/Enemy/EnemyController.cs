@@ -58,7 +58,14 @@ namespace PawVoyage.Enemy
         public Transform Target
         {
             get => target;
-            set => target = value;
+            set
+            {
+                target = value;
+                if (target != null)
+                {
+                    targetName = target.name;
+                }
+            }
         }
 
         /// <summary>
@@ -75,6 +82,14 @@ namespace PawVoyage.Enemy
         public void SetBehavior(MonsterBehaviorType value)
         {
             behaviorType = value;
+        }
+
+        /// <summary>
+        /// 자동 탐색에 사용할 대상 이름을 설정합니다.
+        /// </summary>
+        public void SetTargetName(string value)
+        {
+            targetName = string.IsNullOrWhiteSpace(value) ? "Player" : value;
         }
 
         /// <summary>

@@ -7,7 +7,8 @@ namespace PawVoyage.Data
         Normal,
         Fast,
         Tank,
-        Elite
+        Elite,
+        Raider
     }
 
     public enum MonsterBehaviorType
@@ -32,6 +33,7 @@ namespace PawVoyage.Data
         [SerializeField] private int contactDamage = 1;
         [SerializeField] private float moveSpeed = 2f;
         [SerializeField] private MonsterBehaviorType behaviorType = MonsterBehaviorType.Chase;
+        [SerializeField] private MonsterTargetPolicy targetPolicy = MonsterTargetPolicy.Player;
         [SerializeField] private float sizeScale = 0.75f;
         [SerializeField] private int expReward = 1;
         [SerializeField] private int coinReward = 1;
@@ -46,6 +48,7 @@ namespace PawVoyage.Data
         public int ContactDamage => Mathf.Max(0, contactDamage);
         public float MoveSpeed => Mathf.Max(0f, moveSpeed);
         public MonsterBehaviorType BehaviorType => behaviorType;
+        public MonsterTargetPolicy TargetPolicy => targetPolicy;
         public float SizeScale => Mathf.Max(0.1f, sizeScale);
         public int ExpReward => Mathf.Max(0, expReward);
         public int CoinReward => Mathf.Max(0, coinReward);

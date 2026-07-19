@@ -35,6 +35,15 @@ namespace PawVoyage.Combat
             hitCooldown = Mathf.Max(0.05f, value);
         }
 
+        /// <summary>
+        /// 접촉 피해를 줄 대상의 태그와 이름 조건을 설정합니다.
+        /// </summary>
+        public void SetTarget(string tag, string objectName)
+        {
+            targetTag = tag ?? string.Empty;
+            targetName = objectName ?? string.Empty;
+        }
+
         private void OnCollisionStay2D(Collision2D collision)
         {
             TryDamage(collision.collider);
@@ -65,10 +74,12 @@ namespace PawVoyage.Combat
         private bool IsValidTarget(Collider2D other)
         {
             bool isTargetLayer = (targetLayers.value & (1 << other.gameObject.layer)) != 0;
-            bool isTargetTag = string.IsNullOrWhiteSpace(targetTag) || other.gameObject.tag == targetTag;
-            bool isTargetName = string.IsNullOrWhiteSpace(targetName) || other.gameObject.name == targetName;
+            bool hasTagRule = !string.IsNullOrWhiteSpace(targetTag);
+            bool hasNameRule = !string.IsNullOrWhiteSpace(targetName);
+            bool isTargetTag = hasTagRule && other.gameObject.tag == targetTag;
+            bool isTargetName = hasNameRule && other.gameObject.name == targetName;
 
-            return isTargetLayer && (isTargetTag || isTargetName);
+            return isTargetLayer && (!hasTagRule && !hasNameRule || isTargetTag || isTargetName);
         }
     }
 }

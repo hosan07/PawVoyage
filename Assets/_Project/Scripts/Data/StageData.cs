@@ -21,6 +21,13 @@ namespace PawVoyage.Data
         Mvp180Seconds
     }
 
+    public enum MonsterTargetPolicy
+    {
+        Player,
+        Barn,
+        Mixed
+    }
+
     /// <summary>
     /// 스테이지 모드별 시간, 페이즈, 스폰 압박, 클리어 조건을 담는 데이터입니다.
     /// </summary>
@@ -53,6 +60,11 @@ namespace PawVoyage.Data
         public float spawnIntervalEnd;
         public int enemyCapStart;
         public int enemyCapEnd;
+        public int barnMaxHp;
+        public float barnDefense;
+        public float raiderStartTime;
+        public int raiderWeightStart;
+        public int raiderWeightEnd;
         public StageClearCondition clearCondition;
 
         public static StageModeConfig CreateTestDefault()
@@ -68,6 +80,11 @@ namespace PawVoyage.Data
                 spawnIntervalEnd = 0.65f,
                 enemyCapStart = 20,
                 enemyCapEnd = 36,
+                barnMaxHp = 160,
+                barnDefense = 0f,
+                raiderStartTime = 14f,
+                raiderWeightStart = 8,
+                raiderWeightEnd = 16,
                 clearCondition = StageClearCondition.MiniBossDefeat
             };
         }
@@ -85,6 +102,11 @@ namespace PawVoyage.Data
                 spawnIntervalEnd = 0.38f,
                 enemyCapStart = 18,
                 enemyCapEnd = 68,
+                barnMaxHp = 520,
+                barnDefense = 0.08f,
+                raiderStartTime = 82f,
+                raiderWeightStart = 8,
+                raiderWeightEnd = 22,
                 clearCondition = StageClearCondition.MiniBossDefeat
             };
         }

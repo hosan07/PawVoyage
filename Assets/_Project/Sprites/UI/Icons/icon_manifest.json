@@ -1,0 +1,57 @@
+{
+  "navigation": {
+    "icon_nav_farm.svg": "Farm tab",
+    "icon_nav_farmer.svg": "Farmer tab",
+    "icon_nav_deploy.svg": "Center deploy tab and stage badge",
+    "icon_nav_companion.svg": "Companion tab",
+    "icon_nav_shop.svg": "Shop tab",
+    "icon_nav_record.svg": "Home record button",
+    "icon_nav_settings.svg": "Home settings button"
+  },
+  "currency": {
+    "icon_currency_coin.svg": "Farm Coin: farmer and farm upgrades",
+    "icon_currency_gem.svg": "Gem: cosmetics and future shop content",
+    "icon_currency_energy.svg": "Energy: future run entry limit"
+  },
+  "actions": {
+    "icon_action_back.svg": "Back navigation",
+    "icon_action_pause.svg": "Battle pause",
+    "icon_action_upgrade.svg": "Upgrade action"
+  },
+  "status": {
+    "icon_status_barn.svg": "Barn health HUD",
+    "icon_status_health.svg": "Farmer health HUD",
+    "icon_status_star.svg": "Stage rating",
+    "icon_status_warning.svg": "Danger and boss warning"
+  },
+  "system": {
+    "icon_system_google.svg": "Google login",
+    "icon_system_apple.svg": "Apple login",
+    "icon_system_music.svg": "BGM setting",
+    "icon_system_sound.svg": "SFX setting",
+    "icon_system_vibration.svg": "Vibration setting",
+    "icon_system_notification.svg": "Notification setting",
+    "icon_system_language.svg": "Language setting"
+  },
+  "farm": {
+    "icon_farm_barn.svg": "Barn durability upgrade and barn cosmetic",
+    "icon_farm_fence.svg": "Fence reinforcement upgrade",
+    "icon_farm_pen.svg": "Animal pen upgrade",
+    "icon_farm_lantern.svg": "Gate lantern upgrade"
+  },
+  "farmer": {
+    "icon_farmer_avatar.svg": "Farmer profile, battle token, and farmer cosmetic",
+    "icon_farmer_tool.svg": "Durable tool attack upgrade",
+    "icon_farmer_clothes.svg": "Sturdy workwear maximum HP upgrade",
+    "icon_farmer_boots.svg": "Sturdy boots movement speed upgrade",
+    "icon_farmer_magnet.svg": "Harvest magnet experience range upgrade"
+  },
+  "companions": {
+    "icon_companion_dog.svg": "Dog companion",
+    "icon_companion_cat.svg": "Cat companion",
+    "icon_companion_chicken.svg": "Chicken companion",
+    "icon_companion_sheep.svg": "Sheep companion",
+    "icon_companion_cow.svg": "Cow companion",
+    "icon_companion_pig.svg": "Pig companion"
+  }
+}

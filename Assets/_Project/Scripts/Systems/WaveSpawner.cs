@@ -10,7 +10,8 @@ namespace PawVoyage.Systems
         Normal,
         Fast,
         Tank,
-        Shooter
+        Shooter,
+        Raider
     }
 
     /// <summary>
@@ -36,6 +37,7 @@ namespace PawVoyage.Systems
         [SerializeField] private MonsterData normalMonsterData = null;
         [SerializeField] private MonsterData fastMonsterData = null;
         [SerializeField] private MonsterData tankMonsterData = null;
+        [SerializeField] private MonsterData raiderMonsterData = null;
         [SerializeField] private MonsterData eliteMonsterData = null;
         [SerializeField] private float spawnInterval = 1.5f;
         [SerializeField] private float spawnRadius = 7f;
@@ -67,10 +69,12 @@ namespace PawVoyage.Systems
         private float nextSpawnTime;
         private RunStats runStats;
         private Health activeEliteHealth;
+        private BarnObjective barnObjective;
         private bool eliteSpawned;
         private bool fastEnemyNoticeShown;
         private bool tankEnemyNoticeShown;
         private bool shooterEnemyNoticeShown;
+        private bool raiderEnemyNoticeShown;
         private float eliteWarningEndTime;
         private float variantNoticeEndTime;
         private string variantNoticeText = string.Empty;
@@ -88,6 +92,11 @@ namespace PawVoyage.Systems
                 if (elapsedSeconds >= GetEliteSpawnTime())
                 {
                     return "ELITE";
+                }
+
+                if (elapsedSeconds >= GetRaiderEnemyStartTime())
+                {
+                    return "RAID";
                 }
 
                 if (elapsedSeconds >= GetShooterEnemyStartTime())
@@ -136,6 +145,7 @@ namespace PawVoyage.Systems
         {
             FindPlayerIfNeeded();
             runStats = RunStats.Instance;
+            EnsureBarnObjective();
             ConfigureRunStats();
             nextSpawnTime = spawnOnStart ? Time.time : Time.time + GetCurrentSpawnInterval();
         }
@@ -143,6 +153,7 @@ namespace PawVoyage.Systems
         private void Update()
         {
             FindPlayerIfNeeded();
+            EnsureBarnObjective();
 
             if (player == null || Time.time < nextSpawnTime || CountAliveEnemies() >= GetCurrentMaxAliveEnemies())
             {
@@ -181,8 +192,9 @@ namespace PawVoyage.Systems
                 ? Instantiate(enemyPrefab, spawnPosition, Quaternion.identity)
                 : CreateFallbackEnemy(spawnPosition);
 
-            ConfigureEnemyStats(enemy, ChooseEnemyVariant());
-            enemy.Target = player;
+            EnemyVariantType variantType = ChooseEnemyVariant();
+            MonsterTargetPolicy targetPolicy = ConfigureEnemyStats(enemy, variantType);
+            AssignEnemyTarget(enemy, targetPolicy);
         }
 
         private void TrySpawnElite()
@@ -202,7 +214,7 @@ namespace PawVoyage.Systems
                 : CreateFallbackEnemy(spawnPosition);
 
             ConfigureEliteStats(elite);
-            elite.Target = player;
+            AssignEnemyTarget(elite, MonsterTargetPolicy.Mixed);
         }
 
         private void TryShowVariantNotice()
@@ -224,6 +236,12 @@ namespace PawVoyage.Systems
             {
                 shooterEnemyNoticeShown = true;
                 ShowVariantNotice("SHOOTERS JOINED");
+            }
+
+            if (!raiderEnemyNoticeShown && elapsedSeconds >= GetRaiderEnemyStartTime())
+            {
+                raiderEnemyNoticeShown = true;
+                ShowVariantNotice("RAIDERS TARGET THE BARN");
             }
         }
 
@@ -257,18 +275,17 @@ namespace PawVoyage.Systems
             return enemyObject.AddComponent<EnemyController>();
         }
 
-        private void ConfigureEnemyStats(EnemyController enemy)
+        private MonsterTargetPolicy ConfigureEnemyStats(EnemyController enemy)
         {
-            ConfigureEnemyStats(enemy, EnemyVariantType.Normal);
+            return ConfigureEnemyStats(enemy, EnemyVariantType.Normal);
         }
 
-        private void ConfigureEnemyStats(EnemyController enemy, EnemyVariantType variantType)
+        private MonsterTargetPolicy ConfigureEnemyStats(EnemyController enemy, EnemyVariantType variantType)
         {
             MonsterData monsterData = GetMonsterData(variantType);
             if (monsterData != null)
             {
-                ConfigureEnemyStats(enemy, monsterData);
-                return;
+                return ConfigureEnemyStats(enemy, monsterData);
             }
 
             EnemyVariantTuning tuning = GetEnemyVariantTuning(variantType);
@@ -309,6 +326,7 @@ namespace PawVoyage.Systems
             }
 
             enemy.SetVisualBaseColor(tuning.Color);
+            return tuning.TargetPolicy;
         }
 
         private void ConfigureEliteStats(EnemyController enemy)
@@ -316,11 +334,11 @@ namespace PawVoyage.Systems
             MonsterData monsterData = eliteMonsterData;
             if (monsterData != null)
             {
-                ConfigureEnemyStats(enemy, monsterData);
+                _ = ConfigureEnemyStats(enemy, monsterData);
             }
             else
             {
-                ConfigureEnemyStats(enemy);
+                _ = ConfigureEnemyStats(enemy);
             }
 
             enemy.gameObject.name = "EliteEnemy";
@@ -353,7 +371,7 @@ namespace PawVoyage.Systems
             enemy.SetVisualBaseColor(monsterData != null ? monsterData.VisualHint : eliteColor);
         }
 
-        private void ConfigureEnemyStats(EnemyController enemy, MonsterData monsterData)
+        private MonsterTargetPolicy ConfigureEnemyStats(EnemyController enemy, MonsterData monsterData)
         {
             if (enemy.TryGetComponent(out Health health))
             {
@@ -391,6 +409,7 @@ namespace PawVoyage.Systems
             }
 
             enemy.SetVisualBaseColor(monsterData.VisualHint);
+            return monsterData.TargetPolicy;
         }
 
         private void TrackEliteHealth(Health health)
@@ -430,7 +449,10 @@ namespace PawVoyage.Systems
             if (GetClearCondition() == StageClearCondition.MiniBossDefeat)
             {
                 runStats ??= RunStats.Instance;
-                runStats?.CompleteRun();
+                if (barnObjective == null || barnObjective.IsAlive)
+                {
+                    runStats?.CompleteRun();
+                }
             }
         }
 
@@ -440,6 +462,7 @@ namespace PawVoyage.Systems
             bool canSpawnTank = elapsedSeconds >= GetTankEnemyStartTime();
             bool canSpawnFast = elapsedSeconds >= GetFastEnemyStartTime();
             bool canSpawnShooter = elapsedSeconds >= GetShooterEnemyStartTime();
+            bool canSpawnRaider = elapsedSeconds >= GetRaiderEnemyStartTime();
 
             if (!canSpawnFast)
             {
@@ -450,9 +473,16 @@ namespace PawVoyage.Systems
             int fastWeight = canSpawnFast ? Mathf.RoundToInt(Mathf.Lerp(20f, 42f, GetRunProgress())) : 0;
             int tankWeight = canSpawnTank ? Mathf.RoundToInt(Mathf.Lerp(12f, 32f, GetRunProgress())) : 0;
             int shooterWeight = canSpawnShooter ? Mathf.RoundToInt(Mathf.Lerp(8f, 18f, GetRunProgress())) : 0;
-            int totalWeight = normalWeight + fastWeight + tankWeight + shooterWeight;
+            int raiderWeight = canSpawnRaider ? GetCurrentRaiderWeight() : 0;
+            int totalWeight = normalWeight + fastWeight + tankWeight + shooterWeight + raiderWeight;
             int roll = Random.Range(0, totalWeight);
 
+            if (roll < raiderWeight)
+            {
+                return EnemyVariantType.Raider;
+            }
+
+            roll -= raiderWeight;
             if (roll < shooterWeight)
             {
                 return EnemyVariantType.Shooter;
@@ -486,7 +516,8 @@ namespace PawVoyage.Systems
                     healthPickupDropChance: 0.04f,
                     scale: 0.58f,
                     color: new Color(1f, 0.58f, 0.1f, 1f),
-                    behaviorType: MonsterBehaviorType.Zigzag),
+                    behaviorType: MonsterBehaviorType.Zigzag,
+                    targetPolicy: MonsterTargetPolicy.Player),
                 EnemyVariantType.Tank => new EnemyVariantTuning(
                     "TankEnemy",
                     maxHpMultiplier: 1.85f,
@@ -497,7 +528,8 @@ namespace PawVoyage.Systems
                     healthPickupDropChance: 0.12f,
                     scale: 1.05f,
                     color: new Color(0.95f, 0.12f, 0.35f, 1f),
-                    behaviorType: MonsterBehaviorType.Charger),
+                    behaviorType: MonsterBehaviorType.Charger,
+                    targetPolicy: MonsterTargetPolicy.Player),
                 EnemyVariantType.Shooter => new EnemyVariantTuning(
                     "ShooterEnemy",
                     maxHpMultiplier: 0.86f,
@@ -508,7 +540,20 @@ namespace PawVoyage.Systems
                     healthPickupDropChance: 0.06f,
                     scale: 0.68f,
                     color: new Color(0.18f, 0.88f, 1f, 1f),
-                    behaviorType: MonsterBehaviorType.Shooter),
+                    behaviorType: MonsterBehaviorType.Shooter,
+                    targetPolicy: MonsterTargetPolicy.Player),
+                EnemyVariantType.Raider => new EnemyVariantTuning(
+                    "RaiderEnemy",
+                    maxHpMultiplier: 1.1f,
+                    moveSpeedMultiplier: 0.92f,
+                    contactDamageBonus: 1,
+                    experienceAmount: 2,
+                    coinAmount: 2,
+                    healthPickupDropChance: 0.05f,
+                    scale: 0.82f,
+                    color: new Color(0.58f, 0.28f, 0.08f, 1f),
+                    behaviorType: MonsterBehaviorType.Chase,
+                    targetPolicy: MonsterTargetPolicy.Barn),
                 _ => new EnemyVariantTuning(
                     "Enemy",
                     maxHpMultiplier: 1f,
@@ -519,7 +564,8 @@ namespace PawVoyage.Systems
                     healthPickupDropChance: 0.08f,
                     scale: 0.75f,
                     color: Color.red,
-                    behaviorType: MonsterBehaviorType.Chase)
+                    behaviorType: MonsterBehaviorType.Chase,
+                    targetPolicy: MonsterTargetPolicy.Player)
             };
         }
 
@@ -535,6 +581,54 @@ namespace PawVoyage.Systems
             {
                 player = playerObject.transform;
             }
+        }
+
+        private void EnsureBarnObjective()
+        {
+            StageModeConfig config = GetStageConfig();
+            barnObjective = BarnObjective.CreateDefaultIfMissing(config.barnMaxHp, config.barnDefense);
+            runStats ??= RunStats.Instance;
+            runStats?.CaptureBarnState();
+        }
+
+        private void AssignEnemyTarget(EnemyController enemy, MonsterTargetPolicy targetPolicy)
+        {
+            Transform targetTransform = ResolveTarget(targetPolicy, enemy.transform.position);
+            enemy.Target = targetTransform;
+            enemy.SetTargetName(targetTransform != null ? targetTransform.name : playerName);
+
+            if (enemy.TryGetComponent(out ContactDamage contactDamage))
+            {
+                string targetName = targetTransform != null ? targetTransform.name : playerName;
+                string targetTag = targetName == playerName ? "Player" : string.Empty;
+                contactDamage.SetTarget(targetTag, targetName);
+            }
+        }
+
+        private Transform ResolveTarget(MonsterTargetPolicy targetPolicy, Vector3 origin)
+        {
+            FindPlayerIfNeeded();
+            EnsureBarnObjective();
+
+            Transform barn = barnObjective != null && barnObjective.IsAlive ? barnObjective.transform : null;
+            if (targetPolicy == MonsterTargetPolicy.Barn && barn != null)
+            {
+                return barn;
+            }
+
+            if (targetPolicy == MonsterTargetPolicy.Mixed && barn != null)
+            {
+                if (player == null)
+                {
+                    return barn;
+                }
+
+                float playerDistance = Vector2.Distance(origin, player.position);
+                float barnDistance = Vector2.Distance(origin, barn.position);
+                return barnDistance < playerDistance * 0.85f || Random.value < 0.45f ? barn : player;
+            }
+
+            return player != null ? player : barn;
         }
 
         private static int CountAliveEnemies()
@@ -603,6 +697,11 @@ namespace PawVoyage.Systems
                 spawnIntervalEnd = minimumSpawnInterval,
                 enemyCapStart = maxAliveEnemies,
                 enemyCapEnd = finalMaxAliveEnemies,
+                barnMaxHp = 160,
+                barnDefense = 0f,
+                raiderStartTime = Mathf.Max(12f, tankEnemyStartTimeSeconds),
+                raiderWeightStart = 8,
+                raiderWeightEnd = 16,
                 clearCondition = StageClearCondition.SurviveTime
             };
         }
@@ -637,6 +736,18 @@ namespace PawVoyage.Systems
             return Mathf.Max(GetTankEnemyStartTime() + 4f, shooterEnemyStartTimeSeconds * 0.25f);
         }
 
+        private float GetRaiderEnemyStartTime()
+        {
+            StageModeConfig config = GetStageConfig();
+            return Mathf.Max(0f, config.raiderStartTime);
+        }
+
+        private int GetCurrentRaiderWeight()
+        {
+            StageModeConfig config = GetStageConfig();
+            return Mathf.Max(0, Mathf.RoundToInt(Mathf.Lerp(config.raiderWeightStart, config.raiderWeightEnd, GetRunProgress())));
+        }
+
         private float GetEliteSpawnTime()
         {
             return Mathf.Max(0f, GetStageConfig().eliteSpawnTime);
@@ -648,6 +759,7 @@ namespace PawVoyage.Systems
             {
                 EnemyVariantType.Fast => fastMonsterData,
                 EnemyVariantType.Tank => tankMonsterData,
+                EnemyVariantType.Raider => raiderMonsterData,
                 _ => normalMonsterData
             };
         }
@@ -782,7 +894,8 @@ namespace PawVoyage.Systems
                 float healthPickupDropChance,
                 float scale,
                 Color color,
-                MonsterBehaviorType behaviorType)
+                MonsterBehaviorType behaviorType,
+                MonsterTargetPolicy targetPolicy)
             {
                 Name = name;
                 MaxHpMultiplier = maxHpMultiplier;
@@ -794,6 +907,7 @@ namespace PawVoyage.Systems
                 Scale = Mathf.Max(0.1f, scale);
                 Color = color;
                 BehaviorType = behaviorType;
+                TargetPolicy = targetPolicy;
             }
 
             public string Name { get; }
@@ -806,6 +920,7 @@ namespace PawVoyage.Systems
             public float Scale { get; }
             public Color Color { get; }
             public MonsterBehaviorType BehaviorType { get; }
+            public MonsterTargetPolicy TargetPolicy { get; }
         }
     }
 }

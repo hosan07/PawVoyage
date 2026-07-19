@@ -22,6 +22,7 @@ namespace PawVoyage.UI
         private GUIStyle bodyStyle;
         private GUIStyle buttonStyle;
         private bool isGameOver;
+        private RunFailureReason failureReason = RunFailureReason.None;
         private float previousTimeScale = 1f;
 
         private void Awake()
@@ -32,11 +33,19 @@ namespace PawVoyage.UI
         private void OnEnable()
         {
             health.Died += OnPlayerDied;
+            if (RunStats.Instance != null)
+            {
+                RunStats.Instance.RunFailed += OnRunFailed;
+            }
         }
 
         private void OnDisable()
         {
             health.Died -= OnPlayerDied;
+            if (RunStats.Instance != null)
+            {
+                RunStats.Instance.RunFailed -= OnRunFailed;
+            }
 
             if (isGameOver)
             {
@@ -76,7 +85,7 @@ namespace PawVoyage.UI
             Rect panelRect = GetPanelRect();
 
             GUI.Box(panelRect, GUIContent.none);
-            GUI.Label(new Rect(panelRect.x + 24f, panelRect.y + 28f, panelRect.width - 48f, 38f), titleText, titleStyle);
+            GUI.Label(new Rect(panelRect.x + 24f, panelRect.y + 28f, panelRect.width - 48f, 38f), GetTitleText(), titleStyle);
             GUI.Label(new Rect(panelRect.x + 32f, panelRect.y + 76f, panelRect.width - 64f, 154f), GetRunSummaryText(), bodyStyle);
 
             if (GUI.Button(GetRetryButtonRect(), retryText, buttonStyle))
@@ -151,18 +160,24 @@ namespace PawVoyage.UI
 
         private void OnPlayerDied(Health deadHealth)
         {
+            RunStats.Instance?.FailRun(RunFailureReason.FarmerDeath);
+        }
+
+        private void OnRunFailed(RunFailureReason reason)
+        {
             if (isGameOver)
             {
                 return;
             }
 
+            failureReason = reason;
             isGameOver = true;
-            RecordResult(false);
+            RecordResult(false, reason);
             previousTimeScale = Time.timeScale;
             Time.timeScale = 0f;
         }
 
-        private static void RecordResult(bool cleared)
+        private static void RecordResult(bool cleared, RunFailureReason reason)
         {
             RunStats runStats = RunStats.Instance;
             if (runStats == null)
@@ -178,6 +193,11 @@ namespace PawVoyage.UI
                 runStats.LevelUpCount,
                 runStats.HitCount,
                 runStats.DamageTaken,
+                reason.ToString(),
+                runStats.BarnDamageTaken,
+                runStats.BarnCurrentHp,
+                runStats.BarnMaxHp,
+                runStats.BarnDestroyed,
                 runStats.SelectedWeaponsSummary,
                 runStats.MiniBossSeen,
                 false);
@@ -205,7 +225,18 @@ namespace PawVoyage.UI
 
             string bonusText = runStats.BonusCoinsCollected > 0 ? $" (+{runStats.BonusCoinsCollected} Bonus)" : string.Empty;
             string bossText = runStats.MiniBossSeen ? "Seen" : "Not Seen";
-            return $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}   Coins {runStats.CoinsCollected}{bonusText}\nLevel Ups {runStats.LevelUpCount}   Mini Boss {bossText}\nDamage Taken {runStats.DamageTaken}   Hits {runStats.HitCount}\nWeapons {runStats.SelectedWeaponsSummary}";
+            string barnText = runStats.BarnMaxHp > 0 ? $"Barn {runStats.BarnCurrentHp}/{runStats.BarnMaxHp}   Barn Damage {runStats.BarnDamageTaken}" : "Barn Not Found";
+            return $"Survived {FormatTime(runStats.ElapsedSeconds)}\nKills {runStats.KillCount}   Coins {runStats.CoinsCollected}{bonusText}\nLevel Ups {runStats.LevelUpCount}   Mini Boss {bossText}\nDamage Taken {runStats.DamageTaken}   Hits {runStats.HitCount}\n{barnText}\nWeapons {runStats.SelectedWeaponsSummary}";
+        }
+
+        private string GetTitleText()
+        {
+            return failureReason switch
+            {
+                RunFailureReason.BarnDestroyed => "BARN DESTROYED",
+                RunFailureReason.FarmerDeath => "FARMER DOWN",
+                _ => titleText
+            };
         }
 
         private static string FormatTime(float seconds)
