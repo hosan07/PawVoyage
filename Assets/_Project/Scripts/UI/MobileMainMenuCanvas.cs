@@ -16,15 +16,22 @@ namespace PawVoyage.UI
         private Text coinText;
         private Text recordText;
         private Text companionText;
-        private readonly Text[] upgradeTexts = new Text[5];
+        private readonly Text[] farmerUpgradeTexts = new Text[5];
+        private readonly Text[] farmUpgradeTexts = new Text[2];
 
-        private readonly MetaUpgradeType[] upgrades =
+        private readonly MetaUpgradeType[] farmerUpgrades =
         {
             MetaUpgradeType.Damage,
             MetaUpgradeType.MaxHp,
             MetaUpgradeType.AttackSpeed,
             MetaUpgradeType.MoveSpeed,
             MetaUpgradeType.PickupRadius
+        };
+
+        private readonly MetaUpgradeType[] farmUpgrades =
+        {
+            MetaUpgradeType.BarnMaxHp,
+            MetaUpgradeType.BarnDefense
         };
 
         public static MobileMainMenuCanvas CreateOrGet(MainMenuController source)
@@ -97,21 +104,32 @@ namespace PawVoyage.UI
             companionText = CreateText(companionPanel, "CompanionStatus", 20, TextAnchor.MiddleCenter, new Color(0.86f, 0.91f, 0.98f, 1f));
             SetAnchored(companionText.rectTransform, new Vector2(0f, -208f), new Vector2(760f, 28f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
 
-            RectTransform upgradePanel = CreatePanel(transform, "UpgradePanel", new Vector2(0f, -560f), new Vector2(900f, 720f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
-            AddPanelTitle(upgradePanel, "농부 영구 강화");
-            for (int i = 0; i < upgrades.Length; i++)
+            RectTransform farmerUpgradePanel = CreatePanel(transform, "FarmerUpgradePanel", new Vector2(0f, -520f), new Vector2(900f, 610f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
+            AddPanelTitle(farmerUpgradePanel, "농부 영구 강화");
+            for (int i = 0; i < farmerUpgrades.Length; i++)
             {
                 int index = i;
-                Button upgradeButton = CreateButton(upgradePanel, "UpgradeButton", new Vector2(0f, -112f - i * 108f), new Vector2(820f, 88f), new Color(0.13f, 0.2f, 0.3f, 1f));
-                upgradeTexts[i] = CreateText(upgradeButton.transform, "Label", 22, TextAnchor.MiddleLeft, Color.white);
-                SetStretch(upgradeTexts[i].rectTransform, 26f, 8f, 26f, 8f);
-                upgradeButton.onClick.AddListener(() => menu?.TryBuyUpgrade(upgrades[index]));
+                Button upgradeButton = CreateButton(farmerUpgradePanel, "FarmerUpgradeButton", new Vector2(0f, -92f - i * 96f), new Vector2(820f, 78f), new Color(0.13f, 0.2f, 0.3f, 1f));
+                farmerUpgradeTexts[i] = CreateText(upgradeButton.transform, "Label", 20, TextAnchor.MiddleLeft, Color.white);
+                SetStretch(farmerUpgradeTexts[i].rectTransform, 26f, 8f, 26f, 8f);
+                upgradeButton.onClick.AddListener(() => menu?.TryBuyUpgrade(farmerUpgrades[index]));
             }
 
-            RectTransform recordPanel = CreatePanel(transform, "RecordPanel", new Vector2(0f, -1320f), new Vector2(900f, 250f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
+            RectTransform farmUpgradePanel = CreatePanel(transform, "FarmUpgradePanel", new Vector2(0f, -1160f), new Vector2(900f, 300f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
+            AddPanelTitle(farmUpgradePanel, "농장 영구 강화");
+            for (int i = 0; i < farmUpgrades.Length; i++)
+            {
+                int index = i;
+                Button upgradeButton = CreateButton(farmUpgradePanel, "FarmUpgradeButton", new Vector2(0f, -92f - i * 92f), new Vector2(820f, 74f), new Color(0.28f, 0.18f, 0.12f, 1f));
+                farmUpgradeTexts[i] = CreateText(upgradeButton.transform, "Label", 20, TextAnchor.MiddleLeft, Color.white);
+                SetStretch(farmUpgradeTexts[i].rectTransform, 26f, 8f, 26f, 8f);
+                upgradeButton.onClick.AddListener(() => menu?.TryBuyUpgrade(farmUpgrades[index]));
+            }
+
+            RectTransform recordPanel = CreatePanel(transform, "RecordPanel", new Vector2(0f, -1500f), new Vector2(900f, 270f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
             AddPanelTitle(recordPanel, "최근 기록");
             recordText = CreateText(recordPanel, "RecordText", 21, TextAnchor.UpperLeft, new Color(0.84f, 0.9f, 0.97f, 1f));
-            SetAnchored(recordText.rectTransform, new Vector2(42f, -78f), new Vector2(816f, 150f), new Vector2(0f, 1f), new Vector2(0f, 1f));
+            SetAnchored(recordText.rectTransform, new Vector2(42f, -76f), new Vector2(816f, 170f), new Vector2(0f, 1f), new Vector2(0f, 1f));
 
             Button deployButton = CreateButton(transform, "DeployButton", Vector2.zero, new Vector2(900f, 112f), new Color(0.26f, 0.62f, 0.34f, 1f));
             SetAnchored(deployButton.GetComponent<RectTransform>(), new Vector2(0f, 100f), new Vector2(900f, 112f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f));
@@ -128,17 +146,23 @@ namespace PawVoyage.UI
 
             coinText.text = $"{RunResultData.TotalCoins}";
             companionText.text = $"선택한 동료: {AnimalSelectionData.SelectedCompanionName}";
+            RefreshUpgradeLabels(farmerUpgrades, farmerUpgradeTexts);
+            RefreshUpgradeLabels(farmUpgrades, farmUpgradeTexts);
+
+            string clear = RunResultData.Stage1MvpCleared ? "클리어" : "도전 중";
+            recordText.text = $"Stage 1: {clear}\n최고 생존 {FormatTime(RunResultData.BestElapsedSeconds)}   최고 처치 {RunResultData.BestKillCount}\n최근 코인 {RunResultData.LastCoinCount}   레벨업 {RunResultData.LastLevelUpCount}\n적 {RunResultData.LastTotalEnemiesSpawned}  헛간 타깃 {RunResultData.LastBarnTargetEnemiesSpawned}  최대 동시 {RunResultData.LastPeakAliveEnemies}";
+        }
+
+        private static void RefreshUpgradeLabels(MetaUpgradeType[] upgrades, Text[] labels)
+        {
             for (int i = 0; i < upgrades.Length; i++)
             {
                 MetaUpgradeType type = upgrades[i];
                 int level = MetaProgressionData.GetLevel(type);
                 string cost = MetaProgressionData.IsMaxLevel(type) ? "MAX" : $"{MetaProgressionData.GetCost(type)} 코인";
                 string tier = MetaProgressionData.IsAdvancedLevel(type) ? "고급" : "기본";
-                upgradeTexts[i].text = $"{MetaProgressionData.GetDisplayName(type)}  Lv {level}/{MetaProgressionData.MaxLevel}  {tier}\n{MetaProgressionData.GetEffectText(type)}     {cost}";
+                labels[i].text = $"{MetaProgressionData.GetDisplayName(type)}  Lv {level}/{MetaProgressionData.MaxLevel}  {tier}\n{MetaProgressionData.GetEffectText(type)}     {cost}";
             }
-
-            string clear = RunResultData.Stage1MvpCleared ? "클리어" : "도전 중";
-            recordText.text = $"Stage 1: {clear}\n최고 생존 {FormatTime(RunResultData.BestElapsedSeconds)}   최고 처치 {RunResultData.BestKillCount}\n최근 코인 {RunResultData.LastCoinCount}   레벨업 {RunResultData.LastLevelUpCount}\n적 {RunResultData.LastTotalEnemiesSpawned}  헛간 타깃 {RunResultData.LastBarnTargetEnemiesSpawned}  최대 동시 {RunResultData.LastPeakAliveEnemies}";
         }
 
         private static RectTransform CreatePanel(Transform parent, string name, Vector2 position, Vector2 size, Vector2 anchor, Vector2 pivot)

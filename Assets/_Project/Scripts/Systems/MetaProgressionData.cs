@@ -8,7 +8,9 @@ namespace PawVoyage.Systems
         MaxHp,
         AttackSpeed,
         MoveSpeed,
-        PickupRadius
+        PickupRadius,
+        BarnMaxHp,
+        BarnDefense
     }
 
     /// <summary>
@@ -22,6 +24,8 @@ namespace PawVoyage.Systems
         private const string AttackSpeedLevelKey = "MetaUpgrade.AttackSpeedLevel";
         private const string MoveSpeedLevelKey = "MetaUpgrade.MoveSpeedLevel";
         private const string PickupRadiusLevelKey = "MetaUpgrade.PickupRadiusLevel";
+        private const string BarnMaxHpLevelKey = "MetaUpgrade.BarnMaxHpLevel";
+        private const string BarnDefenseLevelKey = "MetaUpgrade.BarnDefenseLevel";
 
         public static int MaxLevel => MaxUpgradeLevel;
 
@@ -55,6 +59,8 @@ namespace PawVoyage.Systems
                 MetaUpgradeType.AttackSpeed => 30,
                 MetaUpgradeType.MoveSpeed => 24,
                 MetaUpgradeType.PickupRadius => 22,
+                MetaUpgradeType.BarnMaxHp => 32,
+                MetaUpgradeType.BarnDefense => 40,
                 _ => 25
             };
 
@@ -77,6 +83,8 @@ namespace PawVoyage.Systems
                 MetaUpgradeType.AttackSpeed => "빠른 손놀림",
                 MetaUpgradeType.MoveSpeed => "들길 질주",
                 MetaUpgradeType.PickupRadius => "예리한 감각",
+                MetaUpgradeType.BarnMaxHp => "헛간 보강",
+                MetaUpgradeType.BarnDefense => "튼튼한 울타리",
                 _ => "알 수 없음"
             };
         }
@@ -90,8 +98,26 @@ namespace PawVoyage.Systems
                 MetaUpgradeType.AttackSpeed => "레벨당 공격 속도 +5%",
                 MetaUpgradeType.MoveSpeed => "레벨당 이동 속도 +5%",
                 MetaUpgradeType.PickupRadius => "레벨당 획득 범위 +6%",
+                MetaUpgradeType.BarnMaxHp => "레벨당 헛간 최대 체력 +25",
+                MetaUpgradeType.BarnDefense => "레벨당 헛간 피해 감소 +2%",
                 _ => string.Empty
             };
+        }
+
+        /// <summary>
+        /// 영구 강화로 증가하는 헛간 최대 체력 보너스입니다.
+        /// </summary>
+        public static int GetBarnMaxHpBonus()
+        {
+            return GetLevel(MetaUpgradeType.BarnMaxHp) * 25;
+        }
+
+        /// <summary>
+        /// 영구 강화로 증가하는 헛간 피해 감소율입니다.
+        /// </summary>
+        public static float GetBarnDefenseBonus()
+        {
+            return GetLevel(MetaUpgradeType.BarnDefense) * 0.02f;
         }
 
         public static bool TryPurchase(MetaUpgradeType upgradeType)
@@ -120,6 +146,8 @@ namespace PawVoyage.Systems
             PlayerPrefs.DeleteKey(AttackSpeedLevelKey);
             PlayerPrefs.DeleteKey(MoveSpeedLevelKey);
             PlayerPrefs.DeleteKey(PickupRadiusLevelKey);
+            PlayerPrefs.DeleteKey(BarnMaxHpLevelKey);
+            PlayerPrefs.DeleteKey(BarnDefenseLevelKey);
             PlayerPrefs.Save();
         }
 
@@ -132,6 +160,8 @@ namespace PawVoyage.Systems
                 MetaUpgradeType.AttackSpeed => AttackSpeedLevelKey,
                 MetaUpgradeType.MoveSpeed => MoveSpeedLevelKey,
                 MetaUpgradeType.PickupRadius => PickupRadiusLevelKey,
+                MetaUpgradeType.BarnMaxHp => BarnMaxHpLevelKey,
+                MetaUpgradeType.BarnDefense => BarnDefenseLevelKey,
                 _ => DamageLevelKey
             };
         }

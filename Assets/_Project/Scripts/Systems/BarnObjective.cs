@@ -24,6 +24,7 @@ namespace PawVoyage.Systems
         private Vector3 baseScale;
         private Vector3 basePosition;
         private Coroutine feedbackRoutine;
+        private bool isConfigured;
 
         public static BarnObjective Instance { get; private set; }
 
@@ -63,7 +64,6 @@ namespace PawVoyage.Systems
             Health health = barnObject.AddComponent<Health>();
             BarnObjective barn = barnObject.AddComponent<BarnObjective>();
             barn.Configure(maxHp, defense);
-            health.SetBaseMaxHp(maxHp, true);
             return barn;
         }
 
@@ -72,16 +72,22 @@ namespace PawVoyage.Systems
         /// </summary>
         public void Configure(int maxHp, float incomingDefense)
         {
-            baseMaxHp = Mathf.Max(1, maxHp);
-            defense = Mathf.Clamp(incomingDefense, 0f, 0.75f);
+            baseMaxHp = Mathf.Max(1, maxHp) + MetaProgressionData.GetBarnMaxHpBonus();
+            defense = Mathf.Clamp(incomingDefense + MetaProgressionData.GetBarnDefenseBonus(), 0f, 0.75f);
 
             if (health == null)
             {
                 health = GetComponent<Health>();
             }
 
-            health.SetBaseMaxHp(baseMaxHp, true);
+            bool maxHpChanged = health.MaxHp != baseMaxHp;
+            if (maxHpChanged)
+            {
+                health.SetBaseMaxHp(baseMaxHp, !isConfigured);
+            }
+
             health.SetDamageReduction(defense);
+            isConfigured = true;
         }
 
         private void Awake()
