@@ -26,6 +26,7 @@ namespace PawVoyage.UI
         private bool isGameOver;
         private RunFailureReason failureReason = RunFailureReason.None;
         private float previousTimeScale = 1f;
+        private RunStats subscribedRunStats;
 
         public event Action<GameOverPanel> PanelOpened;
         public string CanvasTitle => GetCanvasTitle();
@@ -39,18 +40,16 @@ namespace PawVoyage.UI
         private void OnEnable()
         {
             health.Died += OnPlayerDied;
-            if (RunStats.Instance != null)
-            {
-                RunStats.Instance.RunFailed += OnRunFailed;
-            }
+            SubscribeToRunStats();
         }
 
         private void OnDisable()
         {
             health.Died -= OnPlayerDied;
-            if (RunStats.Instance != null)
+            if (subscribedRunStats != null)
             {
-                RunStats.Instance.RunFailed -= OnRunFailed;
+                subscribedRunStats.RunFailed -= OnRunFailed;
+                subscribedRunStats = null;
             }
 
             if (isGameOver)
@@ -61,6 +60,12 @@ namespace PawVoyage.UI
 
         private void Update()
         {
+            SubscribeToRunStats();
+            if (!isGameOver && subscribedRunStats != null && subscribedRunStats.IsFailed)
+            {
+                OnRunFailed(subscribedRunStats.FailureReason);
+            }
+
             if (!isGameOver)
             {
                 return;
@@ -169,7 +174,41 @@ namespace PawVoyage.UI
 
         private void OnPlayerDied(Health deadHealth)
         {
-            RunStats.Instance?.FailRun(RunFailureReason.FarmerDeath);
+            RunStats runStats = RunStats.Instance;
+            if (runStats == null)
+            {
+                OnRunFailed(RunFailureReason.FarmerDeath);
+                return;
+            }
+
+            runStats.FailRun(RunFailureReason.FarmerDeath);
+            if (runStats.IsFailed)
+            {
+                OnRunFailed(runStats.FailureReason);
+            }
+        }
+
+        /// <summary>
+        /// 초기화 순서와 관계없이 런 실패 이벤트를 연결하고, 놓친 실패 상태도 보정합니다.
+        /// </summary>
+        private void SubscribeToRunStats()
+        {
+            RunStats currentRunStats = RunStats.Instance;
+            if (currentRunStats == subscribedRunStats)
+            {
+                return;
+            }
+
+            if (subscribedRunStats != null)
+            {
+                subscribedRunStats.RunFailed -= OnRunFailed;
+            }
+
+            subscribedRunStats = currentRunStats;
+            if (subscribedRunStats != null)
+            {
+                subscribedRunStats.RunFailed += OnRunFailed;
+            }
         }
 
         private void OnRunFailed(RunFailureReason reason)
