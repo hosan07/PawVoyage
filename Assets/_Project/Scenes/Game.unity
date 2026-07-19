@@ -778,7 +778,7 @@ MonoBehaviour:
   farmerBaseHp: 120
   farmerMoveSpeed: 5
   farmerPrimaryWeapon: {fileID: 11400000, guid: f678884b8def4d1f873390b8a047e696, type: 2}
-  farmerVisualScale: 0.52
+  farmerVisualScale: 0.38
   dogAnimalData: {fileID: 11400000, guid: 41a3f3ef045d4b59a611681144809760, type: 2}
   catAnimalData: {fileID: 11400000, guid: 982b558dff3b4f9aa1326c9e85940550, type: 2}
   dogPetWeapon: {fileID: 11400000, guid: 12f45b7763be4b07b79de248c9b14a72, type: 2}

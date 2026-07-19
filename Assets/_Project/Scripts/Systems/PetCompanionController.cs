@@ -106,7 +106,7 @@ namespace PawVoyage.Systems
                 return 0.38f;
             }
 
-            return animalData.AttackPattern == AnimalAttackPattern.Ranged ? 0.52f : 0.56f;
+            return animalData.AttackPattern == AnimalAttackPattern.Ranged ? 0.4f : 0.43f;
         }
 
         private void PlayAttackFeedback()

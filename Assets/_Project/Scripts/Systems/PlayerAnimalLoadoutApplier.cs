@@ -18,7 +18,7 @@ namespace PawVoyage.Systems
         [SerializeField] private int farmerBaseHp = 120;
         [SerializeField] private float farmerMoveSpeed = 5f;
         [SerializeField] private WeaponData farmerPrimaryWeapon = null;
-        [SerializeField] private float farmerVisualScale = 0.52f;
+        [SerializeField] private float farmerVisualScale = 0.38f;
 
         [Header("Pet")]
         [SerializeField] private AnimalData dogAnimalData = null;
